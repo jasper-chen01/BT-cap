@@ -6,6 +6,8 @@ import scanpy as sc
 import pandas as pd
 from typing import Dict, List
 from collections import Counter
+import logging
+import time
 
 from backend.models.schemas import AnnotationResponse, CellAnnotation
 from backend.services.embedding_service import EmbeddingService
@@ -18,6 +20,7 @@ class AnnotationService:
     def __init__(self):
         self.embedding_service = EmbeddingService()
         self.data_processor = DataProcessor()
+        self.logger = logging.getLogger(__name__)
     
     async def annotate_file(
         self,
@@ -36,14 +39,32 @@ class AnnotationService:
         Returns:
             AnnotationResponse with annotations for each cell
         """
+        start_time = time.perf_counter()
         # Load and preprocess new data
-        adata = self.data_processor.load_and_preprocess(file_path)
+        adata = self.data_processor.load_and_preprocess(
+            file_path,
+            skip_preprocess_if_embeddings=True
+        )
         
+        target_dim = self.embedding_service.index.d if self.embedding_service.index else None
         # Extract embeddings (assuming they're in adata.obsm or need to be computed)
-        query_embeddings = self.data_processor.extract_embeddings(adata)
+        query_embeddings = self.data_processor.extract_embeddings(
+            adata,
+            target_dim=target_dim
+        )
         
         if query_embeddings is None:
-            raise ValueError("Could not extract embeddings from data. Ensure embeddings are available.")
+            available_dims = self.data_processor.available_embedding_dims(adata)
+            raise ValueError(
+                "Could not extract embeddings matching reference index dimension. "
+                f"index_dim={target_dim}, available_dims={available_dims}"
+            )
+        
+        self.logger.info(
+            "Annotation embeddings shape: %s (%.2fs elapsed)",
+            getattr(query_embeddings, "shape", None),
+            time.perf_counter() - start_time,
+        )
         
         # Search for nearest neighbors
         distances, indices = self.embedding_service.search(
@@ -94,6 +115,12 @@ class AnnotationService:
                 confidence_score=confidence,
                 top_matches=top_matches
             ))
+        
+        self.logger.info(
+            "Annotation complete for %s cells (%.2fs total)",
+            len(cell_annotations),
+            time.perf_counter() - start_time,
+        )
         
         return AnnotationResponse(
             total_cells=len(cell_annotations),

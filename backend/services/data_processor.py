@@ -4,8 +4,9 @@ Data processing utilities for single-cell data
 import numpy as np
 import scanpy as sc
 import pandas as pd
-from typing import Optional
+from typing import Optional, Dict
 import anndata as ad
+import logging
 
 from backend.config import settings
 
@@ -13,7 +14,16 @@ from backend.config import settings
 class DataProcessor:
     """Service for processing single-cell data"""
     
-    def load_and_preprocess(self, file_path: str) -> ad.AnnData:
+    _EMBEDDING_KEYS = ['X_umap', 'X_pca', 'X_embedding', 'embeddings', 'X_transformer']
+    
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+    
+    def load_and_preprocess(
+        self,
+        file_path: str,
+        skip_preprocess_if_embeddings: bool = True
+    ) -> ad.AnnData:
         """
         Load and preprocess single-cell data
         
@@ -33,6 +43,10 @@ class DataProcessor:
         if "gene_symbol" not in adata.var.columns:
             adata.var["gene_symbol"] = adata.var_names
         
+        if skip_preprocess_if_embeddings and self._has_embeddings(adata):
+            self.logger.info("Embeddings found; skipping preprocessing.")
+            return adata
+
         # Preprocess if raw data exists
         if adata.raw is not None:
             adata = adata.raw.to_adata()
@@ -47,7 +61,11 @@ class DataProcessor:
         
         return adata
     
-    def extract_embeddings(self, adata: ad.AnnData) -> Optional[np.ndarray]:
+    def extract_embeddings(
+        self,
+        adata: ad.AnnData,
+        target_dim: Optional[int] = None
+    ) -> Optional[np.ndarray]:
         """
         Extract embeddings from AnnData object
         
@@ -61,26 +79,39 @@ class DataProcessor:
         Returns:
             numpy array of embeddings or None if not found
         """
-        # Check common embedding keys
-        embedding_keys = ['X_umap', 'X_pca', 'X_embedding', 'embeddings', 'X_transformer']
-        
-        for key in embedding_keys:
+        for key in self._EMBEDDING_KEYS:
             if key in adata.obsm:
                 embeddings = adata.obsm[key]
                 # If 2D UMAP, might need to use PCA or other higher-dim embeddings
                 if embeddings.shape[1] < 10 and 'X_pca' in adata.obsm:
                     # Use PCA if available and UMAP is too low-dimensional
                     continue
+                if target_dim is not None and embeddings.shape[1] != target_dim:
+                    continue
+                self.logger.info("Using embeddings from %s with shape %s", key, embeddings.shape)
                 return embeddings
         
         # If no embeddings found, compute PCA as fallback
         if 'X_pca' not in adata.obsm:
-            sc.tl.pca(adata, n_comps=50)
+            n_comps = target_dim or 50
+            sc.tl.pca(adata, n_comps=n_comps)
         
         if 'X_pca' in adata.obsm:
-            return adata.obsm['X_pca']
+            embeddings = adata.obsm['X_pca']
+            if target_dim is None or embeddings.shape[1] == target_dim:
+                return embeddings
         
         return None
+
+    def available_embedding_dims(self, adata: ad.AnnData) -> Dict[str, int]:
+        return {
+            key: adata.obsm[key].shape[1]
+            for key in self._EMBEDDING_KEYS
+            if key in adata.obsm
+        }
+
+    def _has_embeddings(self, adata: ad.AnnData) -> bool:
+        return any(key in adata.obsm for key in self._EMBEDDING_KEYS)
     
     def load_reference_data(self):
         """

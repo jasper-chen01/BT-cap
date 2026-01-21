@@ -6,11 +6,13 @@ from fastapi.responses import JSONResponse
 from typing import Optional
 import tempfile
 import os
+import logging
 
 from backend.models.schemas import AnnotationResponse, CellAnnotation
 from backend.services.annotation_service import AnnotationService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/annotate", response_model=AnnotationResponse)
@@ -54,14 +56,20 @@ async def annotate_cells(
             return result
             
         except Exception as e:
+            logger.exception("Annotation failed for uploaded file")
             raise HTTPException(
                 status_code=500,
-                detail=f"Error processing file: {str(e)}"
+                detail=f"Error processing file: {e!r}"
             )
         finally:
+            await file.close()
             # Clean up temporary file
             if os.path.exists(tmp_file_path):
-                os.unlink(tmp_file_path)
+                try:
+                    os.unlink(tmp_file_path)
+                except PermissionError:
+                    # Windows can keep the file locked briefly; ignore cleanup failure.
+                    pass
 
 
 @router.get("/annotate/status")

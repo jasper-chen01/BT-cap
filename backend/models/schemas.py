@@ -12,12 +12,17 @@ class AnnotationRequest(BaseModel):
     similarity_threshold: Optional[float] = 0.7
 
 
+class TopMatch(BaseModel):
+    annotation: str
+    similarity: float
+
+
 class CellAnnotation(BaseModel):
     """Single cell annotation result"""
     cell_id: str
     predicted_annotation: str
     confidence_score: float
-    top_matches: List[Dict[str, float]]  # List of {annotation: similarity_score}
+    top_matches: List[TopMatch]
 
 
 class AnnotationResponse(BaseModel):

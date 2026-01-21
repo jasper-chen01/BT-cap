@@ -118,7 +118,7 @@ class EmbeddingService:
             raise ValueError("FAISS index not loaded. Please build index first.")
         
         # Normalize query embeddings
-        query_embeddings = query_embeddings.astype('float32')
+        query_embeddings = np.asarray(query_embeddings, dtype="float32", order="C")
         faiss.normalize_L2(query_embeddings)
         
         # Search
