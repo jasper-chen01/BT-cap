@@ -26,7 +26,9 @@ A web-based platform for annotating glioma single-cell RNA-seq data using vector
 
 ## Quick Start
 
-### Option 1: Using the startup script (Recommended)
+**Python requirement:** Use Python 3.10 or 3.11. Python 3.12+ (including 3.13) is not supported by some dependencies in `requirements.txt` (notably `pandas`).
+
+### Option 1: Using the startup script (macOS/Linux)
 ```bash
 ./start_server.sh
 ```
@@ -36,7 +38,7 @@ This will:
 - Install dependencies
 - Start both backend and frontend servers
 
-### Option 2: Manual Setup
+### Option 2: Manual Setup (macOS/Linux)
 
 1. **Create virtual environment** (recommended):
 ```bash
@@ -74,6 +76,52 @@ cd frontend && python3 -m http.server 8080
    - Web interface: http://localhost:8080
    - API documentation: http://localhost:8000/docs
    - API endpoint: http://localhost:8000/api
+
+### Option 3: Manual Setup (Windows PowerShell)
+1. **Create a Python 3.11 virtual environment**:
+```powershell
+py -3.11 -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+2. **Install dependencies**:
+```powershell
+pip install -r requirements.txt
+```
+
+3. **Download reference data** (same as above)
+
+4. **Initialize reference embeddings**:
+```powershell
+python scripts\prepare_reference_embeddings.py
+```
+
+5. **Start the backend server**:
+```powershell
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+6. **Start the frontend** (in a new PowerShell window):
+```powershell
+cd frontend
+python -m http.server 8080
+```
+
+7. **Access the portal**:
+   - Web interface: http://localhost:8080
+   - API documentation: http://localhost:8000/docs
+   - API endpoint: http://localhost:8000/api
+
+### Optional: React Frontend (Vite)
+If you prefer a React-based UI, a Vite app is available in `frontend-react/`.
+
+```bash
+cd frontend-react
+npm install
+npm run dev
+```
+
+Then open: http://localhost:5173
 
 ## Usage
 

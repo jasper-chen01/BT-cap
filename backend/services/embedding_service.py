@@ -70,6 +70,7 @@ class EmbeddingService:
             annotations: dictionary mapping cell_id to annotation
         """
         # Normalize embeddings for cosine similarity
+        embeddings = np.asarray(embeddings, dtype="float32", order="C")
         faiss.normalize_L2(embeddings)
         
         # Create FAISS index (inner product for cosine similarity)
@@ -77,7 +78,7 @@ class EmbeddingService:
         self.index = faiss.IndexFlatIP(dimension)  # Inner product = cosine for normalized vectors
         
         # Add embeddings to index
-        self.index.add(embeddings.astype('float32'))
+        self.index.add(embeddings)
         
         # Store cell IDs and annotations
         self.reference_cell_ids = cell_ids
