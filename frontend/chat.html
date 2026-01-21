@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAT Portal - AI Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #fafafa;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.assistant .message-content pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message.assistant .message-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .message.assistant .message-content ul,
+        .message.assistant .message-content ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        .message.assistant .message-content strong {
+            color: #667eea;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .suggestion-chip {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .file-upload-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: #e3f2fd;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .file-upload-area {
+            position: relative;
+        }
+
+        .file-upload-button {
+            padding: 12px 20px;
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-upload-button:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .annotation-results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .annotation-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .annotation-stat {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .annotation-stat h4 {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .annotation-stat p {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .link-button {
+            color: #667eea;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.2s ease;
+        }
+
+        .link-button:hover {
+            background: #f0f2ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            🧠 Brain Tumor Annotation Portal - AI Agent
+        </h1>
+        <div class="header-actions">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+            <a href="index.html" class="link-button" style="color: white; text-decoration: none; padding: 5px 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">Web Portal</a>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages-container" id="messagesContainer">
+            <div class="empty-state" id="emptyState">
+                <h3>👋 Welcome!</h3>
+                <p>Start a conversation to annotate your glioma single-cell data</p>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="file-upload-area">
+                <label class="file-upload-button">
+                    📎 Upload
+                    <input type="file" id="fileInput" accept=".h5ad" />
+                </label>
+            </div>
+            <div class="input-wrapper">
+                <textarea
+                    id="messageInput"
+                    class="message-input"
+                    placeholder="Type your message..."
+                    rows="1"
+                ></textarea>
+            </div>
+            <button id="sendButton" class="send-button" onclick="sendMessage()">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let sessionId = null;
+        let uploadedFiles = [];
+
+        // Initialize session on load
+        window.addEventListener('load', async () => {
+            await createSession();
+            addWelcomeMessage();
+        });
+
+        // Auto-resize textarea
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Send on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                await uploadFile(e.target.files[0]);
+            }
+        });
+
+        async function createSession() {
+            try {
+                const response = await fetch(`${API_URL}/chat/session`, {
+                    method: 'POST'
+                });
+                const session = await response.json();
+                sessionId = session.session_id;
+            } catch (error) {
+                console.error('Error creating session:', error);
+            }
+        }
+
+        function addWelcomeMessage() {
+            const content = `👋 Hello! I'm your Brain Tumor Annotation Assistant.
+
+I can help you:
+- 📁 Upload and annotate single-cell glioma data
+- 🔍 Analyze your data using our reference embeddings
+- 📊 Provide detailed annotation results
+
+You can upload a file by dragging it into the chat or clicking the upload button. How can I help you today?`;
+
+            addMessage('assistant', content, [
+                'Upload a file',
+                'How does this work?',
+                'Check system status'
+            ]);
+        }
+
+        async function uploadFile(file) {
+            if (!file.name.endsWith('.h5ad')) {
+                alert('Please upload a .h5ad file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('message', `Upload file: ${file.name}`);
+
+            addMessage('user', `📎 ${file.name}`);
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_URL}/chat/${sessionId}/message`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                hideTypingIndicator();
+                addMessage('assistant', result.message.content, result.suggestions, result.message.annotation_results);
+                
+                if (result.message.file_uploaded) {
+                    uploadedFiles.push(result.message.file_uploaded);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('assistant', `❌ Error uploading file: ${error.message}`);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message && uploadedFiles.length === 0) return;
+
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                input.style.height = 'auto';
+            }
+
+            showTypingIndicator();
+
+            try {
+                const formData = new FormData();
+                if (message) {
+                    formData.append('message', message);
+                }
+
+                const response = await fetch(`${API_URL}/chat/${sessionId}/message`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                hideTypingIndicator();
+                addMessage('assistant', result.message.content, result.suggestions, result.message.annotation_results);
+
+                // Auto-annotate if file was just uploaded
+                if (result.requires_action === 'annotate' && uploadedFiles.length > 0) {
+                    setTimeout(() => {
+                        annotateFile(uploadedFiles.length - 1);
+                    }, 1000);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('assistant', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function annotateFile(fileIndex = 0) {
+            addMessage('user', 'Annotate this file');
+            showTypingIndicator();
+
+            try {
+                const formData = new FormData();
+                formData.append('file_index', fileIndex);
+                formData.append('top_k', '10');
+                formData.append('similarity_threshold', '0.7');
+
+                const response = await fetch(`${API_URL}/chat/${sessionId}/annotate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                hideTypingIndicator();
+                addMessage('assistant', result.message.content, result.suggestions, result.message.annotation_results);
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('assistant', `❌ Error annotating: ${error.message}`);
+            }
+        }
+
+        function addMessage(role, content, suggestions = null, annotationResults = null) {
+            const container = document.getElementById('messagesContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // Format markdown-like content
+            let formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+
+            contentDiv.innerHTML = formattedContent;
+
+            // Add annotation results if present
+            if (annotationResults) {
+                const resultsDiv = document.createElement('div');
+                resultsDiv.className = 'annotation-results';
+                
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = 'annotation-summary';
+                
+                summaryDiv.innerHTML = `
+                    <div class="annotation-stat">
+                        <h4>${annotationResults.total_cells}</h4>
+                        <p>Total Cells</p>
+                    </div>
+                    <div class="annotation-stat">
+                        <h4>${Object.keys(annotationResults.annotation_counts || {}).length}</h4>
+                        <p>Unique Types</p>
+                    </div>
+                    <div class="annotation-stat">
+                        <h4>${(annotationResults.average_confidence * 100).toFixed(1)}%</h4>
+                        <p>Avg Confidence</p>
+                    </div>
+                `;
+                
+                resultsDiv.appendChild(summaryDiv);
+                contentDiv.appendChild(resultsDiv);
+            }
+
+            // Add suggestions
+            if (suggestions && suggestions.length > 0) {
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'suggestions';
+                
+                suggestions.forEach(suggestion => {
+                    const chip = document.createElement('div');
+                    chip.className = 'suggestion-chip';
+                    chip.textContent = suggestion;
+                    chip.onclick = () => {
+                        if (suggestion.toLowerCase().includes('annotate')) {
+                            annotateFile();
+                        } else {
+                            document.getElementById('messageInput').value = suggestion;
+                            sendMessage();
+                        }
+                    };
+                    suggestionsDiv.appendChild(chip);
+                });
+                
+                contentDiv.appendChild(suggestionsDiv);
+            }
+
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('messagesContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+            
+            typingDiv.appendChild(contentDiv);
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+    </script>
+</body>
+</html>

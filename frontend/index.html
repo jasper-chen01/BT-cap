@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Annotation Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header > div {
+            text-align: center;
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background 0.3s ease;
+        }
+
+        .file-input-button:hover {
+            background: #764ba2;
+        }
+
+        .parameters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .parameter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .parameter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .parameter-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .parameter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .annotate-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .annotate-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .annotate-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            color: #333;
+        }
+
+        .download-button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+
+        .download-button:hover {
+            background: #764ba2;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .results-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        .results-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .confidence-bar {
+            width: 100px;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f);
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🧠 Brain Tumor Annotation Portal</h1>
+                <p>Annotate glioma single-cell RNA-seq data using vector embeddings</p>
+            </div>
+            <a href="chat.html" style="color: white; text-decoration: none; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 10px; transition: background 0.3s ease;">
+                💬 Try AI Agent
+            </a>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h2 style="margin-bottom: 20px; color: #333;">Upload Single-Cell Data</h2>
+                <p style="margin-bottom: 20px; color: #666;">Drag and drop your h5ad file here, or click to browse</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".h5ad" />
+                    <span class="file-input-button">Choose File</span>
+                </div>
+                <p id="fileName" style="margin-top: 15px; color: #667eea; font-weight: 600;"></p>
+            </div>
+
+            <div class="parameters">
+                <div class="parameter-group">
+                    <label for="topK">Top K Neighbors</label>
+                    <input type="number" id="topK" value="10" min="1" max="50" />
+                </div>
+                <div class="parameter-group">
+                    <label for="threshold">Similarity Threshold</label>
+                    <input type="number" id="threshold" value="0.7" min="0" max="1" step="0.1" />
+                </div>
+            </div>
+
+            <button class="annotate-button" id="annotateButton" onclick="annotateData()">
+                Annotate Cells
+            </button>
+
+            <div class="status" id="status"></div>
+
+            <div class="results" id="results">
+                <div class="results-header">
+                    <h2>Annotation Results</h2>
+                    <button class="download-button" onclick="downloadResults()">Download Results</button>
+                </div>
+
+                <div class="stats" id="stats"></div>
+
+                <div style="overflow-x: auto;">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Cell ID</th>
+                                <th>Predicted Annotation</th>
+                                <th>Confidence</th>
+                                <th>Top Matches</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentResults = null;
+
+        // File input handling
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const uploadSection = document.getElementById('uploadSection');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileName.textContent = `Selected: ${e.target.files[0].name}`;
+            }
+        });
+
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.h5ad')) {
+                fileInput.files = files;
+                fileName.textContent = `Selected: ${files[0].name}`;
+            } else {
+                showStatus('Please upload a .h5ad file', 'error');
+            }
+        });
+
+        async function annotateData() {
+            const fileInput = document.getElementById('fileInput');
+            const topK = parseInt(document.getElementById('topK').value);
+            const threshold = parseFloat(document.getElementById('threshold').value);
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showStatus('Please select a file first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('top_k', topK);
+            formData.append('similarity_threshold', threshold);
+
+            const annotateButton = document.getElementById('annotateButton');
+            annotateButton.disabled = true;
+            annotateButton.innerHTML = 'Annotating... <span class="loading"></span>';
+
+            showStatus('Processing your data...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/annotate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Annotation failed');
+                }
+
+                const data = await response.json();
+                currentResults = data;
+                displayResults(data);
+                showStatus(`Successfully annotated ${data.total_cells} cells!`, 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Annotation error:', error);
+            } finally {
+                annotateButton.disabled = false;
+                annotateButton.textContent = 'Annotate Cells';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const tableBody = document.getElementById('resultsTableBody');
+            const statsDiv = document.getElementById('stats');
+
+            resultsDiv.style.display = 'block';
+            tableBody.innerHTML = '';
+
+            // Calculate statistics
+            const annotations = data.annotations;
+            const annotationCounts = {};
+            let totalConfidence = 0;
+
+            annotations.forEach(cell => {
+                const ann = cell.predicted_annotation;
+                annotationCounts[ann] = (annotationCounts[ann] || 0) + 1;
+                totalConfidence += cell.confidence_score;
+            });
+
+            const avgConfidence = totalConfidence / annotations.length;
+            const uniqueAnnotations = Object.keys(annotationCounts).length;
+
+            // Display statistics
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <h3>${data.total_cells}</h3>
+                    <p>Total Cells</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${uniqueAnnotations}</h3>
+                    <p>Unique Annotations</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${(avgConfidence * 100).toFixed(1)}%</h3>
+                    <p>Average Confidence</p>
+                </div>
+            `;
+
+            // Display table (show first 100 cells)
+            const displayCells = annotations.slice(0, 100);
+            displayCells.forEach(cell => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = cell.cell_id;
+                row.insertCell(1).textContent = cell.predicted_annotation;
+                
+                const confidenceCell = row.insertCell(2);
+                const confidenceBar = document.createElement('div');
+                confidenceBar.className = 'confidence-bar';
+                const confidenceFill = document.createElement('div');
+                confidenceFill.className = 'confidence-fill';
+                confidenceFill.style.width = `${cell.confidence_score * 100}%`;
+                confidenceBar.appendChild(confidenceFill);
+                confidenceCell.appendChild(confidenceBar);
+                confidenceCell.appendChild(document.createTextNode(` ${(cell.confidence_score * 100).toFixed(1)}%`));
+
+                const matchesCell = row.insertCell(3);
+                const matchesText = cell.top_matches.slice(0, 3).map(m => 
+                    `${m.annotation} (${(m.similarity * 100).toFixed(1)}%)`
+                ).join(', ');
+                matchesCell.textContent = matchesText || 'No matches';
+            });
+
+            if (annotations.length > 100) {
+                const row = tableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 4;
+                cell.textContent = `... and ${annotations.length - 100} more cells`;
+                cell.style.textAlign = 'center';
+                cell.style.fontStyle = 'italic';
+                cell.style.color = '#666';
+            }
+        }
+
+        function downloadResults() {
+            if (!currentResults) return;
+
+            // Convert to CSV
+            const headers = ['Cell ID', 'Predicted Annotation', 'Confidence Score', 'Top Matches'];
+            const rows = currentResults.annotations.map(cell => [
+                cell.cell_id,
+                cell.predicted_annotation,
+                cell.confidence_score.toFixed(4),
+                cell.top_matches.map(m => `${m.annotation}:${m.similarity.toFixed(4)}`).join(';')
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `annotations_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        // Check API health on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                if (!data.reference_data_loaded || !data.embeddings_indexed) {
+                    showStatus('Warning: Reference data or embeddings not loaded. Please run prepare_reference_embeddings.py first.', 'error');
+                }
+            } catch (error) {
+                showStatus('Warning: Could not connect to API. Make sure the backend server is running.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
