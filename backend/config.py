@@ -16,8 +16,8 @@ class Settings:
     DATA_DIR: Path = BASE_DIR / "data"
     REFERENCE_EMBEDDINGS_DIR: Path = DATA_DIR / "embeddings"
     ANNOTATIONS_DIR: Path = DATA_DIR / "annotations"
-    REFERENCE_DATA_PATH: Path = DATA_DIR / "glioma_original.h5ad"
-    REFERENCE_EMBEDDING_COORDS_PATH: Path = DATA_DIR / "embedding_coordinates.csv"
+    REFERENCE_DATA_PATH: Path = DATA_DIR / "adata.h5ad"
+    REFERENCE_EMBEDDING_COORDS_PATH: Path = REFERENCE_EMBEDDINGS_DIR / "embedding_coordinates.csv"
     FAISS_INDEX_PATH: Path = DATA_DIR / "reference_embeddings.faiss"
     ANNOTATIONS_PATH: Path = DATA_DIR / "reference_annotations.pkl"
     

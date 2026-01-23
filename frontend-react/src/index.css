@@ -2,3 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .scroll-fade-in {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 600ms ease, transform 600ms ease;
+    will-change: opacity, transform;
+  }
+
+  .scroll-fade-in.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chat-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-message {
+  animation: chat-message-in 220ms ease-out;
+  will-change: opacity, transform;
+}
+
