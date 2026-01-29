@@ -1,7 +1,7 @@
 """
 Pydantic schemas for API requests and responses
 """
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List, Dict, Optional
 import numpy as np
 
@@ -67,3 +67,41 @@ class ChatResponse(BaseModel):
     session_id: str
     suggestions: Optional[List[str]] = None
     requires_action: Optional[str] = None  # e.g., "annotate", "upload_file"
+
+
+class SignUpRequest(BaseModel):
+    """Request model for user signup"""
+    name: str
+    email: str
+    password: str
+
+    @validator("password")
+    def password_max_bytes(cls, value: str) -> str:
+        # bcrypt only accepts up to 72 bytes
+        if value is None:
+            return value
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes.")
+        return value
+
+
+class SignInRequest(BaseModel):
+    """Request model for user signin"""
+    email: str
+    password: str
+
+    @validator("password")
+    def password_max_bytes(cls, value: str) -> str:
+        # bcrypt only accepts up to 72 bytes
+        if value is None:
+            return value
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes.")
+        return value
+
+
+class AuthResponse(BaseModel):
+    """Response model for auth"""
+    user_id: str
+    name: str
+    email: str

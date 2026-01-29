@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 # Base directory
 BASE_DIR = Path(__file__).parent.parent
+DEFAULT_CREDENTIALS_DIR = BASE_DIR / "backend" / "credentials"
 
 # Load environment variables from .env at repo root (if present)
 load_dotenv(BASE_DIR / ".env")
@@ -22,6 +23,13 @@ class Settings:
     VERTEX_PROJECT_ID: str = os.getenv("VERTEX_PROJECT_ID", "")
     VERTEX_LOCATION: str = os.getenv("VERTEX_LOCATION", "us-central1")
     GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
+
+    # Firestore settings
+    # Default to empty so the service account project_id is used when available.
+    FIRESTORE_PROJECT_ID: str = os.getenv("FIRESTORE_PROJECT_ID", "")
+    FIRESTORE_COLLECTION: str = os.getenv("FIRESTORE_COLLECTION", "users")
+    # Optional Firestore database id (non-default)
+    FIRESTORE_DATABASE_ID: str = os.getenv("FIRESTORE_DATABASE_ID", "")
     
     # Data paths
     DATA_DIR: Path = BASE_DIR / "data"
@@ -44,5 +52,10 @@ class Settings:
         self.DATA_DIR.mkdir(exist_ok=True)
         self.REFERENCE_EMBEDDINGS_DIR.mkdir(exist_ok=True)
         self.ANNOTATIONS_DIR.mkdir(exist_ok=True)
+
+        if not self.GOOGLE_APPLICATION_CREDENTIALS and DEFAULT_CREDENTIALS_DIR.exists():
+            json_files = sorted(DEFAULT_CREDENTIALS_DIR.glob("*.json"))
+            if json_files:
+                self.GOOGLE_APPLICATION_CREDENTIALS = str(json_files[0])
 
 settings = Settings()

@@ -3,28 +3,50 @@ import { Activity, Brain } from 'lucide-react';
 import Button from './ui/Button';
 import Input from './ui/Input';
 
+const API_URL = 'http://localhost:8000/api';
+
 const AuthModal = ({ isOpen, onClose, onLogin }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setError('');
 
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const endpoint = isSignUp ? 'auth/signup' : 'auth/signin';
+      const payload = isSignUp ? { name, email, password } : { email, password };
+      const response = await fetch(`${API_URL}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.detail || 'Authentication failed');
+      }
+
+      const data = await response.json();
       onLogin({
-        name: isSignUp ? name : 'Dr. Researcher',
-        email,
+        userId: data.user_id,
+        name: data.name,
+        email: data.email,
         avatar: null,
       });
       onClose();
-    }, 1000);
+    } catch (err) {
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,11 +91,12 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             <Button
               type="submit"
               className="w-full mt-6"
-              disabled={loading || !email || !password}
+              disabled={loading || !email || !password || (isSignUp && !name)}
             >
               {loading ? (
                 <Activity className="animate-spin" />
