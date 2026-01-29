@@ -3,14 +3,25 @@ Configuration settings
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Base directory
 BASE_DIR = Path(__file__).parent.parent
+
+# Load environment variables from .env at repo root (if present)
+load_dotenv(BASE_DIR / ".env")
 
 class Settings:
     """Application settings"""
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", 8000))
+
+    # Gemini settings (optional)
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    VERTEX_PROJECT_ID: str = os.getenv("VERTEX_PROJECT_ID", "")
+    VERTEX_LOCATION: str = os.getenv("VERTEX_LOCATION", "us-central1")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
     
     # Data paths
     DATA_DIR: Path = BASE_DIR / "data"

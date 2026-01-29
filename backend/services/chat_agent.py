@@ -1,6 +1,7 @@
 """
 Chat agent service for conversational interface
 """
+import asyncio
 import re
 from typing import Optional, List, Dict
 from datetime import datetime
@@ -8,6 +9,21 @@ from collections import Counter
 
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
 from backend.services.annotation_service import AnnotationService
+from backend.config import settings
+
+try:
+    import google.generativeai as genai
+except Exception:  # pragma: no cover - optional dependency
+    genai = None
+
+try:
+    import vertexai
+    from vertexai.generative_models import GenerativeModel
+    from google.oauth2 import service_account
+except Exception:  # pragma: no cover - optional dependency
+    vertexai = None
+    GenerativeModel = None
+    service_account = None
 
 
 class ChatAgent:
@@ -21,6 +37,31 @@ class ChatAgent:
         self.help_keywords = ["help", "how", "what", "guide", "tutorial", "instructions"]
         self.annotate_keywords = ["annotate", "analyze", "process", "classify", "label", "predict"]
         self.status_keywords = ["status", "health", "ready", "available"]
+        self.gemini_model = None
+        self.gemini_enabled = False
+        self._init_gemini()
+
+    def _init_gemini(self) -> None:
+        """Initialize Gemini client if configured."""
+        if settings.VERTEX_PROJECT_ID and vertexai is not None and GenerativeModel is not None:
+            credentials = None
+            if settings.GOOGLE_APPLICATION_CREDENTIALS and service_account is not None:
+                credentials = service_account.Credentials.from_service_account_file(
+                    settings.GOOGLE_APPLICATION_CREDENTIALS
+                )
+            vertexai.init(
+                project=settings.VERTEX_PROJECT_ID,
+                location=settings.VERTEX_LOCATION,
+                credentials=credentials
+            )
+            self.gemini_model = GenerativeModel(settings.GEMINI_MODEL)
+            self.gemini_enabled = True
+            return
+
+        if settings.GEMINI_API_KEY and genai is not None:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            self.gemini_model = genai.GenerativeModel(settings.GEMINI_MODEL)
+            self.gemini_enabled = True
     
     async def process_message(
         self,
@@ -77,6 +118,8 @@ class ChatAgent:
         threshold = self._extract_number(message_lower, r'threshold[:\s]?([\d.]+)', default=0.7, is_float=True)
         
         # Default response
+        if self.gemini_enabled:
+            return await self._gemini_response(session, user_message)
         return self._default_response(session.session_id, session.uploaded_files)
     
     async def annotate_file(
@@ -325,6 +368,43 @@ What would you like to do?"""
             session_id=session_id,
             suggestions=suggestions
         )
+
+    def _build_gemini_prompt(self, session: ChatSession, user_message: str) -> str:
+        """Build a prompt with lightweight context for Gemini."""
+        recent_messages = session.messages[-6:] if session.messages else []
+        history_lines = [
+            f"{msg.role}: {msg.content}" for msg in recent_messages if msg.content
+        ]
+        uploaded_names = [f["filename"] for f in session.uploaded_files] if session.uploaded_files else []
+        uploaded_text = ", ".join(uploaded_names) if uploaded_names else "none"
+
+        system_prompt = (
+            "You are the Brain Tumor Annotation Assistant for a web app that annotates "
+            "glioma single-cell data. Be concise and helpful. If the user asks about "
+            "uploading or annotating files, explain the steps clearly. If the request is "
+            "outside the app scope, say you can only help with this portal."
+        )
+
+        history_block = "\n".join(history_lines) if history_lines else "No prior messages."
+        return (
+            f"{system_prompt}\n\n"
+            f"Uploaded files: {uploaded_text}\n\n"
+            f"Conversation:\n{history_block}\n\n"
+            f"User: {user_message}\nAssistant:"
+        )
+
+    async def _gemini_response(self, session: ChatSession, user_message: str) -> ChatResponse:
+        """Generate a Gemini response for general conversation."""
+        prompt = self._build_gemini_prompt(session, user_message)
+        try:
+            response = await asyncio.to_thread(self.gemini_model.generate_content, prompt)
+            content = (response.text or "").strip()
+            if not content:
+                return self._default_response(session.session_id, session.uploaded_files)
+            message = ChatMessage(role="assistant", content=content)
+            return ChatResponse(message=message, session_id=session.session_id)
+        except Exception:
+            return self._default_response(session.session_id, session.uploaded_files)
     
     def _extract_number(self, text: str, pattern: str, default: float, is_float: bool = False) -> float:
         """Extract number from text using regex pattern"""
