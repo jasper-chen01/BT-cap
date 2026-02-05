@@ -39,7 +39,10 @@ class FirestoreService:
             database=database_id,
         )
         self.collection = self.client.collection(settings.FIRESTORE_COLLECTION)
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.pwd_context = CryptContext(
+            schemes=["argon2", "bcrypt"],
+            deprecated="auto"
+        )
 
     def get_user_by_email(self, email: str) -> Tuple[Optional[str], Optional[Dict]]:
         if FieldFilter is not None:
