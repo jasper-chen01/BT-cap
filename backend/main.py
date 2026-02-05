@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 
-from backend.api import annotation, health, chat, auth
+from backend.api import annotation, health, chat, auth, visualization
 from backend.config import settings
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(annotation.router, prefix="/api", tags=["annotation"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(auth.router, prefix="/api", tags=["auth"])
+app.include_router(visualization.router, prefix="/api", tags=["visualization"])
 
 
 @app.exception_handler(Exception)
