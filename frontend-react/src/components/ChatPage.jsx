@@ -159,7 +159,7 @@ const handleSend = async () => {
                     : 'bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700'
                 }`}
               >
-                <p className="leading-relaxed">{msg.content}</p>
+                <p className="leading-relaxed whitespace-pre-line">{msg.content}</p>
               </div>
             </div>
           ))}
