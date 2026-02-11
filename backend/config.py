@@ -30,6 +30,12 @@ class Settings:
     FIRESTORE_COLLECTION: str = os.getenv("FIRESTORE_COLLECTION", "users")
     # Optional Firestore database id (non-default)
     FIRESTORE_DATABASE_ID: str = os.getenv("FIRESTORE_DATABASE_ID", "")
+    FIRESTORE_SUPPTABLE_COLLECTION: str = os.getenv(
+        "FIRESTORE_SUPPTABLE_COLLECTION",
+        "supptables"
+    )
+    SUPPTABLE_DOC_ID: str = os.getenv("SUPPTABLE_DOC_ID", "supptable1")
+    SUPPTABLE_URL: str = os.getenv("SUPPTABLE_URL", "")
     
     # Data paths
     DATA_DIR: Path = BASE_DIR / "data"
