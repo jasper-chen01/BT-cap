@@ -34,7 +34,7 @@ class ChatAgent:
         self.greetings = [
             "hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening"
         ]
-        self.help_keywords = ["help", "how", "what", "guide", "tutorial", "instructions"]
+        self.help_keywords = ["help", "guide", "tutorial", "instructions"]
         self.annotate_keywords = ["annotate", "analyze", "process", "classify", "label", "predict"]
         self.status_keywords = ["status", "health", "ready", "available"]
         self.gemini_model = None
@@ -83,15 +83,15 @@ class ChatAgent:
         message_lower = user_message.lower().strip()
         
         # Handle greetings
-        if any(greeting in message_lower for greeting in self.greetings):
+        if any(self._has_keyword(message_lower, greeting) for greeting in self.greetings):
             return self._greeting_response(session.session_id)
         
         # Handle help requests
-        if any(keyword in message_lower for keyword in self.help_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.help_keywords):
             return self._help_response(session.session_id)
         
         # Handle status checks
-        if any(keyword in message_lower for keyword in self.status_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.status_keywords):
             return await self._status_response(session.session_id)
         
         # Handle file upload
@@ -99,7 +99,7 @@ class ChatAgent:
             return await self._handle_file_upload(session, file_path, user_message)
         
         # Handle annotation requests
-        if any(keyword in message_lower for keyword in self.annotate_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.annotate_keywords):
             if session.uploaded_files:
                 # Annotate the most recent file
                 return await self._annotate_latest_file(session)
@@ -380,9 +380,10 @@ What would you like to do?"""
 
         system_prompt = (
             "You are the Brain Tumor Annotation Assistant for a web app that annotates "
-            "glioma single-cell data. Be concise and helpful. If the user asks about "
-            "uploading or annotating files, explain the steps clearly. If the request is "
-            "outside the app scope, say you can only help with this portal."
+            "glioma single-cell data. Be concise and helpful, and respond naturally to the user."
+            "If the user asks about uploading or annotating files, explain the steps clearly."
+            "If the request is outside the app scope, say you can only help with this portal."
+            "No profanity or swearing. Do not repeat profanity even if the user uses it."
         )
 
         history_block = "\n".join(history_lines) if history_lines else "No prior messages."
@@ -403,8 +404,19 @@ What would you like to do?"""
                 return self._default_response(session.session_id, session.uploaded_files)
             message = ChatMessage(role="assistant", content=content)
             return ChatResponse(message=message, session_id=session.session_id)
-        except Exception:
+        except Exception as e:
+            print("GEMINI ERROR:", repr(e))
             return self._default_response(session.session_id, session.uploaded_files)
+    
+    def _has_keyword(self, text: str, keyword: str) -> bool:
+        """Match keyword as a whole word (or exact phrase if multi-word)."""
+        keyword = keyword.strip().lower()
+        if not keyword:
+            return False
+        if " " in keyword:
+            return keyword in text
+        return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
+
     
     def _extract_number(self, text: str, pattern: str, default: float, is_float: bool = False) -> float:
         """Extract number from text using regex pattern"""

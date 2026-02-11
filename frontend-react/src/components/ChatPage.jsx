@@ -3,48 +3,118 @@ import { ArrowRight, MessageSquare, Paperclip, Send, X } from 'lucide-react';
 import Button from './ui/Button';
 import Card from './ui/Card';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+
+const normalizeBackendMessage = (msg) => ({
+  id: Date.now() + Math.random(),
+  role: msg?.role ?? 'assistant',
+  content: msg?.content ?? '',
+});
+
+
 const ChatPage = ({ embedded = false, onClose }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: 'assistant',
-      content:
-        'Hello! I am your research assistant for glioma analysis. How can I help you today?',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+  const createSession = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/chat/session`, { method: 'POST' });
+      if (!res.ok) throw new Error(`Create session failed (${res.status})`);
+      const data = await res.json();
+      setSessionId(data.session_id);
+
+      // Optional: show a greeting from backend once session exists
+      setMessages([
+        {
+          id: Date.now(),
+          role: 'assistant',
+          content: 'Hi! Send a message to start, or upload a .h5ad file then ask me to annotate it.',
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
+      setMessages([
+        {
+          id: Date.now(),
+          role: 'assistant',
+          content:
+            'I could not connect to the backend server. Make sure the backend is running on http://127.0.0.1:8000.',
+        },
+      ]);
+    }
+  };
+
+  createSession();
+}, []);
+
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+ const API_BASE = "http://127.0.0.1:8000"; // hardcode for now to avoid env/proxy issues
 
-    const newUserMsg = { id: Date.now(), role: 'user', content: inputValue };
-    setMessages((prev) => [...prev, newUserMsg]);
-    setInputValue('');
-    setIsTyping(true);
+const ensureSession = async () => {
+  if (sessionId) return sessionId;
 
-    setTimeout(() => {
-      const responses = [
-        'Based on the expression profile, these cells likely belong to the oligodendrocyte lineage.',
-        "I've analyzed the uploaded dataset. The tumor core shows high heterogeneity.",
-        'Would you like to compare these results with the TCGA reference database?',
-      ];
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          role: 'assistant',
-          content: responses[Math.floor(Math.random() * responses.length)],
-        },
-      ]);
-      setIsTyping(false);
-    }, 1500);
-  };
+  const res = await fetch(`${API_BASE}/api/chat/session`, { method: "POST" });
+  if (!res.ok) throw new Error(`Create session failed (${res.status})`);
+  const data = await res.json();
+  setSessionId(data.session_id);
+  return data.session_id;
+};
+
+const handleSend = async () => {
+  const text = inputValue.trim();
+  if (!text) return;
+
+  setMessages((prev) => [...prev, { id: Date.now(), role: "user", content: text }]);
+  setInputValue("");
+  setIsTyping(true);
+
+  try {
+    const sid = await ensureSession();
+
+    // ✅ This is the ONLY message request. It ALWAYS has JSON body.
+    const payload = { message: { role: "user", content: text } };
+    console.log("SENDING PAYLOAD:", payload);
+
+    const formData = new FormData();
+    formData.append("message", text); // must match docs: message (string)
+
+    const res = await fetch(`${API_BASE}/api/chat/${sid}/message`, {
+      method: "POST",
+      body: formData, // ✅ no JSON.stringify
+  // ✅ IMPORTANT: do NOT set Content-Type manually for FormData
+    });
+
+
+    const raw = await res.text();
+    console.log("RAW RESPONSE:", res.status, raw);
+
+    if (!res.ok) throw new Error(raw);
+
+    const data = JSON.parse(raw);
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now() + 1, role: data.message.role, content: data.message.content },
+    ]);
+  } catch (err) {
+    console.error(err);
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now() + 1, role: "assistant", content: "Backend error. Check console + backend logs." },
+    ]);
+  } finally {
+    setIsTyping(false);
+  }
+};
+
+
 
   const containerClassName = embedded
     ? 'h-full w-full flex flex-col p-4'
