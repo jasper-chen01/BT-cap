@@ -32,6 +32,40 @@ class AnnotationResponse(BaseModel):
     metadata: Optional[Dict] = None
 
 
+class UmapPoint(BaseModel):
+    cell_id: str
+    x: float
+    y: float
+    cluster: str
+    cell_type: Optional[str] = None
+    score: Optional[float] = None
+
+
+class CellTypeSummary(BaseModel):
+    name: str
+    count: int
+    avg_score: Optional[float] = None
+
+
+class DifferentialExpressionGroup(BaseModel):
+    group: str
+    genes: List[str]
+    scores: Optional[List[Optional[float]]] = None
+    logfoldchanges: Optional[List[Optional[float]]] = None
+    pvals_adj: Optional[List[Optional[float]]] = None
+
+
+class VisualizationResponse(BaseModel):
+    total_cells: int
+    umap_points: List[UmapPoint]
+    cluster_labels: List[str]
+    cluster_counts: Dict[str, int]
+    cell_types: Optional[List[CellTypeSummary]] = None
+    de_by_cluster: Optional[List[DifferentialExpressionGroup]] = None
+    de_by_cell_type: Optional[List[DifferentialExpressionGroup]] = None
+    metadata: Optional[Dict] = None
+
+
 class HealthResponse(BaseModel):
     """Health check response"""
     status: str
@@ -76,12 +110,12 @@ class SignUpRequest(BaseModel):
     password: str
 
     @validator("password")
-    def password_max_bytes(cls, value: str) -> str:
-        # bcrypt only accepts up to 72 bytes
+    def password_min_length(cls, value: str) -> str:
+        # Enforce a minimum length; max length is handled by the hash scheme.
         if value is None:
             return value
-        if len(value.encode("utf-8")) > 72:
-            raise ValueError("Password must be at most 72 bytes.")
+        if len(value) < 4:
+            raise ValueError("Password must be at least 4 characters long.")
         return value
 
 
@@ -91,12 +125,12 @@ class SignInRequest(BaseModel):
     password: str
 
     @validator("password")
-    def password_max_bytes(cls, value: str) -> str:
-        # bcrypt only accepts up to 72 bytes
+    def password_min_length(cls, value: str) -> str:
+        # Enforce a minimum length; max length is handled by the hash scheme.
         if value is None:
             return value
-        if len(value.encode("utf-8")) > 72:
-            raise ValueError("Password must be at most 72 bytes.")
+        if len(value) < 4:
+            raise ValueError("Password must be at least 4 characters long.")
         return value
 
 
