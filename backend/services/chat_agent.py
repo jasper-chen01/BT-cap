@@ -132,19 +132,19 @@ class ChatAgent:
         gene_match = re.search(r"\b[A-Za-z0-9-]{2,20}\b", raw)
 
         lookup_query = gene_match.group(0) if gene_match else raw
-        print("DEBUG lookup_query =", lookup_query)
+        
 
         try:
             lookup = self._lookup_weight_from_xlsx(user_message)  # <-- your existing method name
         except Exception as e:
             print("MARKER LOOKUP ERROR:", repr(e))
             lookup = None
-        print("DEBUG lookup =", "None" if not lookup else "OK")
+        
         if lookup:
             kind, q, rows = lookup
-            print("DEBUG lookup kind =", kind, "q =", q, "rows =", len(rows))
+            
             if rows:
-                print("DEBUG first row =", rows[0])
+                
                 #if kind == "gene":
                    # lines = [f"{q.upper()} weights:"]
                   #  for cell, gene, w in rows[:25]:
@@ -519,17 +519,14 @@ What would you like to do?"""
             return None
 
         xlsx_path = self._download_gcs_xlsx_if_needed()
-        print("DEBUG xlsx_path =", xlsx_path)
-        if xlsx_path.exists():
-            print("DEBUG xlsx size =", xlsx_path.stat().st_size)
-        else:
-            print("DEBUG xlsx does not exist!")
+        
+      
 
         if not xlsx_path.exists():
             return None
 
         wb = openpyxl.load_workbook(xlsx_path, data_only=True)
-        print("DEBUG sheetnames =", wb.sheetnames)
+        
 
 
         sheet_name = (os.getenv("MARKER_WEIGHTS_SHEET", "") or "").strip()
@@ -537,7 +534,7 @@ What would you like to do?"""
 
         # Expect headers in first row: CellType | MarkerGene | weights
         headers = [str(c.value).strip() if c.value is not None else "" for c in ws[1]]
-        print("DEBUG headers =", headers)
+  
         
 
 
@@ -572,7 +569,7 @@ What would you like to do?"""
             else:
                 if cell.lower() == q.lower():
                     rows.append((cell, gene.upper(), w))
-        print("DEBUG rows_found =", len(rows))
+        
 
         return ("gene" if is_gene else "celltype"), q, rows
 
