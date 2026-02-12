@@ -87,6 +87,8 @@ npm run dev
 
 ## System flowcharts
 
+### Upload -> embedding pipeline (chat upload)
+
 ```mermaid
 flowchart TD
   A[Upload .h5ad in chat UI] --> B[Backend saves temp file]
@@ -100,6 +102,8 @@ flowchart TD
   I --> J[Saved under data/embedding_runs/<h5ad_stem>_embs/]
 ```
 
+### Annotation endpoint (no files written)
+
 ```mermaid
 flowchart TD
   A[Upload .h5ad to /api/annotate] --> B[Temp file saved]
@@ -108,6 +112,8 @@ flowchart TD
   D --> E[Return JSON annotations]
   E --> F[Temp file deleted]
 ```
+
+### Visualization endpoint (no files written)
 
 ```mermaid
 flowchart TD
