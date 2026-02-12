@@ -139,3 +139,79 @@ class AuthResponse(BaseModel):
     user_id: str
     name: str
     email: str
+
+
+class EmbeddingJobRequest(BaseModel):
+    """Request model to start embedding extraction"""
+    h5ad_path: str
+    dict_dir: str
+    models_root: str
+    out_dir: Optional[str] = None
+    gene_id_type: str = "ensembl"
+    gpu: str = "0"
+    max_ncells: int = 1_000_000
+    forward_batch_size: int = 100
+    finetune_subdir: Optional[str] = None
+
+
+class EmbeddingJobResponse(BaseModel):
+    """Status of an embedding extraction job"""
+    job_id: str
+    status: str
+    created_at: str
+    started_at: Optional[str]
+    finished_at: Optional[str]
+    command: List[str]
+    out_dir: str
+    log_path: str
+    pid: Optional[int]
+    exit_code: Optional[int]
+    error_message: Optional[str]
+
+
+class EmbeddingJobLogResponse(BaseModel):
+    """Log output for an embedding extraction job"""
+    job_id: str
+    tail: int
+    log: str
+
+
+class EmbeddingPipelineJobRequest(BaseModel):
+    """Request model to start embedding + matching pipeline"""
+    h5ad_path: str
+    dict_dir: Optional[str] = None
+    models_root: Optional[str] = None
+    out_dir: Optional[str] = None
+    gene_id_type: str = "symbol"
+    gpu: str = "0"
+    max_ncells: int = 1_000_000
+    forward_batch_size: int = 100
+    finetune_subdir: Optional[str] = None
+    trained_embeddings_path: Optional[str] = None
+    celltypes_path: Optional[str] = None
+    id_col: str = "individual"
+
+
+class EmbeddingPipelineJobResponse(BaseModel):
+    """Status of an embedding pipeline job"""
+    job_id: str
+    status: str
+    created_at: str
+    started_at: Optional[str]
+    finished_at: Optional[str]
+    command: List[str]
+    out_dir: str
+    log_path: str
+    pid: Optional[int]
+    exit_code: Optional[int]
+    error_message: Optional[str]
+    embeddings_csv: Optional[str]
+    matches_csv: Optional[str]
+    annotated_matches_csv: Optional[str]
+
+
+class EmbeddingPipelineJobLogResponse(BaseModel):
+    """Log output for an embedding pipeline job"""
+    job_id: str
+    tail: int
+    log: str

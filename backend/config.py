@@ -45,6 +45,11 @@ class Settings:
     REFERENCE_EMBEDDING_COORDS_PATH: Path = REFERENCE_EMBEDDINGS_DIR / "embedding_coordinates.csv"
     FAISS_INDEX_PATH: Path = DATA_DIR / "reference_embeddings.faiss"
     ANNOTATIONS_PATH: Path = DATA_DIR / "reference_annotations.pkl"
+    TRAINED_EMBEDDINGS_PATH: Path = (
+        REFERENCE_EMBEDDINGS_DIR
+        / "embs_by_dirks_primary_gbm_combined_2000perCellType_num_classes_13_emb_layer_-1.csv"
+    )
+    CELLTYPES_PATH: Path = ANNOTATIONS_DIR / "celltypes.csv"
     
     # Embedding settings
     EMBEDDING_LAYER: int = -1  # Use layer -1 from transformer

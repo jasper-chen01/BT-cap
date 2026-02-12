@@ -1,0 +1,89 @@
+{
+  "best_metric": 0.5013546347618103,
+  "best_model_checkpoint": "dirks_primary_gbm_combined_2000perCellType/finetune/240605_geneformer_CellClassifier_0_L2048_B12_LR5e-05_LSlinear_WU500_E10_Oadamw_F0/checkpoint-1223",
+  "epoch": 1.0,
+  "eval_steps": 500,
+  "global_step": 1223,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "epoch": 0.1,
+      "learning_rate": 1.22e-05,
+      "loss": 2.4986,
+      "step": 122
+    },
+    {
+      "epoch": 0.2,
+      "learning_rate": 2.44e-05,
+      "loss": 2.2568,
+      "step": 244
+    },
+    {
+      "epoch": 0.3,
+      "learning_rate": 3.66e-05,
+      "loss": 1.796,
+      "step": 366
+    },
+    {
+      "epoch": 0.4,
+      "learning_rate": 4.88e-05,
+      "loss": 1.4229,
+      "step": 488
+    },
+    {
+      "epoch": 0.5,
+      "learning_rate": 4.953111679454391e-05,
+      "loss": 1.097,
+      "step": 610
+    },
+    {
+      "epoch": 0.6,
+      "learning_rate": 4.9011082693947144e-05,
+      "loss": 0.8886,
+      "step": 732
+    },
+    {
+      "epoch": 0.7,
+      "learning_rate": 4.8491048593350386e-05,
+      "loss": 0.7482,
+      "step": 854
+    },
+    {
+      "epoch": 0.8,
+      "learning_rate": 4.797101449275362e-05,
+      "loss": 0.5938,
+      "step": 976
+    },
+    {
+      "epoch": 0.9,
+      "learning_rate": 4.745098039215686e-05,
+      "loss": 0.5421,
+      "step": 1098
+    },
+    {
+      "epoch": 1.0,
+      "learning_rate": 4.6930946291560105e-05,
+      "loss": 0.4801,
+      "step": 1220
+    },
+    {
+      "epoch": 1.0,
+      "eval_accuracy": 0.854143947655398,
+      "eval_loss": 0.5013546347618103,
+      "eval_macro_f1": 0.7235854311360751,
+      "eval_runtime": 29.3743,
+      "eval_samples_per_second": 124.871,
+      "eval_steps_per_second": 10.417,
+      "step": 1223
+    }
+  ],
+  "logging_steps": 122,
+  "max_steps": 12230,
+  "num_train_epochs": 10,
+  "save_steps": 500,
+  "total_flos": 469599917225328.0,
+  "trial_name": null,
+  "trial_params": null
+}
