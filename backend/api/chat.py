@@ -11,6 +11,8 @@ import json
 
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
 from backend.services.chat_agent import ChatAgent
+from backend.services.embedding_pipeline_service import EmbeddingPipelineJobService
+from backend.config import BASE_DIR
 
 router = APIRouter()
 
@@ -77,11 +79,24 @@ async def send_message(
             tmp_file.write(content)
             file_path = tmp_file.name
         
-        session.uploaded_files.append({
+        file_info = {
             "filename": file.filename,
             "path": file_path,
             "session_id": session_id
-        })
+        }
+
+        try:
+            pipeline_service = EmbeddingPipelineJobService()
+            job = pipeline_service.start_job(
+                h5ad_path=file_path,
+                dict_dir=str(BASE_DIR / "backend" / "dict"),
+                models_root=str(BASE_DIR / "backend"),
+            )
+            file_info["embedding_pipeline_job_id"] = job.job_id
+        except Exception as exc:
+            file_info["embedding_pipeline_error"] = str(exc)
+
+        session.uploaded_files.append(file_info)
     
     # Add user message to session
     user_msg = ChatMessage(
