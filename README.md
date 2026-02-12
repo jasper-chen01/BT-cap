@@ -88,8 +88,8 @@ npm run dev
 ## System flowcharts
 
 ```mermaid
-flowchart LR
-  subgraph PIPELINE[Upload -> embedding pipeline (chat upload)]
+flowchart TD
+  subgraph PIPELINE["Upload to embedding pipeline (chat upload)"]
     A[Upload .h5ad in chat UI] --> B[Backend saves temp file]
     B --> C[Start background job]
     C --> D[run_embeddings.py]
@@ -101,7 +101,7 @@ flowchart LR
     I --> J[Saved under data/embedding_runs/<h5ad_stem>_embs/]
   end
 
-  subgraph ANNOTATE[Annotation endpoint (no files written)]
+  subgraph ANNOTATE["Annotation endpoint (no files written)"]
     K[Upload .h5ad to /api/annotate] --> L[Temp file saved]
     L --> M[Compute/load embeddings]
     M --> N[FAISS search]
@@ -109,7 +109,7 @@ flowchart LR
     O --> P[Temp file deleted]
   end
 
-  subgraph VIS[Visualization endpoint (no files written)]
+  subgraph VIS["Visualization endpoint (no files written)"]
     Q[Upload .h5ad to /api/visualize] --> R[Temp file saved]
     R --> S[Scanpy preprocess + UMAP + Leiden]
     S --> T[Optional supptable cell types]
