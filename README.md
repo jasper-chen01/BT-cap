@@ -89,33 +89,33 @@ npm run dev
 
 ```mermaid
 flowchart TD
-  subgraph PIPELINE["Upload to embedding pipeline (chat upload)"]
-    A[Upload .h5ad in chat UI] --> B[Backend saves temp file]
-    B --> C[Start background job]
-    C --> D[run_embeddings.py]
-    D --> E[embs_by_*_emb_layer_-1.csv]
-    E --> F[match_embeddings.py]
-    F --> G[embedding_matches.csv]
-    G --> H[Map celltypes.csv]
-    H --> I[embedding_matches_with_celltypes.csv]
-    I --> J[Saved under data/embedding_runs/<h5ad_stem>_embs/]
-  end
+  A[Upload .h5ad in chat UI] --> B[Backend saves temp file]
+  B --> C[Start background job]
+  C --> D[run_embeddings.py]
+  D --> E[embs_by_*_emb_layer_-1.csv]
+  E --> F[match_embeddings.py]
+  F --> G[embedding_matches.csv]
+  G --> H[Map celltypes.csv]
+  H --> I[embedding_matches_with_celltypes.csv]
+  I --> J[Saved under data/embedding_runs/<h5ad_stem>_embs/]
+```
 
-  subgraph ANNOTATE["Annotation endpoint (no files written)"]
-    K[Upload .h5ad to /api/annotate] --> L[Temp file saved]
-    L --> M[Compute/load embeddings]
-    M --> N[FAISS search]
-    N --> O[Return JSON annotations]
-    O --> P[Temp file deleted]
-  end
+```mermaid
+flowchart TD
+  A[Upload .h5ad to /api/annotate] --> B[Temp file saved]
+  B --> C[Compute/load embeddings]
+  C --> D[FAISS search]
+  D --> E[Return JSON annotations]
+  E --> F[Temp file deleted]
+```
 
-  subgraph VIS["Visualization endpoint (no files written)"]
-    Q[Upload .h5ad to /api/visualize] --> R[Temp file saved]
-    R --> S[Scanpy preprocess + UMAP + Leiden]
-    S --> T[Optional supptable cell types]
-    T --> U[Return JSON UMAP + clusters + DE genes]
-    U --> V[Temp file deleted]
-  end
+```mermaid
+flowchart TD
+  A[Upload .h5ad to /api/visualize] --> B[Temp file saved]
+  B --> C[Scanpy preprocess + UMAP + Leiden]
+  C --> D[Optional supptable cell types]
+  D --> E[Return JSON UMAP + clusters + DE genes]
+  E --> F[Temp file deleted]
 ```
 
 ## Outputs written to disk
