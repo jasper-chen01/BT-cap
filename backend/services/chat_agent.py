@@ -10,6 +10,13 @@ from collections import Counter
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
 from backend.services.annotation_service import AnnotationService
 from backend.config import settings
+from pathlib import Path
+from google.cloud import storage
+import openpyxl
+import os
+import json
+
+
 
 try:
     import google.generativeai as genai
@@ -34,7 +41,7 @@ class ChatAgent:
         self.greetings = [
             "hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening"
         ]
-        self.help_keywords = ["help", "how", "what", "guide", "tutorial", "instructions"]
+        self.help_keywords = ["help", "guide", "tutorial", "instructions"]
         self.annotate_keywords = ["annotate", "analyze", "process", "classify", "label", "predict"]
         self.status_keywords = ["status", "health", "ready", "available"]
         self.gemini_model = None
@@ -82,16 +89,18 @@ class ChatAgent:
         """
         message_lower = user_message.lower().strip()
         
+
+        
         # Handle greetings
-        if any(greeting in message_lower for greeting in self.greetings):
+        if any(self._has_keyword(message_lower, greeting) for greeting in self.greetings):
             return self._greeting_response(session.session_id)
         
         # Handle help requests
-        if any(keyword in message_lower for keyword in self.help_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.help_keywords):
             return self._help_response(session.session_id)
         
         # Handle status checks
-        if any(keyword in message_lower for keyword in self.status_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.status_keywords):
             return await self._status_response(session.session_id)
         
         # Handle file upload
@@ -99,7 +108,7 @@ class ChatAgent:
             return await self._handle_file_upload(session, file_path, user_message)
         
         # Handle annotation requests
-        if any(keyword in message_lower for keyword in self.annotate_keywords):
+        if any(self._has_keyword(message_lower, keyword) for keyword in self.annotate_keywords):
             if session.uploaded_files:
                 # Annotate the most recent file
                 return await self._annotate_latest_file(session)
@@ -116,7 +125,59 @@ class ChatAgent:
         # Extract parameters from message
         top_k = self._extract_number(message_lower, r'top[_\s]?k[:\s]?(\d+)', default=10)
         threshold = self._extract_number(message_lower, r'threshold[:\s]?([\d.]+)', default=0.7, is_float=True)
+        # 0) Marker weight lookup (runs before Gemini)
+        raw = (user_message or "").strip()
+
+        # try to grab a gene-like token (CHRM1, EGFR, OLIG2, etc.)
+        gene_match = re.search(r"\b[A-Za-z0-9-]{2,20}\b", raw)
+
+        lookup_query = gene_match.group(0) if gene_match else raw
         
+
+        try:
+            lookup = self._lookup_weight_from_xlsx(user_message)  # <-- your existing method name
+        except Exception as e:
+            print("MARKER LOOKUP ERROR:", repr(e))
+            lookup = None
+        
+        if lookup:
+            kind, q, rows = lookup
+            
+            if rows:
+                
+                #if kind == "gene":
+                   # lines = [f"{q.upper()} weights:"]
+                  #  for cell, gene, w in rows[:25]:
+                 #       lines.append(f"- {cell}: {w}")
+                #else:
+                   # lines = [f"{q} marker weights:"]
+                  #  for cell, gene, w in rows[:25]:
+                 #       lines.append(f"- {gene}: {w}")
+
+                #return ChatResponse(
+                  #  message=ChatMessage(role="assistant", content="\n".join(lines)),
+                 #   session_id=session.session_id
+                #)
+
+                context = {
+                    "query_type": kind,
+                    "query": q,
+                    "results": [{"cell_type": c, "gene": g, "weight": w} for c, g, w in rows[:20]],
+                }
+                prompt = f"""
+                Answer using ONLY these lookup results. If empty, say not found.
+                No swearing. Stay on topic. <=3 sentences.
+
+                Lookup results:
+                {context}
+
+                User: {user_message}
+                """
+                resp = await asyncio.to_thread(self.gemini_model.generate_content, prompt)
+                content = (resp.text or "").strip() or "Found results but couldn't format them."
+                return ChatResponse(message=ChatMessage(role="assistant", content=content), session_id=session.session_id)
+                
+
         # Default response
         if self.gemini_enabled:
             return await self._gemini_response(session, user_message)
@@ -203,14 +264,13 @@ class ChatAgent:
     
     def _greeting_response(self, session_id: str) -> ChatResponse:
         """Generate greeting response"""
-        content = """👋 Hello! I'm your Brain Tumor Annotation Assistant.
+        content = """Hello! I'm your Brain Tumor Annotation Assistant.\n
+I can help you:\n
+- Upload and annotate single-cell glioma data\n
+- Analyze your data using our reference embeddings\n
+- Provide detailed annotation results\n
 
-I can help you:
-- 📁 Upload and annotate single-cell glioma data
-- 🔍 Analyze your data using our reference embeddings
-- 📊 Provide detailed annotation results
-
-You can upload a file by dragging it into the chat or typing "upload file". How can I help you today?"""
+You can upload a file by dragging it into the chat or typing "upload file".\n How can I help you today?"""
         
         message = ChatMessage(role="assistant", content=content)
         return ChatResponse(
@@ -221,20 +281,20 @@ You can upload a file by dragging it into the chat or typing "upload file". How 
     
     def _help_response(self, session_id: str) -> ChatResponse:
         """Generate help response"""
-        content = """📚 **How to use the Brain Tumor Annotation Portal:**
+        content = """ How to use the Brain Tumor Annotation Portal:\n
 
-1. **Upload Data**: Drag and drop a `.h5ad` file or type "upload file"
-2. **Annotate**: Say "annotate" or "analyze my data" to process uploaded files
-3. **Customize**: Specify parameters like "top k: 20" or "threshold: 0.8"
-4. **Download**: Request to download results after annotation
+1. Upload Data: Drag and drop a `.h5ad` file or type "upload file"\n
+2. Annotate: Say "annotate" or "analyze my data" to process uploaded files\n
+3. Customize: Specify parameters like "top k: 20" or "threshold: 0.8"\n
+4. Download: Request to download results after annotation\n
 
-**Example Commands:**
+Example Commands:\n
 - "Upload my glioma data"
 - "Annotate with top k 15"
 - "Analyze file 1 with threshold 0.75"
 - "What's the system status?"
 
-**Supported Formats:**
+Supported Formats:
 - Input: `.h5ad` files (AnnData format)
 - Output: CSV with annotations and confidence scores
 
@@ -252,18 +312,18 @@ Need more help? Just ask!"""
         status = self.annotation_service.get_status()
         
         if status["reference_loaded"] and status["index_loaded"]:
-            content = f"""✅ **System Status: Ready**
+            content = f"""System Status: Ready
 
-- Reference data: ✅ Loaded
-- Embeddings index: ✅ Ready ({status['index_size']:,} reference cells)
-- System: ✅ Operational
+- Reference data: Loaded
+- Embeddings index: Ready ({status['index_size']:,} reference cells)
+- System: Operational
 
 You can upload and annotate files now!"""
         else:
-            ref_status = "✅ Loaded" if status['reference_loaded'] else "❌ Not loaded"
-            idx_status = "✅ Ready" if status['index_loaded'] else "❌ Not ready"
+            ref_status = "Loaded" if status['reference_loaded'] else "Not loaded"
+            idx_status = " Ready" if status['index_loaded'] else "Not ready"
             
-            content = f"""⚠️ **System Status: Not Ready**
+            content = f"""System Status: Not Ready
 
 - Reference data: {ref_status}
 - Embeddings index: {idx_status}
@@ -324,12 +384,12 @@ Ready to annotate?"""
     
     def _request_file_upload(self, session_id: str) -> ChatResponse:
         """Request file upload"""
-        content = """📤 **No file uploaded yet**
+        content = """No file uploaded yet
 
-Please upload a `.h5ad` file to get started. You can:
-- Drag and drop a file into the chat
-- Click the upload button
-- Or type "upload file" and select a file
+Please upload a `.h5ad` file to get started. You can:\n
+- Drag and drop a file into the chat\n
+- Click the upload button\n
+- Or type "upload file" and select a file\n
 
 Once uploaded, I can annotate it for you!"""
         
@@ -345,9 +405,9 @@ Once uploaded, I can annotate it for you!"""
         if uploaded_files:
             content = """I'm not sure what you're asking. Here's what I can help with:
 
-- **Annotate files**: Say "annotate" or "analyze my data"
-- **Get help**: Ask "how does this work?" or "help"
-- **Check status**: Ask "what's the system status?"
+- Annotate files: Say "annotate" or "analyze my data"
+- Get help: Ask "how does this work?" or "help"
+- Check status: Ask "what's the system status?"
 
 You have uploaded files ready to annotate. Would you like me to analyze them?"""
         else:
@@ -380,9 +440,10 @@ What would you like to do?"""
 
         system_prompt = (
             "You are the Brain Tumor Annotation Assistant for a web app that annotates "
-            "glioma single-cell data. Be concise and helpful. If the user asks about "
-            "uploading or annotating files, explain the steps clearly. If the request is "
-            "outside the app scope, say you can only help with this portal."
+            "glioma single-cell data. Be concise and helpful, and respond naturally to the user."
+            "If the user asks about uploading or annotating files, explain the steps clearly."
+            "If the request is outside the app scope, say you can only help with this portal."
+            "No profanity or swearing. Do not repeat profanity even if the user uses it."
         )
 
         history_block = "\n".join(history_lines) if history_lines else "No prior messages."
@@ -403,8 +464,19 @@ What would you like to do?"""
                 return self._default_response(session.session_id, session.uploaded_files)
             message = ChatMessage(role="assistant", content=content)
             return ChatResponse(message=message, session_id=session.session_id)
-        except Exception:
+        except Exception as e:
+            print("GEMINI ERROR:", repr(e))
             return self._default_response(session.session_id, session.uploaded_files)
+    
+    def _has_keyword(self, text: str, keyword: str) -> bool:
+        """Match keyword as a whole word (or exact phrase if multi-word)."""
+        keyword = keyword.strip().lower()
+        if not keyword:
+            return False
+        if " " in keyword:
+            return keyword in text
+        return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
+
     
     def _extract_number(self, text: str, pattern: str, default: float, is_float: bool = False) -> float:
         """Extract number from text using regex pattern"""
@@ -412,3 +484,93 @@ What would you like to do?"""
         if match:
             return float(match.group(1)) if is_float else int(match.group(1))
         return default
+    def _download_gcs_xlsx_if_needed(self) -> Path:
+        """
+        Downloads the XLSX from GCS once and caches it under data/SuppTable1.xlsx.
+        Requires GOOGLE_APPLICATION_CREDENTIALS to be set to your service account JSON.
+        """
+        gcs_uri = os.getenv("MARKER_WEIGHTS_GCS_URI", "").strip()
+        if not gcs_uri.startswith("gs://"):
+            return settings.DATA_DIR / "SuppTable1.xlsx"  # fallback path
+
+        local_path = settings.DATA_DIR / "SuppTable1.xlsx"
+        if local_path.exists():
+            return local_path
+
+        # parse gs://bucket/object
+        no_scheme = gcs_uri[len("gs://"):]
+        bucket_name, blob_path = no_scheme.split("/", 1)
+
+        client = storage.Client()  # uses GOOGLE_APPLICATION_CREDENTIALS
+        blob = client.bucket(bucket_name).blob(blob_path)
+
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        blob.download_to_filename(str(local_path))
+        return local_path
+
+
+    def _lookup_weight_from_xlsx(self, user_text: str):
+        """
+        If user types a gene -> returns all matching rows (CellType, weight).
+        If user types a cell type -> returns all matching rows (Gene, weight).
+        """
+        q = (user_text or "").strip()
+        if not q:
+            return None
+
+        xlsx_path = self._download_gcs_xlsx_if_needed()
+        
+      
+
+        if not xlsx_path.exists():
+            return None
+
+        wb = openpyxl.load_workbook(xlsx_path, data_only=True)
+        
+
+
+        sheet_name = (os.getenv("MARKER_WEIGHTS_SHEET", "") or "").strip()
+        ws = wb[sheet_name] if sheet_name and sheet_name in wb.sheetnames else wb.active
+
+        # Expect headers in first row: CellType | MarkerGene | weights
+        headers = [str(c.value).strip() if c.value is not None else "" for c in ws[1]]
+  
+        
+
+
+        # Find column indices
+        def col_idx(name: str) -> int:
+            name_l = name.lower()
+            for i, h in enumerate(headers):
+                if h.lower() == name_l:
+                    return i
+            return -1
+
+        i_cell = col_idx("CellType")
+        i_gene = col_idx("MarkerGene")
+        i_w = col_idx("weights")
+        if i_w == -1:
+            i_w = col_idx("weight")
+
+        if i_cell == -1 or i_gene == -1 or i_w == -1:
+            return ("error", q, [])
+
+        is_gene = (" " not in q) and bool(re.fullmatch(r"[A-Za-z0-9\-]{2,20}", q))
+
+        rows = []
+        for r in ws.iter_rows(min_row=2, values_only=True):
+            cell = (str(r[i_cell]).strip() if r[i_cell] is not None else "")
+            gene = (str(r[i_gene]).strip() if r[i_gene] is not None else "")
+            w = r[i_w]
+
+            if is_gene:
+                if gene.upper() == q.upper():
+                    rows.append((cell, gene.upper(), w))
+            else:
+                if cell.lower() == q.lower():
+                    rows.append((cell, gene.upper(), w))
+        
+
+        return ("gene" if is_gene else "celltype"), q, rows
+
+    
