@@ -22,6 +22,7 @@ class VisualizationService:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self._annotation_cache: Optional[Dict] = None
 
     def process_file(
         self,
@@ -86,13 +87,20 @@ class VisualizationService:
         cluster_labels = sorted(adata.obs["leiden"].astype(str).unique().tolist())
         cluster_counts = adata.obs["leiden"].astype(str).value_counts().to_dict()
 
-        de_by_cluster = self._rank_genes(adata, groupby="leiden", top_n=de_top_n)
+        annotation_data = self._load_ligand_receptor_drug_annotations()
+        de_by_cluster = self._rank_genes(
+            adata,
+            groupby="leiden",
+            top_n=de_top_n,
+            annotation_data=annotation_data,
+        )
         de_by_cell_type = None
         if "cell_type" in adata.obs:
             de_by_cell_type = self._rank_genes(
                 adata,
                 groupby="cell_type",
                 top_n=de_top_n,
+                annotation_data=annotation_data,
             )
 
         return {
@@ -333,7 +341,13 @@ class VisualizationService:
             )
         return points
 
-    def _rank_genes(self, adata, groupby: str, top_n: int) -> Optional[List[Dict]]:
+    def _rank_genes(
+        self,
+        adata,
+        groupby: str,
+        top_n: int,
+        annotation_data: Optional[Dict] = None,
+    ) -> Optional[List[Dict]]:
         if groupby not in adata.obs:
             return None
         series = adata.obs[groupby]
@@ -354,6 +368,13 @@ class VisualizationService:
         scores = result.get("scores")
         logfold = result.get("logfoldchanges")
         pvals_adj = result.get("pvals_adj")
+        ligand_genes = set()
+        receptor_genes = set()
+        drug_targets = {}
+        if annotation_data:
+            ligand_genes = annotation_data.get("ligands", set())
+            receptor_genes = annotation_data.get("receptors", set())
+            drug_targets = annotation_data.get("drug_targets", {})
 
         for group in groups:
             genes = [str(gene) for gene in np.asarray(names[group])[:top_n].tolist()]
@@ -381,6 +402,14 @@ class VisualizationService:
                     "scores": group_scores,
                     "logfoldchanges": group_logfold,
                     "pvals_adj": group_pvals,
+                    "gene_annotations": self._build_gene_annotations(
+                        genes,
+                        ligand_genes=ligand_genes,
+                        receptor_genes=receptor_genes,
+                        drug_targets=drug_targets,
+                    )
+                    if annotation_data
+                    else None,
                 }
             )
 
@@ -394,4 +423,110 @@ class VisualizationService:
         except (TypeError, ValueError):
             return None
         return casted if np.isfinite(casted) else None
+
+    def _safe_bool(self, value) -> Optional[bool]:
+        if value is None or pd.isna(value):
+            return None
+        if isinstance(value, bool):
+            return value
+        text = str(value).strip().lower()
+        if text in {"true", "t", "1", "yes", "y"}:
+            return True
+        if text in {"false", "f", "0", "no", "n"}:
+            return False
+        return None
+
+    def _normalize_gene(self, value: str) -> str:
+        return str(value).strip().upper()
+
+    def _load_ligand_receptor_drug_annotations(self) -> Dict:
+        if self._annotation_cache is not None:
+            return self._annotation_cache
+
+        annotations_dir = settings.ANNOTATIONS_DIR
+        ligands_path = annotations_dir / "ligands.txt"
+        receptors_path = annotations_dir / "receptors.txt"
+        drugs_path = annotations_dir / "drug.tsv"
+
+        ligand_genes = self._load_gene_list(ligands_path)
+        receptor_genes = self._load_gene_list(receptors_path)
+        drug_targets = self._load_drug_targets(drugs_path)
+
+        self._annotation_cache = {
+            "ligands": ligand_genes,
+            "receptors": receptor_genes,
+            "drug_targets": drug_targets,
+        }
+        return self._annotation_cache
+
+    def _find_column(self, df: pd.DataFrame, candidates: List[str]) -> Optional[str]:
+        normalized = {self._normalize(col): col for col in df.columns}
+        for candidate in candidates:
+            key = self._normalize(candidate)
+            if key in normalized:
+                return normalized[key]
+        return None
+
+    def _load_gene_list(self, path: Path) -> set:
+        if not path.is_file():
+            self.logger.warning("Annotation file not found: %s", path)
+            return set()
+        df = pd.read_csv(path, sep="\t")
+        gene_col = self._find_column(df, ["hgnc symbol", "gene_name", "gene", "symbol"])
+        if not gene_col:
+            self.logger.warning("Gene column not found in %s", path)
+            return set()
+        genes = df[gene_col].dropna().astype(str)
+        return {self._normalize_gene(gene) for gene in genes if gene.strip()}
+
+    def _load_drug_targets(self, path: Path) -> Dict[str, List[Dict]]:
+        if not path.is_file():
+            self.logger.warning("Drug targets file not found: %s", path)
+            return {}
+        df = pd.read_csv(path, sep="\t")
+        gene_col = self._find_column(df, ["gene_name", "gene", "hgnc symbol", "symbol"])
+        if not gene_col:
+            self.logger.warning("Gene column not found in %s", path)
+            return {}
+
+        output: Dict[str, List[Dict]] = {}
+        for record in df.to_dict(orient="records"):
+            gene_value = record.get(gene_col)
+            if gene_value is None or pd.isna(gene_value):
+                continue
+            gene_key = self._normalize_gene(gene_value)
+            entry = {
+                "drug_name": record.get("drug_name"),
+                "drug_claim_name": record.get("drug_claim_name"),
+                "drug_concept_id": record.get("drug_concept_id"),
+                "interaction_source_db_name": record.get("interaction_source_db_name"),
+                "interaction_type": record.get("interaction_type"),
+                "interaction_score": self._safe_float(record.get("interaction_score")),
+                "approved": self._safe_bool(record.get("approved")),
+                "immunotherapy": self._safe_bool(record.get("immunotherapy")),
+                "anti_neoplastic": self._safe_bool(record.get("anti_neoplastic")),
+            }
+            output.setdefault(gene_key, []).append(entry)
+        return output
+
+    def _build_gene_annotations(
+        self,
+        genes: List[str],
+        ligand_genes: set,
+        receptor_genes: set,
+        drug_targets: Dict[str, List[Dict]],
+    ) -> List[Dict]:
+        annotations = []
+        for gene in genes:
+            gene_key = self._normalize_gene(gene)
+            targets = drug_targets.get(gene_key)
+            annotations.append(
+                {
+                    "gene": gene,
+                    "is_ligand": gene_key in ligand_genes,
+                    "is_receptor": gene_key in receptor_genes,
+                    "drug_targets": targets if targets else None,
+                }
+            )
+        return annotations
 
