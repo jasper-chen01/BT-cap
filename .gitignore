@@ -4,8 +4,16 @@ venv_py313_backup/
 data/
 frontend-react/node_modules/
 frontend-react/dist/
+frontend/node_modules/
 __pycache__/
 *.pyc
 .env
 backend/credentials/
+
+# Large model artifacts / datasets
+backend/dirks_primary_gbm_combined_2000perCellType/
+**/checkpoint-*/
+*.pt
+*.bin
+*.arrow
 
