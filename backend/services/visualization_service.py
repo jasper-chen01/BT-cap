@@ -6,6 +6,7 @@ from __future__ import annotations
 import io
 import logging
 import urllib.request
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -21,12 +22,15 @@ class VisualizationService:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self._annotation_cache: Optional[Dict] = None
 
     def process_file(
         self,
         file_path: str,
         supptable_url: Optional[str] = None,
         supptable_doc_id: Optional[str] = None,
+        embedding_matches_path: Optional[str] = None,
+        source_filename: Optional[str] = None,
         de_top_n: int = 15,
         cluster_resolution: float = 1.0,
     ) -> Dict:
@@ -41,15 +45,20 @@ class VisualizationService:
         if adata.raw is not None:
             adata = adata.raw.to_adata()
 
-        self._preprocess(adata)
+        has_umap = "X_umap" in adata.obsm
+        has_leiden = "leiden" in adata.obs
 
-        try:
-            sc.tl.leiden(adata, resolution=cluster_resolution, key_added="leiden")
-        except ImportError as exc:
-            raise ImportError(
-                "Leiden clustering requires the 'leidenalg' package. "
-                "Install it with `pip install leidenalg python-igraph`."
-            ) from exc
+        if not has_umap or not has_leiden:
+            self._preprocess(adata, compute_umap=not has_umap)
+
+        if not has_leiden:
+            try:
+                sc.tl.leiden(adata, resolution=cluster_resolution, key_added="leiden")
+            except ImportError as exc:
+                raise ImportError(
+                    "Leiden clustering requires the 'leidenalg' package. "
+                    "Install it with `pip install leidenalg python-igraph`."
+                ) from exc
 
         supptable_summary = None
         supptable_meta = {}
@@ -62,17 +71,36 @@ class VisualizationService:
             except Exception as exc:
                 self.logger.warning("Failed to load supptable: %s", exc)
 
+        embedding_meta = {}
+        resolved_matches_path = self._resolve_embedding_matches_path(
+            embedding_matches_path, source_filename
+        )
+        if resolved_matches_path:
+            try:
+                applied = self._apply_embedding_matches(resolved_matches_path, adata)
+                if applied:
+                    embedding_meta["embedding_matches_path"] = resolved_matches_path
+            except Exception as exc:
+                self.logger.warning("Failed to apply embedding matches: %s", exc)
+
         points = self._build_umap_points(adata)
         cluster_labels = sorted(adata.obs["leiden"].astype(str).unique().tolist())
         cluster_counts = adata.obs["leiden"].astype(str).value_counts().to_dict()
 
-        de_by_cluster = self._rank_genes(adata, groupby="leiden", top_n=de_top_n)
+        annotation_data = self._load_ligand_receptor_drug_annotations()
+        de_by_cluster = self._rank_genes(
+            adata,
+            groupby="leiden",
+            top_n=de_top_n,
+            annotation_data=annotation_data,
+        )
         de_by_cell_type = None
         if "cell_type" in adata.obs:
             de_by_cell_type = self._rank_genes(
                 adata,
                 groupby="cell_type",
                 top_n=de_top_n,
+                annotation_data=annotation_data,
             )
 
         return {
@@ -86,11 +114,14 @@ class VisualizationService:
             "metadata": {
                 "de_top_n": de_top_n,
                 "cluster_resolution": cluster_resolution,
+                "used_existing_umap": has_umap,
+                "used_existing_leiden": has_leiden,
                 **supptable_meta,
+                **embedding_meta,
             },
         }
 
-    def _preprocess(self, adata) -> None:
+    def _preprocess(self, adata, compute_umap: bool = True) -> None:
         sc.pp.filter_cells(adata, min_genes=200)
         sc.pp.filter_genes(adata, min_cells=3)
         sc.pp.normalize_total(adata, target_sum=1e4)
@@ -99,7 +130,8 @@ class VisualizationService:
         sc.pp.scale(adata, max_value=10)
         sc.tl.pca(adata, svd_solver="arpack")
         sc.pp.neighbors(adata, n_neighbors=15, n_pcs=min(40, adata.obsm["X_pca"].shape[1]))
-        sc.tl.umap(adata)
+        if compute_umap:
+            sc.tl.umap(adata)
 
     def _resolve_supptable_url(
         self,
@@ -194,16 +226,93 @@ class VisualizationService:
             .replace("-", "")
         )
 
+    def _resolve_embedding_matches_path(
+        self,
+        embedding_matches_path: Optional[str],
+        source_filename: Optional[str],
+    ) -> Optional[str]:
+        if embedding_matches_path:
+            candidate = Path(embedding_matches_path)
+            if candidate.is_file():
+                return str(candidate)
+            self.logger.warning("Embedding matches file not found: %s", embedding_matches_path)
+            return None
+
+        if source_filename:
+            stem = Path(source_filename).stem
+            candidate = (
+                Path(settings.DATA_DIR)
+                / "embedding_runs"
+                / f"{stem}_embs"
+                / "embedding_matches_with_celltypes.csv"
+            )
+            if candidate.is_file():
+                return str(candidate)
+        return None
+
+    def _apply_embedding_matches(self, matches_path: str, adata) -> bool:
+        df = pd.read_csv(matches_path)
+        if df.empty:
+            return False
+
+        normalized = {self._normalize(col): col for col in df.columns}
+
+        def find(candidates: List[str]) -> Optional[str]:
+            for candidate in candidates:
+                key = self._normalize(candidate)
+                if key in normalized:
+                    return normalized[key]
+            return None
+
+        cell_id_col = find(["cell_id", "cell", "new_cell_id"])
+        cell_type_col = find(["matched_cell_type", "predicted_cell_type", "cell_type"])
+        score_col = find(["max_cosine", "similarity", "score"])
+
+        if not cell_id_col or not cell_type_col:
+            self.logger.warning(
+                "Embedding matches missing required columns: %s", df.columns.tolist()
+            )
+            return False
+
+        working = df[[cell_id_col, cell_type_col]].copy()
+        if score_col:
+            working[score_col] = pd.to_numeric(working[score_col], errors="coerce")
+
+        working = working.dropna(subset=[cell_id_col])
+        working[cell_id_col] = working[cell_id_col].astype(str)
+        working = working.set_index(cell_id_col)
+
+        predicted_series = working[cell_type_col].reindex(adata.obs_names)
+        adata.obs["predicted_cell_type"] = predicted_series
+
+        if score_col:
+            score_series = working[score_col].reindex(adata.obs_names)
+            adata.obs["predicted_cell_type_score"] = score_series
+
+        return True
+
     def _build_umap_points(self, adata) -> List[Dict]:
         coords = adata.obsm["X_umap"]
         points = []
         cell_types = adata.obs.get("cell_type") if "cell_type" in adata.obs else None
         scores = adata.obs.get("cell_type_score") if "cell_type_score" in adata.obs else None
+        predicted = (
+            adata.obs.get("predicted_cell_type")
+            if "predicted_cell_type" in adata.obs
+            else None
+        )
+        predicted_scores = (
+            adata.obs.get("predicted_cell_type_score")
+            if "predicted_cell_type_score" in adata.obs
+            else None
+        )
         clusters = adata.obs["leiden"].astype(str)
 
         for idx, cell_id in enumerate(adata.obs_names):
             cell_type = None
             score = None
+            predicted_cell_type = None
+            predicted_score = None
             if cell_types is not None:
                 value = cell_types.iloc[idx]
                 if pd.notna(value):
@@ -211,6 +320,13 @@ class VisualizationService:
             if scores is not None:
                 value = scores.iloc[idx]
                 score = self._safe_float(value)
+            if predicted is not None:
+                value = predicted.iloc[idx]
+                if pd.notna(value):
+                    predicted_cell_type = str(value)
+            if predicted_scores is not None:
+                value = predicted_scores.iloc[idx]
+                predicted_score = self._safe_float(value)
             points.append(
                 {
                     "cell_id": str(cell_id),
@@ -219,11 +335,19 @@ class VisualizationService:
                     "cluster": str(clusters.iloc[idx]),
                     "cell_type": cell_type,
                     "score": score,
+                    "predicted_cell_type": predicted_cell_type,
+                    "predicted_score": predicted_score,
                 }
             )
         return points
 
-    def _rank_genes(self, adata, groupby: str, top_n: int) -> Optional[List[Dict]]:
+    def _rank_genes(
+        self,
+        adata,
+        groupby: str,
+        top_n: int,
+        annotation_data: Optional[Dict] = None,
+    ) -> Optional[List[Dict]]:
         if groupby not in adata.obs:
             return None
         series = adata.obs[groupby]
@@ -244,6 +368,13 @@ class VisualizationService:
         scores = result.get("scores")
         logfold = result.get("logfoldchanges")
         pvals_adj = result.get("pvals_adj")
+        ligand_genes = set()
+        receptor_genes = set()
+        drug_targets = {}
+        if annotation_data:
+            ligand_genes = annotation_data.get("ligands", set())
+            receptor_genes = annotation_data.get("receptors", set())
+            drug_targets = annotation_data.get("drug_targets", {})
 
         for group in groups:
             genes = [str(gene) for gene in np.asarray(names[group])[:top_n].tolist()]
@@ -271,6 +402,14 @@ class VisualizationService:
                     "scores": group_scores,
                     "logfoldchanges": group_logfold,
                     "pvals_adj": group_pvals,
+                    "gene_annotations": self._build_gene_annotations(
+                        genes,
+                        ligand_genes=ligand_genes,
+                        receptor_genes=receptor_genes,
+                        drug_targets=drug_targets,
+                    )
+                    if annotation_data
+                    else None,
                 }
             )
 
@@ -284,4 +423,110 @@ class VisualizationService:
         except (TypeError, ValueError):
             return None
         return casted if np.isfinite(casted) else None
+
+    def _safe_bool(self, value) -> Optional[bool]:
+        if value is None or pd.isna(value):
+            return None
+        if isinstance(value, bool):
+            return value
+        text = str(value).strip().lower()
+        if text in {"true", "t", "1", "yes", "y"}:
+            return True
+        if text in {"false", "f", "0", "no", "n"}:
+            return False
+        return None
+
+    def _normalize_gene(self, value: str) -> str:
+        return str(value).strip().upper()
+
+    def _load_ligand_receptor_drug_annotations(self) -> Dict:
+        if self._annotation_cache is not None:
+            return self._annotation_cache
+
+        annotations_dir = settings.ANNOTATIONS_DIR
+        ligands_path = annotations_dir / "ligands.txt"
+        receptors_path = annotations_dir / "receptors.txt"
+        drugs_path = annotations_dir / "drug.tsv"
+
+        ligand_genes = self._load_gene_list(ligands_path)
+        receptor_genes = self._load_gene_list(receptors_path)
+        drug_targets = self._load_drug_targets(drugs_path)
+
+        self._annotation_cache = {
+            "ligands": ligand_genes,
+            "receptors": receptor_genes,
+            "drug_targets": drug_targets,
+        }
+        return self._annotation_cache
+
+    def _find_column(self, df: pd.DataFrame, candidates: List[str]) -> Optional[str]:
+        normalized = {self._normalize(col): col for col in df.columns}
+        for candidate in candidates:
+            key = self._normalize(candidate)
+            if key in normalized:
+                return normalized[key]
+        return None
+
+    def _load_gene_list(self, path: Path) -> set:
+        if not path.is_file():
+            self.logger.warning("Annotation file not found: %s", path)
+            return set()
+        df = pd.read_csv(path, sep="\t")
+        gene_col = self._find_column(df, ["hgnc symbol", "gene_name", "gene", "symbol"])
+        if not gene_col:
+            self.logger.warning("Gene column not found in %s", path)
+            return set()
+        genes = df[gene_col].dropna().astype(str)
+        return {self._normalize_gene(gene) for gene in genes if gene.strip()}
+
+    def _load_drug_targets(self, path: Path) -> Dict[str, List[Dict]]:
+        if not path.is_file():
+            self.logger.warning("Drug targets file not found: %s", path)
+            return {}
+        df = pd.read_csv(path, sep="\t")
+        gene_col = self._find_column(df, ["gene_name", "gene", "hgnc symbol", "symbol"])
+        if not gene_col:
+            self.logger.warning("Gene column not found in %s", path)
+            return {}
+
+        output: Dict[str, List[Dict]] = {}
+        for record in df.to_dict(orient="records"):
+            gene_value = record.get(gene_col)
+            if gene_value is None or pd.isna(gene_value):
+                continue
+            gene_key = self._normalize_gene(gene_value)
+            entry = {
+                "drug_name": record.get("drug_name"),
+                "drug_claim_name": record.get("drug_claim_name"),
+                "drug_concept_id": record.get("drug_concept_id"),
+                "interaction_source_db_name": record.get("interaction_source_db_name"),
+                "interaction_type": record.get("interaction_type"),
+                "interaction_score": self._safe_float(record.get("interaction_score")),
+                "approved": self._safe_bool(record.get("approved")),
+                "immunotherapy": self._safe_bool(record.get("immunotherapy")),
+                "anti_neoplastic": self._safe_bool(record.get("anti_neoplastic")),
+            }
+            output.setdefault(gene_key, []).append(entry)
+        return output
+
+    def _build_gene_annotations(
+        self,
+        genes: List[str],
+        ligand_genes: set,
+        receptor_genes: set,
+        drug_targets: Dict[str, List[Dict]],
+    ) -> List[Dict]:
+        annotations = []
+        for gene in genes:
+            gene_key = self._normalize_gene(gene)
+            targets = drug_targets.get(gene_key)
+            annotations.append(
+                {
+                    "gene": gene,
+                    "is_ligand": gene_key in ligand_genes,
+                    "is_receptor": gene_key in receptor_genes,
+                    "drug_targets": targets if targets else None,
+                }
+            )
+        return annotations
 

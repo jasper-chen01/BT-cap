@@ -19,6 +19,7 @@ async def visualize_cells(
     file: UploadFile = File(..., description="Single-cell data file (h5ad format)"),
     supptable_url: Optional[str] = Form(None),
     supptable_doc_id: Optional[str] = Form(None),
+    embedding_matches_path: Optional[str] = Form(None),
     de_top_n: Optional[int] = Form(15),
     cluster_resolution: Optional[float] = Form(1.0),
 ):
@@ -36,6 +37,8 @@ async def visualize_cells(
                 tmp_file_path,
                 supptable_url=supptable_url,
                 supptable_doc_id=supptable_doc_id,
+                embedding_matches_path=embedding_matches_path,
+                source_filename=file.filename,
                 de_top_n=de_top_n or 15,
                 cluster_resolution=cluster_resolution or 1.0,
             )

@@ -199,6 +199,31 @@ const PortalPage = () => {
     [activeDeGroups, deGroup]
   );
 
+  const deDrugSummary = useMemo(() => {
+    if (!activeDeGroup) return [];
+    const annotations = activeDeGroup.gene_annotations || [];
+    return annotations
+      .map((annotation, index) => {
+        if (!annotation) return null;
+        const geneName = annotation.gene || activeDeGroup.genes?.[index];
+        const drugTargets = Array.isArray(annotation.drug_targets)
+          ? annotation.drug_targets
+          : [];
+        if (!drugTargets.length) return null;
+        const drugNames = drugTargets
+          .map((target) => target?.drug_name || target?.drug_claim_name)
+          .filter(Boolean)
+          .map((name) => String(name));
+        const uniqueDrugNames = Array.from(new Set(drugNames));
+        return {
+          gene: geneName,
+          drugCount: drugTargets.length,
+          drugNames: uniqueDrugNames,
+        };
+      })
+      .filter(Boolean);
+  }, [activeDeGroup]);
+
   const toggleCellType = (cellType) => {
     setSelectedCellTypes((prev) => {
       if (prev.includes(cellType)) {
@@ -896,10 +921,31 @@ const PortalPage = () => {
                               <th className="pb-2 pr-4">Gene</th>
                               <th className="pb-2 pr-4">Score</th>
                               <th className="pb-2">LogFC</th>
+                              <th className="pb-2">Annotations</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-800/70">
-                            {activeDeGroup.genes.map((gene, index) => (
+                            {activeDeGroup.genes.map((gene, index) => {
+                              const geneAnnotation =
+                                activeDeGroup.gene_annotations?.[index] ?? null;
+                              const hasLigand = geneAnnotation?.is_ligand;
+                              const hasReceptor = geneAnnotation?.is_receptor;
+                              const drugTargets = geneAnnotation?.drug_targets;
+                              const drugCount = Array.isArray(drugTargets)
+                                ? drugTargets.length
+                                : 0;
+                              const drugNames = Array.isArray(drugTargets)
+                                ? drugTargets
+                                    .map((target) => target?.drug_name || target?.drug_claim_name)
+                                    .filter(Boolean)
+                                : [];
+                              const uniqueDrugNames = Array.from(
+                                new Set(drugNames.map((name) => String(name)))
+                              );
+                              const shownDrugNames = uniqueDrugNames.slice(0, 3);
+                              const remainingDrugNames =
+                                uniqueDrugNames.length - shownDrugNames.length;
+                              return (
                               <tr key={`${activeDeGroup.group}-${gene}`}>
                                 <td className="py-2 pr-4 font-mono text-xs text-slate-200">
                                   {gene}
@@ -910,8 +956,38 @@ const PortalPage = () => {
                                 <td className="py-2 text-slate-400 text-xs">
                                   {activeDeGroup.logfoldchanges?.[index]?.toFixed(3) ?? '—'}
                                 </td>
+                                <td className="py-2 text-xs text-slate-300">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {hasLigand ? (
+                                      <span className="rounded-full bg-emerald-500/15 text-emerald-200 px-2 py-0.5 text-[10px] uppercase">
+                                        Ligand
+                                      </span>
+                                    ) : null}
+                                    {hasReceptor ? (
+                                      <span className="rounded-full bg-cyan-500/15 text-cyan-200 px-2 py-0.5 text-[10px] uppercase">
+                                        Receptor
+                                      </span>
+                                    ) : null}
+                                    {drugCount ? (
+                                      <span className="rounded-full bg-indigo-500/15 text-indigo-200 px-2 py-0.5 text-[10px] uppercase">
+                                        Drug targets: {drugCount}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  {drugCount ? (
+                                    <div className="mt-1 text-[11px] text-slate-400">
+                                      {shownDrugNames.join(', ')}
+                                      {remainingDrugNames > 0
+                                        ? ` +${remainingDrugNames} more`
+                                        : ''}
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-500 text-[10px]">—</span>
+                                  )}
+                                </td>
                               </tr>
-                            ))}
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -923,6 +999,54 @@ const PortalPage = () => {
                   </div>
                 </Card>
               </div>
+
+              <Card className="overflow-hidden p-0">
+                <div className="p-4 border-b border-slate-700/60 bg-slate-800/50 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Layers size={18} className="text-slate-400" />
+                    <h3 className="font-semibold text-white">Drug Target Summary</h3>
+                  </div>
+                  <span className="text-xs text-slate-500">
+                    {deDrugSummary.length
+                      ? `${deDrugSummary.length} genes with drug targets`
+                      : 'No drug targets for this selection'}
+                  </span>
+                </div>
+                <div className="p-4">
+                  {deDrugSummary.length ? (
+                    <div className="overflow-x-auto max-h-[320px]">
+                      <table className="w-full text-left text-sm text-slate-300">
+                        <thead className="text-slate-400 uppercase text-xs">
+                          <tr>
+                            <th className="pb-2 pr-4">Gene</th>
+                            <th className="pb-2 pr-4">Drug Count</th>
+                            <th className="pb-2">Drug Names</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/70">
+                          {deDrugSummary.map((row) => (
+                            <tr key={`${activeDeGroup?.group}-${row.gene}`}>
+                              <td className="py-2 pr-4 font-mono text-xs text-slate-200">
+                                {row.gene}
+                              </td>
+                              <td className="py-2 pr-4 text-slate-400 text-xs">
+                                {row.drugCount}
+                              </td>
+                              <td className="py-2 text-slate-400 text-xs">
+                                {row.drugNames.join(', ') || '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      No drug target annotations available for the selected DE group.
+                    </p>
+                  )}
+                </div>
+              </Card>
             </div>
           )}
         </div>

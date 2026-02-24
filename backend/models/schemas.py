@@ -39,6 +39,8 @@ class UmapPoint(BaseModel):
     cluster: str
     cell_type: Optional[str] = None
     score: Optional[float] = None
+    predicted_cell_type: Optional[str] = None
+    predicted_score: Optional[float] = None
 
 
 class CellTypeSummary(BaseModel):
@@ -47,12 +49,32 @@ class CellTypeSummary(BaseModel):
     avg_score: Optional[float] = None
 
 
+class DrugTargetInfo(BaseModel):
+    drug_name: Optional[str] = None
+    drug_claim_name: Optional[str] = None
+    drug_concept_id: Optional[str] = None
+    interaction_source_db_name: Optional[str] = None
+    interaction_type: Optional[str] = None
+    interaction_score: Optional[float] = None
+    approved: Optional[bool] = None
+    immunotherapy: Optional[bool] = None
+    anti_neoplastic: Optional[bool] = None
+
+
+class GeneAnnotation(BaseModel):
+    gene: str
+    is_ligand: bool = False
+    is_receptor: bool = False
+    drug_targets: Optional[List[DrugTargetInfo]] = None
+
+
 class DifferentialExpressionGroup(BaseModel):
     group: str
     genes: List[str]
     scores: Optional[List[Optional[float]]] = None
     logfoldchanges: Optional[List[Optional[float]]] = None
     pvals_adj: Optional[List[Optional[float]]] = None
+    gene_annotations: Optional[List[GeneAnnotation]] = None
 
 
 class VisualizationResponse(BaseModel):
