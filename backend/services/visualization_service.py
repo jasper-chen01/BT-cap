@@ -44,15 +44,20 @@ class VisualizationService:
         if adata.raw is not None:
             adata = adata.raw.to_adata()
 
-        self._preprocess(adata)
+        has_umap = "X_umap" in adata.obsm
+        has_leiden = "leiden" in adata.obs
 
-        try:
-            sc.tl.leiden(adata, resolution=cluster_resolution, key_added="leiden")
-        except ImportError as exc:
-            raise ImportError(
-                "Leiden clustering requires the 'leidenalg' package. "
-                "Install it with `pip install leidenalg python-igraph`."
-            ) from exc
+        if not has_umap or not has_leiden:
+            self._preprocess(adata, compute_umap=not has_umap)
+
+        if not has_leiden:
+            try:
+                sc.tl.leiden(adata, resolution=cluster_resolution, key_added="leiden")
+            except ImportError as exc:
+                raise ImportError(
+                    "Leiden clustering requires the 'leidenalg' package. "
+                    "Install it with `pip install leidenalg python-igraph`."
+                ) from exc
 
         supptable_summary = None
         supptable_meta = {}
@@ -101,12 +106,14 @@ class VisualizationService:
             "metadata": {
                 "de_top_n": de_top_n,
                 "cluster_resolution": cluster_resolution,
+                "used_existing_umap": has_umap,
+                "used_existing_leiden": has_leiden,
                 **supptable_meta,
                 **embedding_meta,
             },
         }
 
-    def _preprocess(self, adata) -> None:
+    def _preprocess(self, adata, compute_umap: bool = True) -> None:
         sc.pp.filter_cells(adata, min_genes=200)
         sc.pp.filter_genes(adata, min_cells=3)
         sc.pp.normalize_total(adata, target_sum=1e4)
@@ -115,7 +122,8 @@ class VisualizationService:
         sc.pp.scale(adata, max_value=10)
         sc.tl.pca(adata, svd_solver="arpack")
         sc.pp.neighbors(adata, n_neighbors=15, n_pcs=min(40, adata.obsm["X_pca"].shape[1]))
-        sc.tl.umap(adata)
+        if compute_umap:
+            sc.tl.umap(adata)
 
     def _resolve_supptable_url(
         self,
