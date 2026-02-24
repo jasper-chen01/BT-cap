@@ -39,6 +39,8 @@ class UmapPoint(BaseModel):
     cluster: str
     cell_type: Optional[str] = None
     score: Optional[float] = None
+    predicted_cell_type: Optional[str] = None
+    predicted_score: Optional[float] = None
 
 
 class CellTypeSummary(BaseModel):

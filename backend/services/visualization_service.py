@@ -6,6 +6,7 @@ from __future__ import annotations
 import io
 import logging
 import urllib.request
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -27,6 +28,8 @@ class VisualizationService:
         file_path: str,
         supptable_url: Optional[str] = None,
         supptable_doc_id: Optional[str] = None,
+        embedding_matches_path: Optional[str] = None,
+        source_filename: Optional[str] = None,
         de_top_n: int = 15,
         cluster_resolution: float = 1.0,
     ) -> Dict:
@@ -62,6 +65,18 @@ class VisualizationService:
             except Exception as exc:
                 self.logger.warning("Failed to load supptable: %s", exc)
 
+        embedding_meta = {}
+        resolved_matches_path = self._resolve_embedding_matches_path(
+            embedding_matches_path, source_filename
+        )
+        if resolved_matches_path:
+            try:
+                applied = self._apply_embedding_matches(resolved_matches_path, adata)
+                if applied:
+                    embedding_meta["embedding_matches_path"] = resolved_matches_path
+            except Exception as exc:
+                self.logger.warning("Failed to apply embedding matches: %s", exc)
+
         points = self._build_umap_points(adata)
         cluster_labels = sorted(adata.obs["leiden"].astype(str).unique().tolist())
         cluster_counts = adata.obs["leiden"].astype(str).value_counts().to_dict()
@@ -87,6 +102,7 @@ class VisualizationService:
                 "de_top_n": de_top_n,
                 "cluster_resolution": cluster_resolution,
                 **supptable_meta,
+                **embedding_meta,
             },
         }
 
@@ -194,16 +210,93 @@ class VisualizationService:
             .replace("-", "")
         )
 
+    def _resolve_embedding_matches_path(
+        self,
+        embedding_matches_path: Optional[str],
+        source_filename: Optional[str],
+    ) -> Optional[str]:
+        if embedding_matches_path:
+            candidate = Path(embedding_matches_path)
+            if candidate.is_file():
+                return str(candidate)
+            self.logger.warning("Embedding matches file not found: %s", embedding_matches_path)
+            return None
+
+        if source_filename:
+            stem = Path(source_filename).stem
+            candidate = (
+                Path(settings.DATA_DIR)
+                / "embedding_runs"
+                / f"{stem}_embs"
+                / "embedding_matches_with_celltypes.csv"
+            )
+            if candidate.is_file():
+                return str(candidate)
+        return None
+
+    def _apply_embedding_matches(self, matches_path: str, adata) -> bool:
+        df = pd.read_csv(matches_path)
+        if df.empty:
+            return False
+
+        normalized = {self._normalize(col): col for col in df.columns}
+
+        def find(candidates: List[str]) -> Optional[str]:
+            for candidate in candidates:
+                key = self._normalize(candidate)
+                if key in normalized:
+                    return normalized[key]
+            return None
+
+        cell_id_col = find(["cell_id", "cell", "new_cell_id"])
+        cell_type_col = find(["matched_cell_type", "predicted_cell_type", "cell_type"])
+        score_col = find(["max_cosine", "similarity", "score"])
+
+        if not cell_id_col or not cell_type_col:
+            self.logger.warning(
+                "Embedding matches missing required columns: %s", df.columns.tolist()
+            )
+            return False
+
+        working = df[[cell_id_col, cell_type_col]].copy()
+        if score_col:
+            working[score_col] = pd.to_numeric(working[score_col], errors="coerce")
+
+        working = working.dropna(subset=[cell_id_col])
+        working[cell_id_col] = working[cell_id_col].astype(str)
+        working = working.set_index(cell_id_col)
+
+        predicted_series = working[cell_type_col].reindex(adata.obs_names)
+        adata.obs["predicted_cell_type"] = predicted_series
+
+        if score_col:
+            score_series = working[score_col].reindex(adata.obs_names)
+            adata.obs["predicted_cell_type_score"] = score_series
+
+        return True
+
     def _build_umap_points(self, adata) -> List[Dict]:
         coords = adata.obsm["X_umap"]
         points = []
         cell_types = adata.obs.get("cell_type") if "cell_type" in adata.obs else None
         scores = adata.obs.get("cell_type_score") if "cell_type_score" in adata.obs else None
+        predicted = (
+            adata.obs.get("predicted_cell_type")
+            if "predicted_cell_type" in adata.obs
+            else None
+        )
+        predicted_scores = (
+            adata.obs.get("predicted_cell_type_score")
+            if "predicted_cell_type_score" in adata.obs
+            else None
+        )
         clusters = adata.obs["leiden"].astype(str)
 
         for idx, cell_id in enumerate(adata.obs_names):
             cell_type = None
             score = None
+            predicted_cell_type = None
+            predicted_score = None
             if cell_types is not None:
                 value = cell_types.iloc[idx]
                 if pd.notna(value):
@@ -211,6 +304,13 @@ class VisualizationService:
             if scores is not None:
                 value = scores.iloc[idx]
                 score = self._safe_float(value)
+            if predicted is not None:
+                value = predicted.iloc[idx]
+                if pd.notna(value):
+                    predicted_cell_type = str(value)
+            if predicted_scores is not None:
+                value = predicted_scores.iloc[idx]
+                predicted_score = self._safe_float(value)
             points.append(
                 {
                     "cell_id": str(cell_id),
@@ -219,6 +319,8 @@ class VisualizationService:
                     "cluster": str(clusters.iloc[idx]),
                     "cell_type": cell_type,
                     "score": score,
+                    "predicted_cell_type": predicted_cell_type,
+                    "predicted_score": predicted_score,
                 }
             )
         return points
