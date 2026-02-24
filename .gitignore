@@ -9,11 +9,10 @@ __pycache__/
 *.pyc
 .env
 backend/credentials/
+backend/credentials/*.json
 
-# Large model artifacts / datasets
-backend/dirks_primary_gbm_combined_2000perCellType/
-**/checkpoint-*/
-*.pt
-*.bin
-*.arrow
-
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
