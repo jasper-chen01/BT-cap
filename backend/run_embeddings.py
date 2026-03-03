@@ -32,7 +32,11 @@ def prepare_h5ad(in_h5ad: str, out_h5ad: str, gene_id_type: str):
     if "isTumor" not in adata.obs:
         adata.obs["isTumor"] = 0
     if "n_counts" not in adata.obs:
-        adata.obs["n_counts"] = np.sum(adata.X.toarray(), axis=1)
+        # Avoid densifying large sparse matrices.
+        if hasattr(adata.X, "sum"):
+            adata.obs["n_counts"] = np.asarray(adata.X.sum(axis=1)).ravel()
+        else:
+            adata.obs["n_counts"] = np.sum(adata.X, axis=1)
     if "filter_pass" not in adata.obs:
         adata.obs["filter_pass"] = 1
     if "individual" not in adata.obs:

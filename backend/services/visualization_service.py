@@ -512,6 +512,12 @@ class VisualizationService:
             return False
         return None
 
+    def _safe_str(self, value) -> Optional[str]:
+        if value is None or pd.isna(value):
+            return None
+        text = str(value).strip()
+        return text if text else None
+
     def _normalize_gene(self, value: str) -> str:
         return str(value).strip().upper()
 
@@ -572,11 +578,13 @@ class VisualizationService:
                 continue
             gene_key = self._normalize_gene(gene_value)
             entry = {
-                "drug_name": record.get("drug_name"),
-                "drug_claim_name": record.get("drug_claim_name"),
-                "drug_concept_id": record.get("drug_concept_id"),
-                "interaction_source_db_name": record.get("interaction_source_db_name"),
-                "interaction_type": record.get("interaction_type"),
+                "drug_name": self._safe_str(record.get("drug_name")),
+                "drug_claim_name": self._safe_str(record.get("drug_claim_name")),
+                "drug_concept_id": self._safe_str(record.get("drug_concept_id")),
+                "interaction_source_db_name": self._safe_str(
+                    record.get("interaction_source_db_name")
+                ),
+                "interaction_type": self._safe_str(record.get("interaction_type")),
                 "interaction_score": self._safe_float(record.get("interaction_score")),
                 "approved": self._safe_bool(record.get("approved")),
                 "immunotherapy": self._safe_bool(record.get("immunotherapy")),
