@@ -4,8 +4,12 @@ Service for visualization workflows (normalization, clustering, UMAP, DE).
 from __future__ import annotations
 
 import io
+import json
 import logging
+import os
+import re
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -29,10 +33,13 @@ class VisualizationService:
         file_path: str,
         supptable_url: Optional[str] = None,
         supptable_doc_id: Optional[str] = None,
+        supptable_path: Optional[str] = None,
         embedding_matches_path: Optional[str] = None,
         source_filename: Optional[str] = None,
         de_top_n: int = 15,
         cluster_resolution: float = 1.0,
+        use_hvg: bool = True,
+        apply_filtering: bool = True,
     ) -> Dict:
         adata = sc.read_h5ad(file_path)
 
@@ -49,7 +56,12 @@ class VisualizationService:
         has_leiden = "leiden" in adata.obs
 
         if not has_umap or not has_leiden:
-            self._preprocess(adata, compute_umap=not has_umap)
+            self._preprocess(
+                adata,
+                use_hvg=use_hvg,
+                apply_filtering=apply_filtering,
+                compute_umap=not has_umap,
+            )
 
         if not has_leiden:
             try:
@@ -62,12 +74,14 @@ class VisualizationService:
 
         supptable_summary = None
         supptable_meta = {}
-        resolved_url = self._resolve_supptable_url(supptable_url, supptable_doc_id)
-        if resolved_url:
+        resolved_source = supptable_path or self._resolve_supptable_url(
+            supptable_url, supptable_doc_id
+        )
+        if resolved_source:
             try:
-                df = self._load_supptable(resolved_url)
+                df = self._load_supptable(resolved_source)
                 supptable_summary = self._apply_supptable(df, adata)
-                supptable_meta["supptable_url"] = resolved_url
+                supptable_meta["supptable_source"] = resolved_source
             except Exception as exc:
                 self.logger.warning("Failed to load supptable: %s", exc)
 
@@ -103,6 +117,27 @@ class VisualizationService:
                 annotation_data=annotation_data,
             )
 
+        target_sets = self._load_target_gene_sets()
+        overlap_report = self._compute_overlap_report(
+            de_by_cluster, de_by_cell_type, target_sets
+        )
+
+        analysis_summary_path = self._write_analysis_summary(
+            {
+                "total_cells": adata.n_obs,
+                "cluster_counts": cluster_counts,
+                "cell_types": supptable_summary,
+                "metadata": {
+                    "de_top_n": de_top_n,
+                    "cluster_resolution": cluster_resolution,
+                    "use_hvg": use_hvg,
+                    "apply_filtering": apply_filtering,
+                    "de_overlaps": overlap_report,
+                    **supptable_meta,
+                },
+            }
+        )
+
         return {
             "total_cells": adata.n_obs,
             "umap_points": points,
@@ -116,17 +151,34 @@ class VisualizationService:
                 "cluster_resolution": cluster_resolution,
                 "used_existing_umap": has_umap,
                 "used_existing_leiden": has_leiden,
+                "use_hvg": use_hvg,
+                "apply_filtering": apply_filtering,
+                "de_overlaps": overlap_report,
+                "analysis_summary_path": analysis_summary_path,
                 **supptable_meta,
                 **embedding_meta,
             },
         }
 
-    def _preprocess(self, adata, compute_umap: bool = True) -> None:
-        sc.pp.filter_cells(adata, min_genes=200)
-        sc.pp.filter_genes(adata, min_cells=3)
+    def _write_analysis_summary(self, summary: Dict) -> str:
+        analysis_root = settings.DATA_DIR / "analysis_runs"
+        analysis_root.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        summary_path = analysis_root / f"visualization_summary_{timestamp}.json"
+        with open(summary_path, "w", encoding="utf-8") as handle:
+            json.dump(summary, handle, indent=2)
+        return str(summary_path)
+
+    def _preprocess(
+        self, adata, use_hvg: bool, apply_filtering: bool, compute_umap: bool = True
+    ) -> None:
+        if apply_filtering:
+            sc.pp.filter_cells(adata, min_genes=200)
+            sc.pp.filter_genes(adata, min_cells=3)
         sc.pp.normalize_total(adata, target_sum=1e4)
         sc.pp.log1p(adata)
-        sc.pp.highly_variable_genes(adata, n_top_genes=2000, subset=True)
+        if use_hvg:
+            sc.pp.highly_variable_genes(adata, n_top_genes=2000, subset=True)
         sc.pp.scale(adata, max_value=10)
         sc.tl.pca(adata, svd_solver="arpack")
         sc.pp.neighbors(adata, n_neighbors=15, n_pcs=min(40, adata.obsm["X_pca"].shape[1]))
@@ -152,8 +204,14 @@ class VisualizationService:
             self.logger.warning("Firestore supptable lookup failed: %s", exc)
             return None
 
-    def _load_supptable(self, url: str) -> pd.DataFrame:
-        with urllib.request.urlopen(url) as response:
+    def _load_supptable(self, source: str) -> pd.DataFrame:
+        if os.path.isfile(source):
+            ext = os.path.splitext(source)[1].lower()
+            if ext in [".csv", ".tsv", ".txt"]:
+                sep = "\t" if ext == ".tsv" else ","
+                return pd.read_csv(source, sep=sep)
+            return pd.read_excel(source)
+        with urllib.request.urlopen(source) as response:
             content = response.read()
         return pd.read_excel(io.BytesIO(content))
 
@@ -211,7 +269,9 @@ class VisualizationService:
             return None
 
         cell_id_col = find(["cell_id", "cellid", "cell", "barcode", "cellbarcode"])
-        cell_type_col = find(["cell_type", "celltype", "type", "celltypeannotation"])
+        cell_type_col = find(
+            ["cell_type", "celltype", "type", "celltypeannotation", "matched_cell_type"]
+        )
         score_col = find(["score", "confidence", "probability", "cell_score"])
 
         return cell_id_col, cell_type_col, score_col
@@ -364,6 +424,19 @@ class VisualizationService:
         if not groups:
             return None
 
+        gene_symbol_map = None
+        for col in ["gene_symbol", "gene_name", "symbol", "gene", "Gene"]:
+            if col in adata.var.columns:
+                gene_symbol_map = dict(
+                    zip(
+                        adata.var_names.astype(str),
+                        adata.var[col].astype(str),
+                    )
+                )
+                break
+        if gene_symbol_map is None:
+            gene_symbol_map = self._infer_gene_symbol_map(adata)
+
         output = []
         scores = result.get("scores")
         logfold = result.get("logfoldchanges")
@@ -377,7 +450,10 @@ class VisualizationService:
             drug_targets = annotation_data.get("drug_targets", {})
 
         for group in groups:
-            genes = [str(gene) for gene in np.asarray(names[group])[:top_n].tolist()]
+            raw_genes = np.asarray(names[group])[:top_n].tolist()
+            genes = [str(gene) for gene in raw_genes]
+            if gene_symbol_map:
+                genes = [gene_symbol_map.get(gene, gene) for gene in genes]
             group_scores = None
             group_logfold = None
             group_pvals = None
@@ -529,4 +605,115 @@ class VisualizationService:
                 }
             )
         return annotations
+    def _load_target_gene_sets(self) -> Dict[str, set]:
+        targets: Dict[str, set] = {}
+        drug_path = settings.ANNOTATIONS_DIR / "drug.tsv"
+        ligands_path = settings.ANNOTATIONS_DIR / "ligands.txt"
+        receptors_path = settings.ANNOTATIONS_DIR / "receptors.txt"
+
+        if drug_path.exists():
+            df = pd.read_csv(drug_path, sep="\t")
+            if "gene_name" in df.columns:
+                genes = df["gene_name"].dropna().astype(str).tolist()
+            else:
+                genes = df.iloc[:, 0].dropna().astype(str).tolist()
+            targets["drug_targets"] = {self._normalize_gene(g) for g in genes}
+
+        if ligands_path.exists():
+            with open(ligands_path, "r", encoding="utf-8", errors="ignore") as f:
+                genes = [self._extract_target_gene(line) for line in f if line.strip()]
+            targets["ligands"] = {self._normalize_gene(g) for g in genes if g}
+
+        if receptors_path.exists():
+            with open(receptors_path, "r", encoding="utf-8", errors="ignore") as f:
+                genes = [self._extract_target_gene(line) for line in f if line.strip()]
+            targets["receptors"] = {self._normalize_gene(g) for g in genes if g}
+
+        return targets
+
+    def _extract_target_gene(self, raw: str) -> str:
+        cleaned = str(raw).strip()
+        if not cleaned:
+            return ""
+        # Target lists append descriptors like "LIGAND" or "ECM/RECEPTOR"
+        return cleaned.split()[0]
+
+    def _infer_gene_symbol_map(self, adata) -> Optional[Dict[str, str]]:
+        for col in adata.var.columns:
+            series = adata.var[col]
+            if not pd.api.types.is_string_dtype(series):
+                continue
+            sample = series.dropna().astype(str).head(200).tolist()
+            if not sample:
+                continue
+            with_letters = sum(bool(re.search(r"[A-Za-z]", value)) for value in sample)
+            numeric_like = sum(bool(re.fullmatch(r"\d+", value)) for value in sample)
+            if with_letters / len(sample) >= 0.6 and numeric_like / len(sample) <= 0.2:
+                return dict(zip(adata.var_names.astype(str), series.astype(str)))
+        return None
+
+    def _compute_overlap_report(
+        self,
+        de_by_cluster: Optional[List[Dict]],
+        de_by_cell_type: Optional[List[Dict]],
+        target_sets: Dict[str, set],
+    ) -> Optional[Dict]:
+        if not target_sets:
+            return None
+        report = {
+            "targets_loaded": {name: len(values) for name, values in target_sets.items()},
+            "by_cluster": self._compute_overlaps_for_de(de_by_cluster, target_sets),
+            "by_cell_type": self._compute_overlaps_for_de(de_by_cell_type, target_sets),
+            "debug_samples": self._build_overlap_debug_samples(
+                de_by_cluster, de_by_cell_type, target_sets
+            ),
+        }
+        if not report["by_cluster"] and not report["by_cell_type"]:
+            return report
+        return report
+
+    def _compute_overlaps_for_de(
+        self, de_groups: Optional[List[Dict]], target_sets: Dict[str, set]
+    ) -> Optional[Dict]:
+        if not de_groups:
+            return None
+        output: Dict[str, Dict[str, List[str]]] = {}
+        for group in de_groups:
+            group_name = str(group.get("group", ""))
+            genes = [self._normalize_gene(g) for g in group.get("genes", []) if g]
+            if not genes:
+                continue
+            group_set = set(genes)
+            overlaps: Dict[str, List[str]] = {}
+            for target_name, target_set in target_sets.items():
+                overlap = sorted(group_set.intersection(target_set))
+                if overlap:
+                    overlaps[target_name] = overlap
+            if overlaps:
+                output[group_name] = overlaps
+        return output or None
+
+    def _build_overlap_debug_samples(
+        self,
+        de_by_cluster: Optional[List[Dict]],
+        de_by_cell_type: Optional[List[Dict]],
+        target_sets: Dict[str, set],
+    ) -> Dict:
+        def sample_genes(groups: Optional[List[Dict]]) -> Optional[List[str]]:
+            if not groups:
+                return None
+            for group in groups:
+                genes = [self._normalize_gene(g) for g in group.get("genes", []) if g]
+                if genes:
+                    return genes[:25]
+            return None
+
+        debug = {
+            "de_cluster_sample": sample_genes(de_by_cluster),
+            "de_cell_type_sample": sample_genes(de_by_cell_type),
+            "target_samples": {
+                name: sorted(list(values))[:25] for name, values in target_sets.items()
+            },
+        }
+        return debug
 

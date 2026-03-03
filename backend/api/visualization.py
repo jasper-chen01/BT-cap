@@ -19,9 +19,12 @@ async def visualize_cells(
     file: UploadFile = File(..., description="Single-cell data file (h5ad format)"),
     supptable_url: Optional[str] = Form(None),
     supptable_doc_id: Optional[str] = Form(None),
+    supptable_path: Optional[str] = Form(None),
     embedding_matches_path: Optional[str] = Form(None),
     de_top_n: Optional[int] = Form(15),
     cluster_resolution: Optional[float] = Form(1.0),
+    use_hvg: Optional[bool] = Form(True),
+    apply_filtering: Optional[bool] = Form(True),
 ):
     if not file.filename.endswith(".h5ad"):
         raise HTTPException(status_code=400, detail="File must be in h5ad format")
@@ -37,10 +40,13 @@ async def visualize_cells(
                 tmp_file_path,
                 supptable_url=supptable_url,
                 supptable_doc_id=supptable_doc_id,
+                supptable_path=supptable_path,
                 embedding_matches_path=embedding_matches_path,
                 source_filename=file.filename,
                 de_top_n=de_top_n or 15,
                 cluster_resolution=cluster_resolution or 1.0,
+                use_hvg=bool(use_hvg),
+                apply_filtering=bool(apply_filtering),
             )
             return result
         except Exception as exc:

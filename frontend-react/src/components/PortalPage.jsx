@@ -224,6 +224,21 @@ const PortalPage = () => {
       .filter(Boolean);
   }, [activeDeGroup]);
 
+  const overlapReport = vizResults?.metadata?.de_overlaps;
+  const [showOverlapDebug, setShowOverlapDebug] = useState(false);
+  const activeOverlapTargets = useMemo(() => {
+    if (!overlapReport || !deGroup) return null;
+    const source =
+      deGroupby === 'cell_type' ? overlapReport.by_cell_type : overlapReport.by_cluster;
+    if (!source) return null;
+    return source[deGroup] || null;
+  }, [overlapReport, deGroupby, deGroup]);
+
+  const formatOverlapLabel = (value) =>
+    value
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
   const toggleCellType = (cellType) => {
     setSelectedCellTypes((prev) => {
       if (prev.includes(cellType)) {
@@ -914,83 +929,180 @@ const PortalPage = () => {
                   </div>
                   <div className="p-4">
                     {activeDeGroup ? (
-                      <div className="overflow-x-auto max-h-[360px]">
-                        <table className="w-full text-left text-sm text-slate-300">
-                          <thead className="text-slate-400 uppercase text-xs">
-                            <tr>
-                              <th className="pb-2 pr-4">Gene</th>
-                              <th className="pb-2 pr-4">Score</th>
-                              <th className="pb-2">LogFC</th>
-                              <th className="pb-2">Annotations</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-800/70">
-                            {activeDeGroup.genes.map((gene, index) => {
-                              const geneAnnotation =
-                                activeDeGroup.gene_annotations?.[index] ?? null;
-                              const hasLigand = geneAnnotation?.is_ligand;
-                              const hasReceptor = geneAnnotation?.is_receptor;
-                              const drugTargets = geneAnnotation?.drug_targets;
-                              const drugCount = Array.isArray(drugTargets)
-                                ? drugTargets.length
-                                : 0;
-                              const drugNames = Array.isArray(drugTargets)
-                                ? drugTargets
-                                    .map((target) => target?.drug_name || target?.drug_claim_name)
-                                    .filter(Boolean)
-                                : [];
-                              const uniqueDrugNames = Array.from(
-                                new Set(drugNames.map((name) => String(name)))
-                              );
-                              const shownDrugNames = uniqueDrugNames.slice(0, 3);
-                              const remainingDrugNames =
-                                uniqueDrugNames.length - shownDrugNames.length;
-                              return (
-                              <tr key={`${activeDeGroup.group}-${gene}`}>
-                                <td className="py-2 pr-4 font-mono text-xs text-slate-200">
-                                  {gene}
-                                </td>
-                                <td className="py-2 pr-4 text-slate-400 text-xs">
-                                  {activeDeGroup.scores?.[index]?.toFixed(3) ?? '—'}
-                                </td>
-                                <td className="py-2 text-slate-400 text-xs">
-                                  {activeDeGroup.logfoldchanges?.[index]?.toFixed(3) ?? '—'}
-                                </td>
-                                <td className="py-2 text-xs text-slate-300">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    {hasLigand ? (
-                                      <span className="rounded-full bg-emerald-500/15 text-emerald-200 px-2 py-0.5 text-[10px] uppercase">
-                                        Ligand
-                                      </span>
-                                    ) : null}
-                                    {hasReceptor ? (
-                                      <span className="rounded-full bg-cyan-500/15 text-cyan-200 px-2 py-0.5 text-[10px] uppercase">
-                                        Receptor
-                                      </span>
-                                    ) : null}
-                                    {drugCount ? (
-                                      <span className="rounded-full bg-indigo-500/15 text-indigo-200 px-2 py-0.5 text-[10px] uppercase">
-                                        Drug targets: {drugCount}
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                  {drugCount ? (
-                                    <div className="mt-1 text-[11px] text-slate-400">
-                                      {shownDrugNames.join(', ')}
-                                      {remainingDrugNames > 0
-                                        ? ` +${remainingDrugNames} more`
-                                        : ''}
-                                    </div>
-                                  ) : (
-                                    <span className="text-slate-500 text-[10px]">—</span>
-                                  )}
-                                </td>
+                      <>
+                        <div className="overflow-x-auto max-h-[360px]">
+                          <table className="w-full text-left text-sm text-slate-300">
+                            <thead className="text-slate-400 uppercase text-xs">
+                              <tr>
+                                <th className="pb-2 pr-4">Gene</th>
+                                <th className="pb-2 pr-4">Score</th>
+                                <th className="pb-2">LogFC</th>
+                                <th className="pb-2">Annotations</th>
                               </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800/70">
+                              {activeDeGroup.genes.map((gene, index) => {
+                                const geneAnnotation =
+                                  activeDeGroup.gene_annotations?.[index] ?? null;
+                                const hasLigand = geneAnnotation?.is_ligand;
+                                const hasReceptor = geneAnnotation?.is_receptor;
+                                const drugTargets = geneAnnotation?.drug_targets;
+                                const drugCount = Array.isArray(drugTargets)
+                                  ? drugTargets.length
+                                  : 0;
+                                const drugNames = Array.isArray(drugTargets)
+                                  ? drugTargets
+                                      .map(
+                                        (target) => target?.drug_name || target?.drug_claim_name
+                                      )
+                                      .filter(Boolean)
+                                  : [];
+                                const uniqueDrugNames = Array.from(
+                                  new Set(drugNames.map((name) => String(name)))
+                                );
+                                const shownDrugNames = uniqueDrugNames.slice(0, 3);
+                                const remainingDrugNames =
+                                  uniqueDrugNames.length - shownDrugNames.length;
+                                return (
+                                  <tr key={`${activeDeGroup.group}-${gene}`}>
+                                    <td className="py-2 pr-4 font-mono text-xs text-slate-200">
+                                      {gene}
+                                    </td>
+                                    <td className="py-2 pr-4 text-slate-400 text-xs">
+                                      {activeDeGroup.scores?.[index]?.toFixed(3) ?? '—'}
+                                    </td>
+                                    <td className="py-2 text-slate-400 text-xs">
+                                      {activeDeGroup.logfoldchanges?.[index]?.toFixed(3) ?? '—'}
+                                    </td>
+                                    <td className="py-2 text-xs text-slate-300">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        {hasLigand ? (
+                                          <span className="rounded-full bg-emerald-500/15 text-emerald-200 px-2 py-0.5 text-[10px] uppercase">
+                                            Ligand
+                                          </span>
+                                        ) : null}
+                                        {hasReceptor ? (
+                                          <span className="rounded-full bg-cyan-500/15 text-cyan-200 px-2 py-0.5 text-[10px] uppercase">
+                                            Receptor
+                                          </span>
+                                        ) : null}
+                                        {drugCount ? (
+                                          <span className="rounded-full bg-indigo-500/15 text-indigo-200 px-2 py-0.5 text-[10px] uppercase">
+                                            Drug targets: {drugCount}
+                                          </span>
+                                        ) : null}
+                                      </div>
+                                      {drugCount ? (
+                                        <div className="mt-1 text-[11px] text-slate-400">
+                                          {shownDrugNames.join(', ')}
+                                          {remainingDrugNames > 0
+                                            ? ` +${remainingDrugNames} more`
+                                            : ''}
+                                        </div>
+                                      ) : (
+                                        <span className="text-slate-500 text-[10px]">—</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="mt-4 border-t border-slate-800/70 pt-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold text-white">
+                              Target Overlaps
+                            </h4>
+                            <div className="flex items-center gap-3 text-xs text-slate-500">
+                              {overlapReport?.targets_loaded ? (
+                                <span>
+                                  {Object.entries(overlapReport.targets_loaded)
+                                    .map(([key, count]) => `${formatOverlapLabel(key)}: ${count}`)
+                                    .join(' • ')}
+                                </span>
+                              ) : null}
+                              {overlapReport?.debug_samples ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setShowOverlapDebug((prev) => !prev)}
+                                  className="text-cyan-300 hover:text-cyan-200"
+                                >
+                                  {showOverlapDebug ? 'Hide Debug' : 'Show Debug'}
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                          {activeOverlapTargets ? (
+                            <div className="mt-3 space-y-3">
+                              {Object.entries(activeOverlapTargets).map(([key, genes]) => {
+                                const displayGenes = genes.slice(0, 30);
+                                const remaining = genes.length - displayGenes.length;
+                                return (
+                                  <div key={`${deGroup}-${key}`}>
+                                    <div className="flex items-center justify-between text-xs text-slate-400">
+                                      <span>{formatOverlapLabel(key)}</span>
+                                      <span>{genes.length} hits</span>
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      {displayGenes.map((gene) => (
+                                        <span
+                                          key={`${deGroup}-${key}-${gene}`}
+                                          className="px-2 py-1 rounded-full bg-slate-800 text-slate-200 text-[11px] font-mono"
+                                        >
+                                          {gene}
+                                        </span>
+                                      ))}
+                                      {remaining > 0 ? (
+                                        <span className="px-2 py-1 rounded-full bg-slate-900 text-slate-500 text-[11px]">
+                                          +{remaining} more
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="mt-2 text-xs text-slate-500">
+                              {overlapReport
+                                ? 'No drug/ligand/receptor overlaps found for this selection.'
+                                : 'Overlap report not available for this dataset.'}
+                            </p>
+                          )}
+                          {showOverlapDebug && overlapReport?.debug_samples ? (
+                            <div className="mt-4 rounded-lg border border-slate-800/70 bg-slate-900/70 p-3 text-xs text-slate-300">
+                              <div className="text-slate-400 mb-2">
+                                Debug samples used for overlap checks:
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <span className="text-slate-400">DE (cluster) sample:</span>{' '}
+                                  {overlapReport.debug_samples.de_cluster_sample?.length
+                                    ? overlapReport.debug_samples.de_cluster_sample.join(', ')
+                                    : '—'}
+                                </div>
+                                <div>
+                                  <span className="text-slate-400">DE (cell type) sample:</span>{' '}
+                                  {overlapReport.debug_samples.de_cell_type_sample?.length
+                                    ? overlapReport.debug_samples.de_cell_type_sample.join(', ')
+                                    : '—'}
+                                </div>
+                                {Object.entries(
+                                  overlapReport.debug_samples.target_samples || {}
+                                ).map(([key, genes]) => (
+                                  <div key={`debug-${key}`}>
+                                    <span className="text-slate-400">
+                                      {formatOverlapLabel(key)} sample:
+                                    </span>{' '}
+                                    {genes?.length ? genes.join(', ') : '—'}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </>
                     ) : (
                       <p className="text-sm text-slate-500">
                         Differential expression results are unavailable for this selection.
