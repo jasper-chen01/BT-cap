@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import * as XLSX from 'xlsx';
 import {
   Activity,
   AlertCircle,
@@ -45,7 +46,10 @@ const PortalPage = () => {
   const [supptableUrl, setSupptableUrl] = useState('');
   const [deGroupby, setDeGroupby] = useState('cluster');
   const [deGroup, setDeGroup] = useState('');
-  
+  const [deFilterType, setDeFilterType] = useState('all');
+  const [deSortBy, setDeSortBy] = useState('score');
+  const [deSortDir, setDeSortDir] = useState('desc');
+  const [deGeneSearch, setDeGeneSearch] = useState('');
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -258,6 +262,60 @@ const PortalPage = () => {
   }, [vizResults, colorMode]);
 
   const overlapReport = vizResults?.metadata?.de_overlaps;
+  const deRows = useMemo(() => {
+    if (!activeDeGroup) return [];
+    const rows = activeDeGroup.genes.map((gene, index) => {
+      const geneAnnotation = activeDeGroup.gene_annotations?.[index] ?? null;
+      const hasLigand = Boolean(geneAnnotation?.is_ligand);
+      const hasReceptor = Boolean(geneAnnotation?.is_receptor);
+      const drugTargets = geneAnnotation?.drug_targets;
+      const drugCount = Array.isArray(drugTargets) ? drugTargets.length : 0;
+      const score = activeDeGroup.scores?.[index];
+      const logfc = activeDeGroup.logfoldchanges?.[index];
+      return {
+        gene,
+        index,
+        geneAnnotation,
+        hasLigand,
+        hasReceptor,
+        drugTargets,
+        drugCount,
+        score: typeof score === 'number' ? score : null,
+        logfc: typeof logfc === 'number' ? logfc : null,
+      };
+    });
+
+    const search = deGeneSearch.trim().toLowerCase();
+    const filtered = rows.filter((row) => {
+      if (deFilterType === 'ligand' && !row.hasLigand) return false;
+      if (deFilterType === 'receptor' && !row.hasReceptor) return false;
+      if (deFilterType === 'druggable' && row.drugCount === 0) return false;
+      if (search && !row.gene.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    const sortMultiplier = deSortDir === 'asc' ? 1 : -1;
+    const scoreValue = (value) =>
+      typeof value === 'number' && !Number.isNaN(value) ? value : -Infinity;
+    return filtered.sort((a, b) => {
+      if (deSortBy === 'gene') {
+        return sortMultiplier * a.gene.localeCompare(b.gene);
+      }
+      if (deSortBy === 'logfc') {
+        return sortMultiplier * (scoreValue(a.logfc) - scoreValue(b.logfc));
+      }
+      if (deSortBy === 'drug_count') {
+        return sortMultiplier * (a.drugCount - b.drugCount);
+      }
+      return sortMultiplier * (scoreValue(a.score) - scoreValue(b.score));
+    });
+  }, [
+    activeDeGroup,
+    deFilterType,
+    deSortBy,
+    deSortDir,
+    deGeneSearch,
+  ]);
 
   const toggleCellType = (cellType) => {
     setSelectedCellTypes((prev) => {
@@ -377,6 +435,25 @@ const PortalPage = () => {
     } finally {
       setIsVisualizing(false);
     }
+  };
+
+  const downloadProgramScores = () => {
+    if (!vizResults?.umap_points?.length) return;
+    const rows = vizResults.umap_points.map((point) => ({
+      cell_id: point.cell_id,
+      cluster: point.cluster,
+      cell_type: point.cell_type ?? null,
+      cell_type_score: typeof point.score === 'number' ? point.score : null,
+      predicted_cell_type: point.predicted_cell_type ?? null,
+      predicted_score: typeof point.predicted_score === 'number' ? point.predicted_score : null,
+      umap_x: point.x,
+      umap_y: point.y,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'program_scores');
+    const stamp = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `program_scores_${stamp}.xlsx`);
   };
 
   const downloadResults = () => {
@@ -817,6 +894,14 @@ const PortalPage = () => {
                       {filteredUmapPoints.length.toLocaleString()} filtered /{' '}
                       {vizResults.total_cells.toLocaleString()}
                     </span>
+                    <Button
+                      variant="secondary"
+                      onClick={downloadProgramScores}
+                      icon={Download}
+                      className="py-1.5 px-3 text-xs"
+                    >
+                      Export Scores
+                    </Button>
                   </div>
                 </div>
 
@@ -1045,6 +1130,53 @@ const PortalPage = () => {
                   <div className="p-4">
                     {activeDeGroup ? (
                       <>
+                        <div className="flex flex-wrap items-center gap-3 mb-4 text-xs text-slate-300">
+                          <div className="flex items-center gap-2">
+                            <Filter size={14} className="text-slate-400" />
+                            <span>Filters</span>
+                          </div>
+                          <select
+                            value={deFilterType}
+                            onChange={(event) => setDeFilterType(event.target.value)}
+                            className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-xs text-slate-200"
+                          >
+                            <option value="all">All</option>
+                            <option value="ligand">Ligand</option>
+                            <option value="receptor">Receptor</option>
+                            <option value="druggable">Druggable</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={deGeneSearch}
+                            onChange={(event) => setDeGeneSearch(event.target.value)}
+                            placeholder="Search gene"
+                            className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-xs text-slate-200"
+                          />
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-400">Sort</span>
+                            <select
+                              value={deSortBy}
+                              onChange={(event) => setDeSortBy(event.target.value)}
+                              className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-xs text-slate-200"
+                            >
+                              <option value="score">Score</option>
+                              <option value="logfc">LogFC</option>
+                              <option value="drug_count">Drug Count</option>
+                              <option value="gene">Gene</option>
+                            </select>
+                            <select
+                              value={deSortDir}
+                              onChange={(event) => setDeSortDir(event.target.value)}
+                              className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-xs text-slate-200"
+                            >
+                              <option value="desc">Desc</option>
+                              <option value="asc">Asc</option>
+                            </select>
+                          </div>
+                          <span className="text-slate-500">
+                            {deRows.length} shown
+                          </span>
+                        </div>
                         <div className="overflow-x-auto max-h-[360px]">
                           <table className="w-full text-left text-sm text-slate-300">
                             <thead className="text-slate-400 uppercase text-xs">
@@ -1058,15 +1190,16 @@ const PortalPage = () => {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800/70">
-                              {activeDeGroup.genes.map((gene, index) => {
-                                const geneAnnotation =
-                                  activeDeGroup.gene_annotations?.[index] ?? null;
-                                const hasLigand = geneAnnotation?.is_ligand;
-                                const hasReceptor = geneAnnotation?.is_receptor;
-                                const drugTargets = geneAnnotation?.drug_targets;
-                                const drugCount = Array.isArray(drugTargets)
-                                  ? drugTargets.length
-                                  : 0;
+                              {deRows.map((row) => {
+                                const {
+                                  gene,
+                                  index,
+                                  geneAnnotation,
+                                  hasLigand,
+                                  hasReceptor,
+                                  drugTargets,
+                                  drugCount,
+                                } = row;
                                 const drugNames = Array.isArray(drugTargets)
                                   ? drugTargets
                                       .map(
