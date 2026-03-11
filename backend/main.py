@@ -4,6 +4,7 @@ Main FastAPI application for Brain Tumor Annotation Portal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 from backend.api import annotation, health, chat, auth, visualization, embeddings
@@ -28,6 +29,15 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Serve analysis outputs (feature plots, summaries) from data/analysis_runs
+analysis_runs_dir = settings.DATA_DIR / "analysis_runs"
+analysis_runs_dir.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/analysis_runs",
+    StaticFiles(directory=str(analysis_runs_dir)),
+    name="analysis_runs"
 )
 
 # Include routers

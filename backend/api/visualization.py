@@ -29,11 +29,16 @@ async def visualize_cells(
     if not file.filename.endswith(".h5ad"):
         raise HTTPException(status_code=400, detail="File must be in h5ad format")
 
+    tmp_file_path = None
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".h5ad") as tmp_file:
+        tmp_file_path = tmp_file.name
         try:
-            content = await file.read()
-            tmp_file.write(content)
-            tmp_file_path = tmp_file.name
+            while True:
+                chunk = await file.read(1024 * 1024)  # 1MB chunks
+                if not chunk:
+                    break
+                tmp_file.write(chunk)
 
             service = VisualizationService()
             result = service.process_file(
@@ -49,19 +54,20 @@ async def visualize_cells(
                 apply_filtering=bool(apply_filtering),
             )
             return result
+
         except Exception as exc:
             logger.exception("Visualization failed for uploaded file")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error processing file: {exc!r}",
-            )
+            raise HTTPException(status_code=500, detail=f"Error processing file: {exc!r}")
+
         finally:
             await file.close()
-            if os.path.exists(tmp_file_path):
+            if tmp_file_path and os.path.exists(tmp_file_path):
                 try:
                     os.unlink(tmp_file_path)
                 except PermissionError:
                     pass
+
+    
 
 
 

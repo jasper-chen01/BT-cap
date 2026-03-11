@@ -12,7 +12,7 @@ const normalizeBackendMessage = (msg) => ({
 });
 
 
-const ChatPage = ({ embedded = false, onClose }) => {
+const ChatPage = ({ embedded = false, onClose, analysisSummaryPath = '' }) => {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [inputValue, setInputValue] = useState('');
@@ -85,6 +85,7 @@ const handleSend = async () => {
 
     const formData = new FormData();
     formData.append("message", text); // must match docs: message (string)
+    formData.append('analysis_summary_path', analysisSummaryPath);
 
     const res = await fetch(`${API_BASE}/api/chat/${sid}/message`, {
       method: "POST",

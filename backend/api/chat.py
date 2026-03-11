@@ -8,11 +8,9 @@ import tempfile
 import os
 import uuid
 import json
-
+from backend.config import settings
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
 from backend.services.chat_agent import ChatAgent
-from backend.services.embedding_pipeline_service import EmbeddingPipelineJobService
-from backend.config import BASE_DIR
 
 router = APIRouter()
 
@@ -27,7 +25,8 @@ async def create_session():
     session = ChatSession(
         session_id=session_id,
         messages=[],
-        uploaded_files=[]
+        uploaded_files=[],
+        analysis_context=None
     )
     chat_sessions[session_id] = session
     return session
@@ -45,7 +44,8 @@ async def get_session(session_id: str):
 async def send_message(
     session_id: str,
     message: str = Form(...),
-    file: Optional[UploadFile] = File(None)
+    file: Optional[UploadFile] = File(None),
+    analysis_summary_path: Optional[str] = Form(None)
 ):
     """
     Send a message to the chat agent
@@ -62,6 +62,31 @@ async def send_message(
         raise HTTPException(status_code=404, detail="Session not found")
     
     session = chat_sessions[session_id]
+
+    print("DEBUG session_id =", session_id)
+    print("DEBUG before load, analysis_context =", bool(session.analysis_context))
+    print("DEBUG analysis_summary_path =", analysis_summary_path)
+
+
+
+    if analysis_summary_path:
+        try:
+            from pathlib import Path
+            import json
+
+            p = Path(analysis_summary_path)
+            allowed_root = (settings.DATA_DIR / "analysis_runs").resolve()
+            if allowed_root in p.resolve().parents and p.is_file():
+                with open(p, "r", encoding="utf-8") as f:
+                    session.analysis_context = json.load(f)
+                session.analysis_context["_analysis_summary_path"] = str(p)
+        except Exception as e:
+            print("ANALYSIS SUMMARY LOAD ERROR:", repr(e))
+
+    print("DEBUG after load, analysis_context =", bool(session.analysis_context))
+    if session.analysis_context:
+        print("DEBUG analysis_context keys =", list(session.analysis_context.keys())[:20])
+
     chat_agent = ChatAgent()
     
     # Handle file upload if present
@@ -79,24 +104,11 @@ async def send_message(
             tmp_file.write(content)
             file_path = tmp_file.name
         
-        file_info = {
+        session.uploaded_files.append({
             "filename": file.filename,
             "path": file_path,
             "session_id": session_id
-        }
-
-        try:
-            pipeline_service = EmbeddingPipelineJobService()
-            job = pipeline_service.start_job(
-                h5ad_path=file_path,
-                dict_dir=str(BASE_DIR / "backend" / "dict"),
-                models_root=str(BASE_DIR / "backend"),
-            )
-            file_info["embedding_pipeline_job_id"] = job.job_id
-        except Exception as exc:
-            file_info["embedding_pipeline_error"] = str(exc)
-
-        session.uploaded_files.append(file_info)
+        })
     
     # Add user message to session
     user_msg = ChatMessage(
