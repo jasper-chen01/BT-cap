@@ -42,30 +42,29 @@ class UmapPoint(BaseModel):
     predicted_cell_type: Optional[str] = None
     predicted_score: Optional[float] = None
 
+    class Config:
+        extra = "allow"
+
+
+class AnnotationRequest(BaseModel):
+    """Request model for annotation"""
+    top_k: Optional[int] = 10
+    similarity_threshold: Optional[float] = 0.7
+
+
+class TopMatch(BaseModel):
+    cell_id: str
+    x: float
+    y: float
+    cluster: str
+    cell_type: Optional[str] = None
+    score: Optional[float] = None
+
 
 class CellTypeSummary(BaseModel):
     name: str
     count: int
     avg_score: Optional[float] = None
-
-
-class DrugTargetInfo(BaseModel):
-    drug_name: Optional[str] = None
-    drug_claim_name: Optional[str] = None
-    drug_concept_id: Optional[str] = None
-    interaction_source_db_name: Optional[str] = None
-    interaction_type: Optional[str] = None
-    interaction_score: Optional[float] = None
-    approved: Optional[bool] = None
-    immunotherapy: Optional[bool] = None
-    anti_neoplastic: Optional[bool] = None
-
-
-class GeneAnnotation(BaseModel):
-    gene: str
-    is_ligand: bool = False
-    is_receptor: bool = False
-    drug_targets: Optional[List[DrugTargetInfo]] = None
 
 
 class DifferentialExpressionGroup(BaseModel):
@@ -74,7 +73,6 @@ class DifferentialExpressionGroup(BaseModel):
     scores: Optional[List[Optional[float]]] = None
     logfoldchanges: Optional[List[Optional[float]]] = None
     pvals_adj: Optional[List[Optional[float]]] = None
-    gene_annotations: Optional[List[GeneAnnotation]] = None
 
 
 class VisualizationResponse(BaseModel):
@@ -115,7 +113,7 @@ class ChatSession(BaseModel):
     session_id: str
     messages: List[ChatMessage]
     uploaded_files: List[Dict] = []
-
+    analysis_context: Optional[Dict] = None
 
 class ChatResponse(BaseModel):
     """Chat agent response"""
@@ -161,8 +159,6 @@ class AuthResponse(BaseModel):
     user_id: str
     name: str
     email: str
-
-
 class EmbeddingJobRequest(BaseModel):
     """Request model to start embedding extraction"""
     h5ad_path: str

@@ -404,7 +404,32 @@ marker_dict = {
     for cell_type, group in marker_df.groupby("CellType")
 }
 universe_gene_set = set(marker_df["MarkerGene"].unique())
+def build_gene_programs(marker_df, min_genes=3, max_genes=30):
+    programs = {}
 
+    for cell_type, group in marker_df.groupby("CellType"):
+        genes = (
+            group.sort_values("NumTitles", ascending=False)["MarkerGene"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .tolist()
+        )
+        # unique while preserving order
+        seen = set()
+        unique_genes = []
+        for g in genes:
+            if g not in seen:
+                seen.add(g)
+                unique_genes.append(g)
+
+        unique_genes = unique_genes[:max_genes]
+
+        if len(unique_genes) >= min_genes:
+            programs[cell_type] = unique_genes
+
+    return programs
 # ----------------------------
 # Gene symbol conversion
 def ensembl_to_symbol(ensembl_ids):
@@ -548,7 +573,39 @@ os.makedirs(out_root, exist_ok=True)
 # Load data
 scores = pd.read_csv(scores_csv)
 adata = sc.read_h5ad(adata_path)
-
+scampi_out_dir = os.path.join(output_dir, "scanpy_score_genes")
+os.makedirs(scampi_out_dir, exist_ok=True)
+sc.settings.figdir = scampi_out_dir
+if reduction_name in adata.obsm:
+    adata.obsm["X_umap"] = adata.obsm[reduction_name]
+adata.var_names = pd.Index([str(x).upper() for x in adata.var_names])
+gene_programs = build_gene_programs(marker_df, min_genes=3, max_genes=30)
+scanpy_score_cols = []
+for program_name, gene_list in gene_programs.items():
+    present_genes = [g for g in gene_list if g in adata.var_names]
+    if len(present_genes) < 3:
+        continue
+    score_name = f"score__{re.sub(r'[^A-Za-z0-9_]+', '_', program_name)}"
+    sc.tl.score_genes(
+        adata,
+        gene_list=present_genes,
+        score_name=score_name,
+        use_raw=False
+    )
+    scanpy_score_cols.append(score_name)
+    sc.pl.umap(
+        adata,
+        color=score_name,
+        color_map="viridis",
+        show=False,
+        title=program_name,
+        save=f"_{score_name}.png"
+    )
+# Save scanpy module scores
+if scanpy_score_cols:
+    adata.obs[scanpy_score_cols].to_csv(
+        os.path.join(scampi_out_dir, "scanpy_score_genes_scores.csv")
+    )
 # Keep only cells present in AnnData
 scores = scores[scores["cell_id"].isin(adata.obs_names)]
 

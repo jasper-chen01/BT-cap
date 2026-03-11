@@ -126,117 +126,14 @@ class ChatAgent:
         # Extract parameters from message
         top_k = self._extract_number(message_lower, r'top[_\s]?k[:\s]?(\d+)', default=10)
         threshold = self._extract_number(message_lower, r'threshold[:\s]?([\d.]+)', default=0.7, is_float=True)
-        # 0) Marker weight lookup router (Gemini decides whether to lookup)
-        intent = await self._extract_weight_intent(user_message)
-        print("DEBUG weight_intent =", intent)
 
-    # Only route if Gemini is available (prevents None.generate_content() 500s)
-        if self.gemini_enabled and self.gemini_model and intent and intent.get("intent") in {"weight_lookup", "gene_to_celltype", "celltype_to_markers"}:
-            q_raw = (intent.get("query") or "").strip()
-            q = self._clean_lookup_query(q_raw)
+        if getattr(session, "analysis_context", None) and self.gemini_enabled:
+            return await self._gemini_response(session, user_message)
 
-            # guard against garbage queries like "weight", "what", "activated"
-            if not q or q.lower() in {"weight", "weights", "what", "which", "marker", "markers", "gene", "genes"}:
-                return ChatResponse(
-                    message=ChatMessage(role="assistant", content="Tell me the gene symbol (e.g., CHRM2) or the cell type name (e.g., Activated Microglia)."),
-                    session_id=session.session_id,
-                )
+        direct = self._maybe_answer_from_analysis_context(session, user_message)
+        if direct:
+            return direct
 
-            # Force correct lookup behavior based on intent
-            force_mode = None
-            if intent["intent"] == "gene_to_celltype":
-                force_mode = "gene"
-            elif intent["intent"] == "celltype_to_markers":
-                force_mode = "celltype"
-
-            try:
-                lookup = self._lookup_weight_from_xlsx(q, force=force_mode)
-            except Exception as e:
-                print("MARKER LOOKUP ERROR:", repr(e))
-                return ChatResponse(
-                    message=ChatMessage(role="assistant", content="There was an error reading the marker-weight table."),
-                    session_id=session.session_id,
-                )
-
-            if not lookup:
-                return ChatResponse(
-                    message=ChatMessage(role="assistant", content=f"No weights found for {q}."),
-                    session_id=session.session_id,
-                )
-
-            kind, q2, rows = lookup
-            if not rows:
-                return ChatResponse(
-                    message=ChatMessage(role="assistant", content=f"No weights found for {q2}."),
-                    session_id=session.session_id,
-                )
-
-            def w_as_float(x):
-                try:
-                    return float(x)
-                except Exception:
-                    return -1.0
-
-            rows_sorted = sorted(rows, key=lambda t: w_as_float(t[2]), reverse=True)
-
-            # Build context for Gemini formatting
-            if intent["intent"] == "gene_to_celltype":
-                context = {
-                    "intent": "gene_to_celltype",
-                    "gene": q2.upper(),
-                    "top_cell_types": [{"cell_type": c, "weight": w} for c, g, w in rows_sorted[:10]],
-                }
-            elif intent["intent"] == "celltype_to_markers":
-                context = {
-                    "intent": "celltype_to_markers",
-                    "cell_type": q2,
-                    "top_markers": [{"gene": g, "weight": w} for c, g, w in rows_sorted[:10]],
-                }
-            else:
-                context = {
-                    "intent": "weight_lookup",
-                    "query_type": kind,
-                    "query": q2,
-                    "results": [{"cell_type": c, "gene": g, "weight": w} for c, g, w in rows_sorted[:20]],
-                }
-
-            prompt = f"""
-        Return a short answer using ONLY the lookup results below.
-        If results are empty, say "Not found."
-        Max 3 sentences. Plain text only (no markdown, no bullets unless necessary).
-
-        Lookup results:
-        {context}
-
-        User: {user_message}
-        """.strip()
-
-            try:
-                resp = await asyncio.to_thread(self.gemini_model.generate_content, prompt)
-                content = (resp.text or "").strip()
-                if not content:
-                    content = "Found results but couldn't format them."
-            except Exception as e:
-                print("GEMINI FORMAT ERROR:", repr(e))
-                # deterministic fallback
-                if intent["intent"] == "gene_to_celltype":
-                    top = context["top_cell_types"]
-                    content = q2.upper() + " is highest in: " + ", ".join([f"{x['cell_type']} ({x['weight']})" for x in top[:5]])
-                elif intent["intent"] == "celltype_to_markers":
-                    top = context["top_markers"]
-                    content = q2 + " top markers: " + ", ".join([f"{x['gene']} ({x['weight']})" for x in top[:5]])
-                else:
-                    content = f"Found {len(rows)} rows for {q2}."
-
-            return ChatResponse(
-                message=ChatMessage(role="assistant", content=content),
-                session_id=session.session_id,
-            )
-
-
-                
-
-        # Default response
         if self.gemini_enabled:
             return await self._gemini_response(session, user_message)
         return self._default_response(session.session_id, session.uploaded_files)
@@ -268,7 +165,6 @@ class ChatAgent:
             
             avg_confidence = total_confidence / len(annotations) if annotations else 0
 
-            # Build a small, structured summary for the session (top 5 only)
             sorted_counts = sorted(annotation_counts.items(), key=lambda x: -x[1])
             top_types = [
                 {"cell_type": ann, "count": count, "pct": round((count / result.total_cells) * 100, 1)}
@@ -498,50 +394,101 @@ What would you like to do?"""
         )
 
     def _build_gemini_prompt(self, session: ChatSession, user_message: str) -> str:
-        """Build a prompt with lightweight context for Gemini."""
+        """Build a prompt with analysis/visualization context for Gemini."""
         recent_messages = session.messages[-6:] if session.messages else []
         history_lines = [
             f"{msg.role}: {msg.content}" for msg in recent_messages if msg.content
         ]
+        history_block = "\n".join(history_lines) if history_lines else "No prior messages."
+
         uploaded_names = [f["filename"] for f in session.uploaded_files] if session.uploaded_files else []
         uploaded_text = ", ".join(uploaded_names) if uploaded_names else "none"
 
         system_prompt = (
-            "You are the Brain Tumor Annotation Assistant for a web app that annotates "
-            "glioma single-cell data. Be concise and helpful, and respond naturally to the user."
-            "If the user asks about uploading or annotating files, explain the steps clearly."
-            "This portal also supports looking up marker weights for a given gene or cell type from the portal's reference marker-weight table. "
-            "If the user asks about weights (e.g., 'weight for CHRM2' or 'weights for OPC'), answer using the lookup results provided. "
-            "If the request is outside the app scope, say you can only help with this portal."
-            "You may answer general glioma biology questions at a high level if they help the user interpret portal results."
-            "No profanity or swearing. Do not repeat profanity even if the user uses it."
-            
+            "You are the Brain Tumor Annotation Assistant for a web app that annotates and visualizes "
+            "single-cell data. Be concise, natural, and helpful.\n"
+            "If the user asks about upload, annotation, or status, answer directly.\n"
+            "If a latest analysis summary is provided, treat it as the source of truth for the current dataset.\n"
+            "Do not tell the user to upload or annotate first if analysis summary context is already present.\n"
+            "For gene-program score questions, explain that scores reflect relative enrichment, not definitive cell identity.\n"
+            "Use exact numeric values from the summary when available, but also interpret them in plain language or using your own resources.\n"
+            "If information is not present in the summary, say so clearly.\n"
+            "Keep the tone conversational and natural.\n"
+            "No profanity or swearing."
         )
 
-        history_block = "\n".join(history_lines) if history_lines else "No prior messages."
-
-        
         analysis_block = "none"
-        latest_analysis = None
-        for msg in reversed(session.messages):
-            if msg.role == "assistant" and getattr(msg, "annotation_results", None):
-                latest_analysis = msg.annotation_results
-                break
+        ctx = getattr(session, "analysis_context", None)
 
-        if latest_analysis:
-            counts = latest_analysis.get("annotation_counts", {}) or {}
-            total_cells = latest_analysis.get("total_cells")
-            avg_conf = latest_analysis.get("average_confidence")
+        if ctx:
+            total_cells = ctx.get("total_cells")
+            cluster_counts = ctx.get("cluster_counts") or {}
+            meta = ctx.get("metadata") or {}
+            program_details = ctx.get("program_details") or {}
+            cell_types = ctx.get("cell_types") or []
 
-            top5 = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
-            top5_str = ", ".join([f"{k}={v}" for k, v in top5]) if top5 else "none"
+            top_clusters = sorted(cluster_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+            top_clusters_str = ", ".join([f"{k}={v}" for k, v in top_clusters]) if top_clusters else "none"
 
-            analysis_block = f"total_cells={total_cells}, avg_confidence={avg_conf}, top_celltypes={top5_str}"
+            available_programs = meta.get("available_programs") or list(program_details.keys())
+            selected_program = meta.get("selected_program") or "none"
+
+            program_preview_lines = []
+            for program_name in available_programs[:12]:
+                detail = program_details.get(program_name) or {}
+                score_stats = detail.get("score_stats") or {}
+                top_prog_clusters = detail.get("top_clusters") or {}
+                top_cluster_items = list(top_prog_clusters.items())[:3]
+                top_cluster_str = ", ".join([f"{k}:{v}" for k, v in top_cluster_items]) if top_cluster_items else "none"
+
+                program_preview_lines.append(
+                    f"{program_name}: "
+                    f"matched={detail.get('present_genes')}/{detail.get('total_genes')}, "
+                    f"missing={detail.get('missing_genes')}, "
+                    f"p05={score_stats.get('p05')}, "
+                    f"p95={score_stats.get('p95')}, "
+                    f"top_clusters={top_cluster_str}"
+                )
+
+            program_preview = "\n".join(program_preview_lines) if program_preview_lines else "none"
+
+            full_program_details_block = json.dumps(
+                program_details,
+                ensure_ascii=False
+            ) if program_details else "none"
+
+            analysis_block = (
+                f"total_cells={total_cells}\n"
+                f"cluster_count={len(cluster_counts)}\n"
+                f"top_clusters={top_clusters_str}\n"
+                f"cell_type_summary_count={len(cell_types) if isinstance(cell_types, list) else 0}\n"
+                f"selected_program={selected_program}\n"
+                f"available_programs={', '.join(available_programs[:50]) if available_programs else 'none'}\n"
+                f"program_preview:\n{program_preview}\n"
+                f"full_program_details:\n{full_program_details_block}"
+            )
+        else:
+            latest_analysis = None
+            for msg in reversed(session.messages):
+                if msg.role == "assistant" and getattr(msg, "annotation_results", None):
+                    latest_analysis = msg.annotation_results
+                    break
+
+            if latest_analysis:
+                counts = latest_analysis.get("annotation_counts", {}) or {}
+                total_cells = latest_analysis.get("total_cells")
+                avg_conf = latest_analysis.get("average_confidence")
+
+                top5 = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                top5_str = ", ".join([f"{k}={v}" for k, v in top5]) if top5 else "none"
+
+                analysis_block = f"total_cells={total_cells}, avg_confidence={avg_conf}, top_celltypes={top5_str}"
 
         return (
             f"{system_prompt}\n\n"
-            f"Uploaded files: {uploaded_text}\n"
-            f"Latest analysis summary: {analysis_block}\n\n"
+            f"Uploaded files: {uploaded_text}\n\n"
+            f"Latest analysis summary:\n{analysis_block}\n\n"
+            f"When the user asks for interpretation, give aninterpretation based on the analysis summary and your knowledge.\n"
             f"Conversation:\n{history_block}\n\n"
             f"User: {user_message}\nAssistant:"
         )
@@ -576,222 +523,7 @@ What would you like to do?"""
         if match:
             return float(match.group(1)) if is_float else int(match.group(1))
         return default
-    def _download_gcs_xlsx_if_needed(self) -> Path:
-        """
-        Downloads the XLSX from GCS once and caches it under data/SuppTable1.xlsx.
-        Requires GOOGLE_APPLICATION_CREDENTIALS to be set to your service account JSON.
-        """
-        gcs_uri = os.getenv("MARKER_WEIGHTS_GCS_URI", "").strip()
-        if not gcs_uri.startswith("gs://"):
-            return settings.DATA_DIR / "SuppTable1.xlsx"  # fallback path
-
-        local_path = settings.DATA_DIR / "SuppTable1.xlsx"
-        if local_path.exists():
-            return local_path
-
-        # parse gs://bucket/object
-        no_scheme = gcs_uri[len("gs://"):]
-        bucket_name, blob_path = no_scheme.split("/", 1)
-
-        client = storage.Client()  # uses GOOGLE_APPLICATION_CREDENTIALS
-        blob = client.bucket(bucket_name).blob(blob_path)
-
-        local_path.parent.mkdir(parents=True, exist_ok=True)
-        blob.download_to_filename(str(local_path))
-        return local_path
-
-
-    def _lookup_weight_from_xlsx(self, user_text: str, force: Optional[str] = None):
-        """
-        If user types a gene -> returns all matching rows (CellType, weight).
-        If user types a cell type -> returns all matching rows (Gene, weight).
-        """
-        q = (user_text or "").strip()
-        if not q:
-            return None
-
-        xlsx_path = self._download_gcs_xlsx_if_needed()
-        
-      
-
-        if not xlsx_path.exists():
-            return None
-
-        wb = openpyxl.load_workbook(xlsx_path, data_only=True)
-        
-
-
-        sheet_name = (os.getenv("MARKER_WEIGHTS_SHEET", "") or "").strip()
-        ws = wb[sheet_name] if sheet_name and sheet_name in wb.sheetnames else wb.active
-
-        # Expect headers in first row: CellType | MarkerGene | weights
-        headers = [str(c.value).strip() if c.value is not None else "" for c in ws[1]]
-  
-        
-
-
-        # Find column indices
-        def col_idx(name: str) -> int:
-            name_l = name.lower()
-            for i, h in enumerate(headers):
-                if h.lower() == name_l:
-                    return i
-            return -1
-
-        i_cell = col_idx("CellType")
-        i_gene = col_idx("MarkerGene")
-        i_w = col_idx("weights")
-        if i_w == -1:
-            i_w = col_idx("weight")
-
-        if i_cell == -1 or i_gene == -1 or i_w == -1:
-            return ("error", q, [])
-
-        if force == "gene":
-            is_gene = True
-        elif force == "celltype":
-            is_gene = False
-        else:
-            is_gene = (" " not in q) and bool(re.fullmatch(r"[A-Za-z0-9\-]{2,20}", q))
-
-        rows = []
-        for r in ws.iter_rows(min_row=2, values_only=True):
-            cell = (str(r[i_cell]).strip() if r[i_cell] is not None else "")
-            gene = (str(r[i_gene]).strip() if r[i_gene] is not None else "")
-            w = r[i_w]
-
-            if is_gene:
-                if gene.upper() == q.upper():
-                    rows.append((cell, gene.upper(), w))
-            else:
-                if cell.lower() == q.lower():
-                    rows.append((cell, gene.upper(), w))
-        
-
-        return ("gene" if is_gene else "celltype"), q, rows
-
-    async def _extract_weight_intent(self, user_message: str) -> Optional[dict]:
-        """
-        Returns:
-        {"intent": "weight_lookup", "query": "<gene_or_celltype>"}  OR  {"intent": "none"}
-        Never raises; returns None only if Gemini is unavailable and regex can't decide.
-        """
-
-        text = (user_message or "").strip()
-        if not text:
-            return {"intent": "none"}
-        def _clean_query(q: str) -> str:
-            q = (q or "").strip()
-            q = re.sub(r"[?.!,;:]+$", "", q).strip()
-            q = re.sub(r"\s+", " ", q).strip()
-
-            # remove common leading question wrappers
-            q = re.sub(r"^(what\s+is|what\s+are|which\s+is|which\s+are|tell\s+me|show\s+me)\s+", "", q, flags=re.I).strip()
-
-            # remove trailing "cell type"/"celltype"
-            q = re.sub(r"\b(cell\s*type|celltype)\b$", "", q, flags=re.I).strip()
-
-            # remove leading articles
-            q = re.sub(r"^(the|a|an)\s+", "", q, flags=re.I).strip()
-
-            return q
-
-        # ---- (2) Reverse-intent detection ----
-
-        # "which cell type is KCNA1" / "KCNA1 which cell type"
-        m = re.search(r"\bwhich\s+cell\s*type\s+(?:is|does)\s+([A-Za-z0-9-]{2,20})\b", text, re.I)
-        if m:
-            return {"intent": "gene_to_celltype", "query": self._clean_lookup_query(m.group(1))}
-
-        m = re.search(r"\b([A-Za-z0-9-]{2,20})\b.*\bwhich\s+cell\s*type\b", text, re.I)
-        if m:
-            return {"intent": "gene_to_celltype", "query": self._clean_lookup_query(m.group(1))}
-
-        # "which cell type corresponds to SCN2A marker gene"
-        m = re.search(r"\bcell\s*type\b.*\bcorresponds\s+to\b\s*([A-Za-z0-9-]{2,20})\b", text, re.I)
-        if m:
-            return {"intent": "gene_to_celltype", "query": self._clean_lookup_query(m.group(1))}
-
-        # "marker genes for/of <celltype...>"
-        m = re.search(r"\b(marker\s+genes?|markers?)\b.*\b(?:for|of)\s+(.+)$", text, re.I)
-        if m:
-            return {"intent": "celltype_to_markers", "query": self._clean_lookup_query(m.group(2))}
-
-        # "<celltype...> (has|show|with) ... marker genes"
-        m = re.search(r"^(.+?)\s+(?:has|have|show|with)\b.*\b(marker\s+genes?|markers?)\b", text, re.I)
-        if m:
-            return {"intent": "celltype_to_markers", "query": self._clean_lookup_query(m.group(1))}
-
-        # "<celltype...> marker genes"
-        m = re.search(r"^(.+?)\s+\b(marker\s+genes?|markers?)\b", text, re.I)
-        if m:
-            return {"intent": "celltype_to_markers", "query": self._clean_lookup_query(m.group(1))}
-
-
-
-        if re.search(r"\bweight(s)?\b", text, re.IGNORECASE):
-            # 1) If they wrote "for <something>" or "of <something>", grab EVERYTHING after it
-            m = re.search(r"\b(?:for|of)\s+(.+)$", text, re.IGNORECASE)
-            if m:
-                q = m.group(1).strip()
-                q = re.sub(r"[?.!,]+$", "", q).strip()
-                return {"intent": "weight_lookup", "query": q}
-
-            # 2) Prefer gene-like tokens: all caps + numbers/hyphen (CHRM2, EGFR, OLIG2, HLA-DRA)
-            gene_like = re.findall(r"\b[A-Z0-9][A-Z0-9-]{1,19}\b", text)
-            # remove common non-gene words if they match this pattern
-            gene_like = [g for g in gene_like if g not in {"WHAT", "WEIGHT", "WEIGHTS", "FOR", "OF"}]
-            if gene_like:
-                return {"intent": "weight_lookup", "query": gene_like[-1]}  # usually the last token is the gene
-
-            # 3) Last resort: take the last word token (not the first)
-            tokens = re.findall(r"\b[A-Za-z0-9-]{2,20}\b", text)
-            if tokens:
-                return {"intent": "weight_lookup", "query": tokens[-1]}
-
-            return {"intent": "weight_lookup", "query": text}
-
-
-            
-
-        # If Gemini isn't enabled, stop here
-        if not self.gemini_enabled or self.gemini_model is None:
-            return {"intent": "none"}
-
-        # Ask Gemini for STRICT JSON only
-        prompt = f"""
-    You are an intent extractor.
-    Return ONLY valid JSON (no markdown, no extra text).
-
-    Schema:
-    {{"intent": "weight_lookup" | "none", "query": string}}
-
-    Rules:
-    - intent="weight_lookup" only if the user is asking for marker WEIGHTS (or "weight for", "weights of").
-    - query should be the gene symbol (e.g., CHRM2) or a cell type name if present.
-    - If not clearly about weights, intent="none" and query="".
-
-    User message:
-    {text}
-    """.strip()
-
-        try:
-            resp = await asyncio.to_thread(self.gemini_model.generate_content, prompt)
-            raw = (resp.text or "").strip()
-            # extra safety: strip code fences if Gemini ignored instructions
-            raw = raw.strip("`").strip()
-            data = json.loads(raw)
-
-            # normalize
-            intent = (data.get("intent") or "").strip().lower()
-            query = (data.get("query") or "").strip()
-            if intent not in {"weight_lookup", "none"}:
-                return {"intent": "none", "query": ""}
-            return {"intent": intent, "query": query}
-        except Exception as e:
-            print("WEIGHT INTENT EXTRACT ERROR:", repr(e))
-            return {"intent": "none", "query": ""}
-
+    
     def _is_help_intent(self, text: str) -> bool:
         """
         True only when the message is basically asking for help, not just containing the word.
@@ -815,18 +547,42 @@ What would you like to do?"""
             return True
 
         return False
-    def _clean_lookup_query(self, q: str) -> str:
-        q = (q or "").strip()
-        q = re.sub(r"[?.!,;:]+$", "", q).strip()
-        q = re.sub(r"\s+", " ", q).strip()
+   
+    def _maybe_answer_from_analysis_context(self, session: ChatSession, user_message: str) -> Optional[ChatResponse]:
+        """
+        Minimal fallback only when Gemini is unavailable.
+        Keep this intentionally small so conversational analysis stays natural.
+        """
+        ctx = getattr(session, "analysis_context", None)
+        if not ctx:
+            return None
 
-        q = re.sub(r"^(what\s+is|what\s+are|which\s+is|which\s+are|tell\s+me|show\s+me)\s+", "", q, flags=re.I).strip()
-        q = re.sub(r"\b(cell\s*type|celltype)\b$", "", q, flags=re.I).strip()
-        q = re.sub(r"^(the|a|an)\s+", "", q, flags=re.I).strip()
-        q = re.sub(r"\b(marker\s+genes?|markers?|weights?)\b$", "", q, flags=re.I).strip()
+        text = (user_message or "").strip().lower()
+        total_cells = ctx.get("total_cells")
+        cluster_counts = ctx.get("cluster_counts") or {}
+        path = ctx.get("_analysis_summary_path") or ctx.get("analysis_summary_path")
 
+        if "path" in text and ("summary" in text or "analysis" in text):
+            return ChatResponse(
+                message=ChatMessage(role="assistant", content=f"analysis_summary_path = {path}"),
+                session_id=session.session_id,
+            )
 
-        return q
+        if "total cells" in text:
+            return ChatResponse(
+                message=ChatMessage(role="assistant", content=f"total_cells = {total_cells}"),
+                session_id=session.session_id,
+            )
+
+        if "cluster counts" in text:
+            items = sorted(cluster_counts.items(), key=lambda kv: int(kv[0]) if str(kv[0]).isdigit() else str(kv[0]))
+            preview = ", ".join([f"{k}:{v}" for k, v in items[:10]])
+            return ChatResponse(
+                message=ChatMessage(role="assistant", content=f"cluster_counts (first 10): {preview}"),
+                session_id=session.session_id,
+            )
+
+        return None
 
 
 

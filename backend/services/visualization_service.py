@@ -40,18 +40,71 @@ class VisualizationService:
         cluster_resolution: float = 1.0,
         use_hvg: bool = True,
         apply_filtering: bool = True,
+        selected_program: Optional[str] = None,
+        program_name: Optional[str] = None,
     ) -> Dict:
+        # Keep these args for compatibility with the route for now,
+        # but use only one resolved selected program for metadata/UI convenience.
+        requested_program = (selected_program or program_name or "").strip() or None
+
         adata = sc.read_h5ad(file_path)
+        self.logger.info("VAR columns: %s", adata.var.columns.tolist())
+        self.logger.info("var_names sample: %s", list(adata.var_names[:10]))
 
-        if adata.var_names.isna().any() or "_index" in adata.var.columns:
-            adata.var_names = adata.var.get("_index", adata.var_names)
-
-        if "gene_symbol" not in adata.var.columns:
-            adata.var["gene_symbol"] = adata.var_names
-
+        # If raw exists, use it as the working matrix so score_genes runs on genes, not HVG-subset only.
         if adata.raw is not None:
             adata = adata.raw.to_adata()
 
+        # Standardize gene symbols
+        candidate_cols = [
+            "gene_symbol",
+            "gene_symbols",
+            "symbol",
+            "symbols",
+            "gene_name",
+            "gene_names",
+            "features",
+            "feature_name",
+            "var_names",
+        ]
+
+        def looks_like_symbol(series: pd.Series) -> float:
+            vals = series.dropna().astype(str).head(200).tolist()
+            if not vals:
+                return 0.0
+            ok = 0
+            for v in vals:
+                v = v.strip()
+                if not v:
+                    continue
+                if v.upper().startswith("ENSG"):
+                    continue
+                if re.search(r"[A-Za-z]", v):
+                    ok += 1
+            return ok / max(len(vals), 1)
+
+        best_col = None
+        best_score = 0.0
+        for col in candidate_cols:
+            if col in adata.var.columns:
+                score = looks_like_symbol(adata.var[col])
+                if score > best_score:
+                    best_score = score
+                    best_col = col
+
+        ensg_ratio = np.mean(
+            [str(x).upper().startswith("ENSG") for x in adata.var_names[:500]]
+        )
+        if best_col and (ensg_ratio > 0.5 or best_score > 0.5):
+            adata.var["gene_symbol"] = adata.var[best_col].astype(str)
+        else:
+            adata.var["gene_symbol"] = adata.var_names.astype(str)
+
+        adata.var["gene_symbol"] = (
+            adata.var["gene_symbol"].astype(str).str.strip().str.upper()
+        )
+        adata.var_names = pd.Index(adata.var["gene_symbol"].astype(str).values)
+        adata.var_names_make_unique()
         has_umap = "X_umap" in adata.obsm
         has_leiden = "leiden" in adata.obs
 
@@ -72,11 +125,22 @@ class VisualizationService:
                     "Install it with `pip install leidenalg python-igraph`."
                 ) from exc
 
+        # Load supptable once, apply annotations once, build programs once.
         supptable_summary = None
         supptable_meta = {}
-        resolved_source = supptable_path or self._resolve_supptable_url(
-            supptable_url, supptable_doc_id
-        )
+        df = None
+        resolved_source = None
+
+        default_supptable = settings.DATA_DIR / "SuppTable1.xlsx"
+        if supptable_path:
+            resolved_source = supptable_path
+        elif default_supptable.is_file():
+            resolved_source = str(default_supptable)
+        else:
+            resolved_source = self._resolve_supptable_url(
+                supptable_url, supptable_doc_id
+            )
+
         if resolved_source:
             try:
                 df = self._load_supptable(resolved_source)
@@ -84,6 +148,7 @@ class VisualizationService:
                 supptable_meta["supptable_source"] = resolved_source
             except Exception as exc:
                 self.logger.warning("Failed to load supptable: %s", exc)
+                df = None
 
         embedding_meta = {}
         resolved_matches_path = self._resolve_embedding_matches_path(
@@ -97,7 +162,118 @@ class VisualizationService:
             except Exception as exc:
                 self.logger.warning("Failed to apply embedding matches: %s", exc)
 
-        points = self._build_umap_points(adata)
+        programs: Dict[str, List[str]] = {}
+        program_columns: Dict[str, str] = {}
+        program_details: Dict[str, Dict] = {}
+
+        if df is not None:
+            programs = self._build_programs_from_supptable(df)
+        else:
+            self.logger.warning("No supptable loaded; cannot build gene programs.")
+
+        var_set = set(map(str, adata.var_names))
+        candidate_programs = sorted(programs.keys())
+
+        for program in candidate_programs:
+            gene_list = [str(g).strip().upper() for g in programs[program] if g]
+            present = [g for g in gene_list if g in var_set]
+            missing = [g for g in gene_list if g not in var_set]
+
+            self.logger.warning(
+                "PROGRAM_SCORE: program=%s total_genes=%d present=%d missing=%d present_sample=%s missing_sample=%s",
+                program,
+                len(gene_list),
+                len(present),
+                len(missing),
+                present[:10],
+                missing[:10],
+            )
+
+            base_detail = {
+                "total_genes": len(gene_list),
+                "present_genes": len(present),
+                "missing_genes": len(missing),
+                "present_sample": present[:10],
+                "missing_sample": missing[:10],
+                "scored": False,
+                "score_stats": None,
+                "top_clusters": None,
+            }
+
+            if len(present) < 3:
+                self.logger.warning(
+                    "Skipping program '%s' because fewer than 3 genes are present.",
+                    program,
+                )
+                program_details[program] = base_detail
+                continue
+
+            safe_program = re.sub(r"[^A-Za-z0-9_]+", "_", str(program)).strip("_")
+            score_name = f"program__{safe_program}"
+
+            sc.tl.score_genes(
+                adata,
+                gene_list=present,
+                score_name=score_name,
+                use_raw=False,
+            )
+
+            program_columns[program] = score_name
+
+            s = adata.obs[score_name]
+            score_stats = {
+                "min": float(s.min()),
+                "max": float(s.max()),
+                "mean": float(s.mean()),
+                "median": float(s.median()),
+                "p01": float(s.quantile(0.01)),
+                "p05": float(s.quantile(0.05)),
+                "p95": float(s.quantile(0.95)),
+                "p99": float(s.quantile(0.99)),
+            }
+
+            self.logger.warning(
+                "PROGRAM_SCORE_STATS: program=%s min=%.4f max=%.4f mean=%.4f median=%.4f p01=%.4f p05=%.4f p95=%.4f p99=%.4f",
+                program,
+                score_stats["min"],
+                score_stats["max"],
+                score_stats["mean"],
+                score_stats["median"],
+                score_stats["p01"],
+                score_stats["p05"],
+                score_stats["p95"],
+                score_stats["p99"],
+            )
+
+            cluster_means = (
+                adata.obs.groupby("leiden", observed=False)[score_name]
+                .mean()
+                .sort_values(ascending=False)
+            )
+            top_clusters = cluster_means.head(10).round(4).to_dict()
+
+            self.logger.warning(
+                "PROGRAM_CLUSTER_MEANS: program=%s top_clusters=%s",
+                program,
+                top_clusters,
+            )
+
+            program_details[program] = {
+                **base_detail,
+                "scored": True,
+                "score_stats": score_stats,
+                "top_clusters": top_clusters,
+            }
+
+        available_programs = sorted(program_columns.keys())
+
+        resolved_selected_program = None
+        if requested_program and requested_program in program_columns:
+            resolved_selected_program = requested_program
+        elif available_programs:
+            resolved_selected_program = available_programs[0]
+
+        points = self._build_umap_points(adata, program_columns=program_columns)
         cluster_labels = sorted(adata.obs["leiden"].astype(str).unique().tolist())
         cluster_counts = adata.obs["leiden"].astype(str).value_counts().to_dict()
 
@@ -108,6 +284,7 @@ class VisualizationService:
             top_n=de_top_n,
             annotation_data=annotation_data,
         )
+
         de_by_cell_type = None
         if "cell_type" in adata.obs:
             de_by_cell_type = self._rank_genes(
@@ -127,13 +304,19 @@ class VisualizationService:
                 "total_cells": adata.n_obs,
                 "cluster_counts": cluster_counts,
                 "cell_types": supptable_summary,
+                "program_details": program_details,
                 "metadata": {
                     "de_top_n": de_top_n,
                     "cluster_resolution": cluster_resolution,
                     "use_hvg": use_hvg,
                     "apply_filtering": apply_filtering,
                     "de_overlaps": overlap_report,
+                    "available_programs": available_programs,
+                    "program_columns": program_columns,
+                    "selected_program": resolved_selected_program,
+                    "has_program_scores": bool(program_columns),
                     **supptable_meta,
+                    **embedding_meta,
                 },
             }
         )
@@ -155,6 +338,11 @@ class VisualizationService:
                 "apply_filtering": apply_filtering,
                 "de_overlaps": overlap_report,
                 "analysis_summary_path": analysis_summary_path,
+                "available_programs": available_programs,
+                "program_columns": program_columns,
+                "selected_program": resolved_selected_program,
+                "has_program_scores": bool(program_columns),
+                "program_details": program_details,
                 **supptable_meta,
                 **embedding_meta,
             },
@@ -214,6 +402,70 @@ class VisualizationService:
         with urllib.request.urlopen(source) as response:
             content = response.read()
         return pd.read_excel(io.BytesIO(content))
+    
+    
+    def _load_marker_weight_xlsx(self) -> Optional[pd.DataFrame]:
+        xlsx_path = settings.DATA_DIR / "SuppTable1.xlsx"
+        if not xlsx_path.exists():
+            self.logger.warning("SuppTable1.xlsx not found at %s", xlsx_path)
+            return None
+        wb = pd.read_excel(xlsx_path, sheet_name=None)
+        if "LLM markers" in wb:
+            return wb["LLM markers"]
+        return next(iter(wb.values()), None)
+
+    def _build_programs_from_supptable(
+        self,
+        df: pd.DataFrame,
+        min_genes: int = 3,
+        max_genes: int = 100,
+    ) -> Dict[str, List[str]]:
+        cols = {self._normalize(c): c for c in df.columns}
+
+        cell_col = cols.get("celltype") or cols.get("cell_type")
+        gene_col = cols.get("genemarker") or cols.get("markergene") or cols.get("gene")
+        w_col = cols.get("weights") or cols.get("weight")
+
+        if not cell_col or not gene_col:
+            self.logger.warning(
+                "Supptable missing program columns. Found columns: %s",
+                df.columns.tolist(),
+            )
+            return {}
+
+        keep_cols = [cell_col, gene_col] + ([w_col] if w_col else [])
+        working = df[keep_cols].copy()
+        working = working.dropna(subset=[cell_col, gene_col])
+
+        working[cell_col] = working[cell_col].astype(str).str.strip()
+        working[gene_col] = (
+            working[gene_col].astype(str).str.strip().str.upper()
+        )
+
+        if w_col:
+            working[w_col] = pd.to_numeric(working[w_col], errors="coerce").fillna(0.0)
+
+        programs: Dict[str, List[str]] = {}
+
+        for cell_type, grp in working.groupby(cell_col):
+            if w_col:
+                genes = grp.sort_values(w_col, ascending=False)[gene_col].tolist()
+            else:
+                genes = grp[gene_col].tolist()
+
+            seen = set()
+            uniq = []
+            for g in genes:
+                if g and g not in seen:
+                    seen.add(g)
+                    uniq.append(g)
+
+            uniq = uniq[:max_genes]
+            if len(uniq) >= min_genes:
+                programs[str(cell_type)] = uniq
+
+        self.logger.info("Built %d programs from supptable.", len(programs))
+        return programs
 
     def _apply_supptable(self, df: pd.DataFrame, adata) -> Optional[List[Dict]]:
         cell_id_col, cell_type_col, score_col = self._detect_columns(df)
@@ -351,11 +603,15 @@ class VisualizationService:
 
         return True
 
-    def _build_umap_points(self, adata) -> List[Dict]:
+    def _build_umap_points(
+        self,
+        adata,
+        program_columns: Optional[Dict[str, str]] = None,
+    ) -> List[Dict]:
         coords = adata.obsm["X_umap"]
         points = []
+
         cell_types = adata.obs.get("cell_type") if "cell_type" in adata.obs else None
-        scores = adata.obs.get("cell_type_score") if "cell_type_score" in adata.obs else None
         predicted = (
             adata.obs.get("predicted_cell_type")
             if "predicted_cell_type" in adata.obs
@@ -370,35 +626,42 @@ class VisualizationService:
 
         for idx, cell_id in enumerate(adata.obs_names):
             cell_type = None
-            score = None
             predicted_cell_type = None
             predicted_score = None
+
             if cell_types is not None:
                 value = cell_types.iloc[idx]
                 if pd.notna(value):
                     cell_type = str(value)
-            if scores is not None:
-                value = scores.iloc[idx]
-                score = self._safe_float(value)
+
             if predicted is not None:
                 value = predicted.iloc[idx]
                 if pd.notna(value):
                     predicted_cell_type = str(value)
+
             if predicted_scores is not None:
-                value = predicted_scores.iloc[idx]
-                predicted_score = self._safe_float(value)
-            points.append(
-                {
-                    "cell_id": str(cell_id),
-                    "x": float(coords[idx, 0]),
-                    "y": float(coords[idx, 1]),
-                    "cluster": str(clusters.iloc[idx]),
-                    "cell_type": cell_type,
-                    "score": score,
-                    "predicted_cell_type": predicted_cell_type,
-                    "predicted_score": predicted_score,
-                }
-            )
+                predicted_score = self._safe_float(predicted_scores.iloc[idx])
+
+            point = {
+                "cell_id": str(cell_id),
+                "x": float(coords[idx, 0]),
+                "y": float(coords[idx, 1]),
+                "cluster": str(clusters.iloc[idx]),
+                "cell_type": cell_type,
+                "predicted_cell_type": predicted_cell_type,
+                "predicted_score": predicted_score,
+                "program_scores": {},
+            }
+
+            if program_columns:
+                for program_name, col_name in program_columns.items():
+                    if col_name in adata.obs.columns:
+                        point["program_scores"][program_name] = self._safe_float(
+                            adata.obs.iloc[idx][col_name]
+                        )
+
+            points.append(point)
+
         return points
 
     def _rank_genes(
@@ -613,6 +876,7 @@ class VisualizationService:
                 }
             )
         return annotations
+    
     def _load_target_gene_sets(self) -> Dict[str, set]:
         targets: Dict[str, set] = {}
         drug_path = settings.ANNOTATIONS_DIR / "drug.tsv"
@@ -724,4 +988,4 @@ class VisualizationService:
             },
         }
         return debug
-
+    

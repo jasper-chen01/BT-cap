@@ -35,6 +35,7 @@ const PortalPage = () => {
   const [showChat, setShowChat] = useState(false);
   const [activeTab, setActiveTab] = useState('annotation');
   const [vizResults, setVizResults] = useState(null);
+  const [analysisSummaryPath, setAnalysisSummaryPath] = useState('');
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [vizStatus, setVizStatus] = useState(null);
   const [colorMode, setColorMode] = useState('cluster');
@@ -117,21 +118,28 @@ const PortalPage = () => {
 
   const filteredUmapPoints = useMemo(() => {
     if (!vizResults?.umap_points) return [];
+
     const hasCellTypes = vizResults.cell_types?.length;
+    const isProgramMode =
+      colorMode !== 'cluster' && colorMode !== 'cell_type';
+
     return vizResults.umap_points.filter((point) => {
-      if (hasCellTypes) {
-        if (selectedCellTypes.length && !selectedCellTypes.includes(point.cell_type)) {
+      if (hasCellTypes && selectedCellTypes.length) {
+        if (!selectedCellTypes.includes(point.cell_type)) {
           return false;
         }
-        if (minScore > 0) {
-          if (typeof point.score !== 'number' || point.score < minScore) {
-            return false;
-          }
+      }
+
+      if (isProgramMode && minScore > 0) {
+        const score = point.program_scores?.[colorMode];
+        if (typeof score !== 'number' || score < minScore) {
+          return false;
         }
       }
+
       return true;
     });
-  }, [vizResults, selectedCellTypes, minScore]);
+  }, [vizResults, selectedCellTypes, minScore, colorMode]);
 
   const MAX_UMAP_POINTS = 40000;
   const sampledUmapPoints = useMemo(() => {
@@ -144,6 +152,11 @@ const PortalPage = () => {
 
   const colorMap = useMemo(() => {
     if (!vizResults?.umap_points) return {};
+
+    const isProgramMode =
+      colorMode !== 'cluster' && colorMode !== 'cell_type';
+    if (isProgramMode) return {};
+
     const palette = [
       '#38bdf8',
       '#f97316',
@@ -158,6 +171,7 @@ const PortalPage = () => {
       '#e879f9',
       '#84cc16',
     ];
+
     const labels = [];
     vizResults.umap_points.forEach((point) => {
       const label = colorMode === 'cell_type' ? point.cell_type : point.cluster;
@@ -165,6 +179,7 @@ const PortalPage = () => {
         labels.push(label);
       }
     });
+
     return labels.reduce((acc, label, index) => {
       acc[label] = palette[index % palette.length];
       return acc;
@@ -203,6 +218,48 @@ const PortalPage = () => {
     () => activeDeGroups.find((group) => group.group === deGroup),
     [activeDeGroups, deGroup]
   );
+
+  const availablePrograms = useMemo(
+    () => vizResults?.metadata?.available_programs || [],
+    [vizResults]
+  );
+
+  const programScoreRange = useMemo(() => {
+    if (!vizResults?.umap_points?.length) return null;
+
+    const isProgramMode =
+      colorMode !== 'cluster' && colorMode !== 'cell_type';
+    if (!isProgramMode) return null;
+
+    const scores = vizResults.umap_points
+      .map((p) =>
+        typeof p.program_scores?.[colorMode] === 'number'
+          ? p.program_scores[colorMode]
+          : null
+      )
+      .filter((v) => v !== null)
+      .sort((a, b) => a - b);
+
+    if (!scores.length) return null;
+
+    const getPercentile = (arr, q) => {
+      if (!arr.length) return null;
+      const pos = (arr.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      if (arr[base + 1] !== undefined) {
+        return arr[base] + rest * (arr[base + 1] - arr[base]);
+      }
+      return arr[base];
+    };
+
+    return {
+      rawMin: scores[0],
+      rawMax: scores[scores.length - 1],
+      displayMin: getPercentile(scores, 0.05),
+      displayMax: getPercentile(scores, 0.95),
+    };
+  }, [vizResults, colorMode]);
 
   const overlapReport = vizResults?.metadata?.de_overlaps;
   const deRows = useMemo(() => {
@@ -303,6 +360,7 @@ const PortalPage = () => {
     formData.append('file', file);
     formData.append('top_k', topK);
     formData.append('similarity_threshold', threshold);
+    
 
     setIsAnnotating(true);
     showStatus('Processing data vectors...', 'info');
@@ -341,6 +399,8 @@ const PortalPage = () => {
     if (supptableUrl.trim()) {
       formData.append('supptable_url', supptableUrl.trim());
     }
+    
+  
 
     setIsVisualizing(true);
     showVizStatus('Running Scanpy workflow (normalize, cluster, UMAP)...', 'info');
@@ -358,6 +418,17 @@ const PortalPage = () => {
 
       const data = await response.json();
       setVizResults(data);
+      setAnalysisSummaryPath(data?.metadata?.analysis_summary_path || '');
+  
+      const selected = data?.metadata?.selected_program || '';
+      if (selected) {
+        setColorMode(selected);
+      } else if (data?.cell_types?.length) {
+        setColorMode('cell_type');
+      } else {
+        setColorMode('cluster');
+      }
+
       showVizStatus(`Visualization ready: ${data.total_cells} cells processed.`, 'success');
     } catch (error) {
       showVizStatus(`Error: ${error.message}`, 'error');
@@ -409,6 +480,8 @@ const PortalPage = () => {
     link.click();
     window.URL.revokeObjectURL(url);
   };
+
+
 
   return (
     <div
@@ -569,7 +642,7 @@ const PortalPage = () => {
                     className="w-full rounded-lg bg-slate-900/60 border border-slate-700/70 px-3 py-2 text-sm text-slate-200"
                   />
                 </div>
-
+                
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-300">Cluster Resolution</span>
@@ -810,6 +883,11 @@ const PortalPage = () => {
                       {vizResults.cell_types?.length ? (
                         <option value="cell_type">Cell Type</option>
                       ) : null}
+                      {availablePrograms.map((program) => (
+                        <option key={program} value={program}>
+                          {program}
+                        </option>
+                      ))}
                     </select>
                     <span className="text-xs text-slate-400">
                       Showing {sampledUmapPoints.length.toLocaleString()} of{' '}
@@ -839,8 +917,51 @@ const PortalPage = () => {
                         const yScale = (point.y - minY) / (maxY - minY || 1);
                         const x = xScale * umapSize.width;
                         const y = umapSize.height - yScale * umapSize.height;
-                        const label = colorMode === 'cell_type' ? point.cell_type : point.cluster;
-                        const color = label ? colorMap[label] || '#94a3b8' : '#94a3b8';
+
+                        const isProgramMode =
+                          colorMode !== 'cluster' && colorMode !== 'cell_type';
+                        const label =
+                          colorMode === 'cell_type' ? point.cell_type : point.cluster;
+
+                        let color = '#94a3b8';
+
+                        if (isProgramMode) {
+                          const s =
+                            typeof point.program_scores?.[colorMode] === 'number'
+                              ? point.program_scores[colorMode]
+                              : null;
+
+                          if (s !== null && programScoreRange) {
+                            const t =
+                              (s - programScoreRange.displayMin) /
+                              (programScoreRange.displayMax - programScoreRange.displayMin || 1);
+                            const clamped = Math.max(0, Math.min(1, t));
+                            if (clamped < 0.33) {
+                              const local = clamped / 0.33;
+                              const r = Math.round(229 + local * (250 - 229));
+                              const g = Math.round(231 + local * (204 - 231));
+                              const b = Math.round(235 + local * (21 - 235));
+                              color = `rgb(${r},${g},${b})`;
+                            } else if (clamped < 0.66) {
+                              const local = (clamped - 0.33) / 0.33;
+                              const r = Math.round(250 + local * (249 - 250));
+                              const g = Math.round(204 + local * (115 - 204));
+                              const b = Math.round(21 + local * (22 - 21));
+                              color = `rgb(${r},${g},${b})`;
+                            } else {
+                              const local = (clamped - 0.66) / 0.34;
+                              const r = Math.round(249 + local * (220 - 249));
+                              const g = Math.round(115 + local * (38 - 115));
+                              const b = Math.round(22 + local * (38 - 22));
+                              color = `rgb(${r},${g},${b})`;
+                            }
+                          } else {
+                            color = '#cbd5e1';
+                          }
+                        } else {
+                          color = label ? colorMap[label] || '#94a3b8' : '#94a3b8';
+                        }
+
                         return (
                           <circle
                             key={`${point.cell_id}-${point.cluster}`}
@@ -866,23 +987,54 @@ const PortalPage = () => {
                   )}
                 </div>
 
-                <div className="p-4 border-t border-slate-800/70 flex flex-wrap gap-3 text-xs text-slate-300">
-                  {Object.entries(colorMap)
-                    .slice(0, 10)
-                    .map(([label, color]) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <span className="inline-block w-3 h-3 rounded-full" style={{ background: color }} />
-                        <span>{label}</span>
-                      </div>
-                    ))}
-                  {Object.keys(colorMap).length > 10 && (
-                    <span className="text-slate-500">
-                      +{Object.keys(colorMap).length - 10} more
-                    </span>
-                  )}
-                </div>
-              </Card>
+                {colorMode === 'cluster' || colorMode === 'cell_type' ? (
+                  <div className="p-4 border-t border-slate-800/70 flex flex-wrap gap-3 text-xs text-slate-300">
+                    {Object.entries(colorMap)
+                      .slice(0, 10)
+                      .map(([label, color]) => (
+                        <div key={label} className="flex items-center gap-2">
+                          <span
+                            className="inline-block w-3 h-3 rounded-full"
+                            style={{ background: color }}
+                          />
+                          <span>{label}</span>
+                        </div>
+                      ))}
+                    {Object.keys(colorMap).length > 10 && (
+                      <span className="text-slate-500">
+                        +{Object.keys(colorMap).length - 10} more
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 border-t border-slate-800/70 space-y-2 text-xs text-slate-400">
+                    <div>
+                      Continuous gene-program score for{' '}
+                      <span className="text-slate-200">{colorMode}</span>
+                    </div>
 
+                    <div className="flex items-center gap-3">
+                      <span className="text-slate-500">Low</span>
+                      <div
+                        className="h-3 w-48 rounded"
+                        style={{
+                          background:
+                            'linear-gradient(to right, rgb(229,231,235), rgb(250,204,21), rgb(249,115,22), rgb(220,38,38))',
+                        }}
+                      />
+                      <span className="text-slate-500">High</span>
+                    </div>
+
+                    {programScoreRange ? (
+                      <div className="text-slate-500">
+                        Display range: {programScoreRange.displayMin.toFixed(2)} to{' '}
+                        {programScoreRange.displayMax.toFixed(2)} (5th–95th percentile clipped)
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </Card>
+              
               <div className="grid grid-cols-1 gap-6">
                 <Card className="w-full">
                   <div className="flex items-center gap-2 mb-4">
@@ -1150,7 +1302,11 @@ const PortalPage = () => {
         aria-hidden={!showChat}
       >
         <Card className="h-full flex flex-col bg-slate-900/95 border-slate-700/70 shadow-2xl">
-          <ChatPage embedded onClose={() => setShowChat(false)} />
+          <ChatPage
+            embedded
+            onClose={() => setShowChat(false)}
+            analysisSummaryPath={analysisSummaryPath}
+          />
         </Card>
       </div>
     </div>
