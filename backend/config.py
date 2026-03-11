@@ -50,6 +50,22 @@ class Settings:
         / "embs_by_dirks_primary_gbm_combined_2000perCellType_num_classes_13_emb_layer_-1.csv"
     )
     CELLTYPES_PATH: Path = ANNOTATIONS_DIR / "celltypes.csv"
+
+    # Embedding pipeline defaults (override via env if needed)
+    EMBEDDING_DICT_DIR: Path = Path(
+        os.getenv(
+            "EMBEDDING_DICT_DIR",
+            str(BASE_DIR / "CODE_FOR_PREDICTING_CELL_TYPE" / "dict"),
+        )
+    )
+    EMBEDDING_MODELS_ROOT: Path = Path(
+        os.getenv(
+            "EMBEDDING_MODELS_ROOT",
+            str(BASE_DIR / "CODE_FOR_PREDICTING_CELL_TYPE"),
+        )
+    )
+    EMBEDDING_FINETUNE_SUBDIR: str = os.getenv("EMBEDDING_FINETUNE_SUBDIR", "")
+    EMBEDDING_GENE_ID_TYPE: str = os.getenv("EMBEDDING_GENE_ID_TYPE", "symbol")
     
     # Embedding settings
     EMBEDDING_LAYER: int = -1  # Use layer -1 from transformer
@@ -68,5 +84,10 @@ class Settings:
             json_files = sorted(DEFAULT_CREDENTIALS_DIR.glob("*.json"))
             if json_files:
                 self.GOOGLE_APPLICATION_CREDENTIALS = str(json_files[0])
+
+        if not os.getenv("EMBEDDING_FINETUNE_SUBDIR"):
+            self.EMBEDDING_FINETUNE_SUBDIR = (
+                "240605_geneformer_CellClassifier_0_L2048_B12_LR5e-05_LSlinear_WU500_E10_Oadamw_F0"
+            )
 
 settings = Settings()

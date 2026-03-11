@@ -4,12 +4,15 @@ Annotation endpoints
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from typing import Optional
-import tempfile
 import os
 import logging
+from pathlib import Path
+from uuid import uuid4
 
 from backend.models.schemas import AnnotationResponse, CellAnnotation
 from backend.services.annotation_service import AnnotationService
+from backend.services.embedding_pipeline_service import EmbeddingPipelineJobService
+from backend.config import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -38,38 +41,50 @@ async def annotate_cells(
             detail="File must be in h5ad format"
         )
     
-    # Save uploaded file temporarily
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.h5ad') as tmp_file:
+    uploads_dir = settings.DATA_DIR / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    safe_name = Path(file.filename).name
+    suffix = Path(safe_name).suffix or ".h5ad"
+    upload_path = uploads_dir / f"{Path(safe_name).stem}_{uuid4().hex}{suffix}"
+
+    try:
+        content = await file.read()
+        with open(upload_path, "wb") as handle:
+            handle.write(content)
+
+        # Always run standard annotation
+        annotation_service = AnnotationService()
+        result = await annotation_service.annotate_file(
+            str(upload_path),
+            top_k=top_k,
+            similarity_threshold=similarity_threshold
+        )
+
+        # Start embedding pipeline job in the background
+        pipeline_job = None
         try:
-            content = await file.read()
-            tmp_file.write(content)
-            tmp_file_path = tmp_file.name
-            
-            # Annotate using the service
-            annotation_service = AnnotationService()
-            result = await annotation_service.annotate_file(
-                tmp_file_path,
-                top_k=top_k,
-                similarity_threshold=similarity_threshold
-            )
-            
-            return result
-            
-        except Exception as e:
-            logger.exception("Annotation failed for uploaded file")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error processing file: {e!r}"
-            )
-        finally:
-            await file.close()
-            # Clean up temporary file
-            if os.path.exists(tmp_file_path):
-                try:
-                    os.unlink(tmp_file_path)
-                except PermissionError:
-                    # Windows can keep the file locked briefly; ignore cleanup failure.
-                    pass
+            pipeline_service = EmbeddingPipelineJobService()
+            pipeline_job = pipeline_service.start_job(h5ad_path=str(upload_path))
+        except Exception as exc:
+            logger.warning("Failed to start embedding pipeline: %s", exc)
+
+        if result.metadata is None:
+            result.metadata = {}
+        if pipeline_job is not None:
+            result.metadata["embedding_pipeline_job"] = pipeline_job.to_dict()
+        else:
+            result.metadata["embedding_pipeline_job"] = {"status": "not_started"}
+
+        return result
+
+    except Exception as e:
+        logger.exception("Annotation failed for uploaded file")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing file: {e!r}"
+        )
+    finally:
+        await file.close()
 
 
 @router.get("/annotate/status")

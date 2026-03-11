@@ -68,8 +68,10 @@ class EmbeddingPipelineJobService:
         id_col: str = "individual",
     ) -> EmbeddingPipelineJob:
         h5ad_path = os.path.abspath(h5ad_path)
-        dict_dir = os.path.abspath(dict_dir or (BASE_DIR / "backend" / "dict"))
-        models_root = os.path.abspath(models_root or (BASE_DIR / "backend"))
+        dict_dir = os.path.abspath(dict_dir or settings.EMBEDDING_DICT_DIR)
+        models_root = os.path.abspath(models_root or settings.EMBEDDING_MODELS_ROOT)
+        finetune_subdir = finetune_subdir or settings.EMBEDDING_FINETUNE_SUBDIR or None
+        gene_id_type = gene_id_type or settings.EMBEDDING_GENE_ID_TYPE
         trained_embeddings_path = os.path.abspath(
             trained_embeddings_path or settings.TRAINED_EMBEDDINGS_PATH
         )

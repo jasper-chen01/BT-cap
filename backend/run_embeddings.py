@@ -46,6 +46,13 @@ def prepare_h5ad(in_h5ad: str, out_h5ad: str, gene_id_type: str):
         ["group", "isTumor", "n_counts", "filter_pass", "individual"]
     ].copy()
 
+    # anndata reserves "_index" as a column name when writing.
+    if "_index" in adata.var.columns:
+        adata.var = adata.var.drop(columns=["_index"])
+    if adata.raw is not None and "_index" in adata.raw.var.columns:
+        # Raw.var is read-only; drop raw entirely to avoid write_h5ad errors.
+        adata.raw = None
+
     if "ensembl_id" not in adata.var:
         if gene_id_type == "symbol":
             gp = GProfiler(return_dataframe=True)

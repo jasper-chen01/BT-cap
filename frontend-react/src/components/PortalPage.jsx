@@ -378,7 +378,15 @@ const PortalPage = () => {
 
       const data = await response.json();
       setResults(data);
-      showStatus(`Analysis complete: ${data.total_cells} cells annotated.`, 'success');
+      const pipelineJobId = data?.metadata?.embedding_pipeline_job?.job_id;
+      const pipelineStatus = data?.metadata?.embedding_pipeline_job?.status;
+      let message = `Analysis complete: ${data.total_cells} cells annotated.`;
+      if (pipelineJobId) {
+        message += ` Pipeline job started: ${pipelineJobId}.`;
+      } else if (pipelineStatus && pipelineStatus !== 'not_started') {
+        message += ` Pipeline status: ${pipelineStatus}.`;
+      }
+      showStatus(message, 'success');
     } catch (error) {
       showStatus(`Error: ${error.message}`, 'error');
     } finally {
@@ -459,12 +467,14 @@ const PortalPage = () => {
   const downloadResults = () => {
     if (!results) return;
 
-    const headers = ['Cell ID', 'Predicted Annotation', 'Confidence Score', 'Top Matches'];
+    const headers = ['Cell ID', 'Predicted Annotation', 'Confidence Score (%)', 'Top Matches'];
     const rows = results.annotations.map((cell) => [
       cell.cell_id,
       cell.predicted_annotation,
-      cell.confidence_score.toFixed(4),
-      cell.top_matches.map((match) => `${match.annotation}:${match.similarity.toFixed(4)}`).join(';'),
+      (cell.confidence_score * 100).toFixed(6),
+      cell.top_matches
+        .map((match) => `${match.annotation}:${(match.similarity * 100).toFixed(6)}%`)
+        .join(';'),
     ]);
 
     const csvContent = [
@@ -687,6 +697,7 @@ const PortalPage = () => {
             </Card>
           )}
 
+
           {activeTab === 'annotation' && status && (
             <div
               className={`p-4 rounded-xl border flex items-start gap-3 ${
@@ -728,6 +739,7 @@ const PortalPage = () => {
               <p className="text-sm">{vizStatus.message}</p>
             </div>
           )}
+
         </div>
 
         <div className="lg:col-span-2">
@@ -807,13 +819,13 @@ const PortalPage = () => {
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full"
-                                    style={{ width: `${cell.confidence_score * 100}%` }}
-                                  />
+                                <div
+                                  className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full"
+                                  style={{ width: `${cell.confidence_score * 100}%` }}
+                                />
                                 </div>
                                 <span className="text-xs">
-                                  {(cell.confidence_score * 100).toFixed(0)}%
+                                  {(cell.confidence_score * 100).toFixed(6)}%
                                 </span>
                               </div>
                             </td>
