@@ -73,6 +73,7 @@ class DifferentialExpressionGroup(BaseModel):
     scores: Optional[List[Optional[float]]] = None
     logfoldchanges: Optional[List[Optional[float]]] = None
     pvals_adj: Optional[List[Optional[float]]] = None
+    gene_annotations: Optional[List[Dict]] = None
 
 
 class VisualizationResponse(BaseModel):

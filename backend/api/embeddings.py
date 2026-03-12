@@ -1,7 +1,10 @@
 """
 Embedding extraction job endpoints.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+import os
+import pandas as pd
 
 from backend.models.schemas import (
     EmbeddingJobRequest,
@@ -115,5 +118,34 @@ async def get_embedding_pipeline_job_log(job_id: str, tail: int = 200):
     except KeyError:
         raise HTTPException(status_code=404, detail="Job not found")
     return EmbeddingPipelineJobLogResponse(job_id=job_id, tail=tail, log=text)
+
+
+@router.get("/embeddings/pipeline/jobs/{job_id}/matches")
+async def get_embedding_pipeline_job_matches(
+    job_id: str,
+    kind: str = Query("annotated", pattern="^(annotated|raw)$"),
+    limit: Optional[int] = Query(None, ge=1),
+):
+    service = EmbeddingPipelineJobService()
+    job = service.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    path = job.annotated_matches_csv if kind == "annotated" else job.matches_csv
+    if not path:
+        raise HTTPException(status_code=404, detail="Matches file not ready")
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="Matches file not found")
+
+    df = pd.read_csv(path, nrows=limit) if limit else pd.read_csv(path)
+    return {
+        "job_id": job_id,
+        "kind": kind,
+        "columns": list(df.columns),
+        "rows": df.to_dict(orient="records"),
+        "row_count": int(len(df)),
+        "source_path": path,
+        "limited": bool(limit),
+    }
 
 

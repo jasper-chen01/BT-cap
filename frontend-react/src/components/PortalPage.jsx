@@ -34,6 +34,10 @@ const PortalPage = () => {
   const fileInputRef = useRef(null);
   const [showChat, setShowChat] = useState(false);
   const [activeTab, setActiveTab] = useState('annotation');
+  const [annotationView, setAnnotationView] = useState('predictions');
+  const [embeddingMatches, setEmbeddingMatches] = useState(null);
+  const [embeddingMatchesStatus, setEmbeddingMatchesStatus] = useState(null);
+  const [embeddingMatchesJob, setEmbeddingMatchesJob] = useState(null);
   const [vizResults, setVizResults] = useState(null);
   const [analysisSummaryPath, setAnalysisSummaryPath] = useState('');
   const [isVisualizing, setIsVisualizing] = useState(false);
@@ -99,6 +103,10 @@ const PortalPage = () => {
     }
   };
 
+  const showEmbeddingStatus = (message, type = 'info') => {
+    setEmbeddingMatchesStatus({ message, type });
+  };
+
   const showVizStatus = (message, type) => {
     setVizStatus({ message, type });
     if (type === 'success') {
@@ -115,6 +123,72 @@ const PortalPage = () => {
     setMinScore(0);
     setDeGroupby('cluster');
   }, [vizResults]);
+
+  useEffect(() => {
+    if (!results) {
+      setAnnotationView('predictions');
+      setEmbeddingMatches(null);
+      setEmbeddingMatchesJob(null);
+      setEmbeddingMatchesStatus(null);
+      return;
+    }
+    setEmbeddingMatches(null);
+    setEmbeddingMatchesJob(null);
+    setEmbeddingMatchesStatus(null);
+    setAnnotationView('predictions');
+  }, [results]);
+
+  const fetchEmbeddingMatches = async () => {
+    const jobId = results?.metadata?.embedding_pipeline_job?.job_id;
+    if (!jobId) {
+      showEmbeddingStatus('Embedding pipeline has not started yet.', 'error');
+      return;
+    }
+
+    showEmbeddingStatus('Checking embedding pipeline status...', 'info');
+    try {
+      const jobResponse = await fetch(
+        `${API_URL}/embeddings/pipeline/jobs/${jobId}`
+      );
+      if (!jobResponse.ok) {
+        const error = await jobResponse.json();
+        throw new Error(error.detail || 'Failed to load pipeline status');
+      }
+      const job = await jobResponse.json();
+      setEmbeddingMatchesJob(job);
+
+      if (job.status !== 'succeeded') {
+        showEmbeddingStatus(
+          `Embedding pipeline ${job.status}. Check back once it finishes.`,
+          job.status === 'failed' ? 'error' : 'info'
+        );
+        return;
+      }
+
+      const matchesResponse = await fetch(
+        `${API_URL}/embeddings/pipeline/jobs/${jobId}/matches?kind=annotated`
+      );
+      if (!matchesResponse.ok) {
+        const rawResponse = await fetch(
+          `${API_URL}/embeddings/pipeline/jobs/${jobId}/matches?kind=raw`
+        );
+        if (!rawResponse.ok) {
+          const error = await rawResponse.json();
+          throw new Error(error.detail || 'Failed to load embedding matches');
+        }
+        const rawData = await rawResponse.json();
+        setEmbeddingMatches(rawData);
+        showEmbeddingStatus('Loaded raw embedding matches.', 'success');
+        return;
+      }
+
+      const data = await matchesResponse.json();
+      setEmbeddingMatches(data);
+      showEmbeddingStatus('Embedding matches loaded.', 'success');
+    } catch (error) {
+      showEmbeddingStatus(`Error: ${error.message}`, 'error');
+    }
+  };
 
   const filteredUmapPoints = useMemo(() => {
     if (!vizResults?.umap_points) return [];
@@ -218,6 +292,12 @@ const PortalPage = () => {
     () => activeDeGroups.find((group) => group.group === deGroup),
     [activeDeGroups, deGroup]
   );
+
+  useEffect(() => {
+    if (annotationView === 'embeddings') {
+      fetchEmbeddingMatches();
+    }
+  }, [annotationView]);
 
   const availablePrograms = useMemo(
     () => vizResults?.metadata?.available_programs || [],
@@ -487,6 +567,31 @@ const PortalPage = () => {
     const link = document.createElement('a');
     link.href = url;
     link.download = `annotations_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const downloadEmbeddingMatches = () => {
+    if (!embeddingMatches?.rows?.length) return;
+    const headers =
+      embeddingMatches.columns || Object.keys(embeddingMatches.rows[0]);
+    const rows = embeddingMatches.rows.map((row) =>
+      headers.map((header) => {
+        const value = row?.[header];
+        return value === null || value === undefined ? '' : String(value);
+      })
+    );
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((value) => `"${value}"`).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `embedding_matches_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     window.URL.revokeObjectURL(url);
   };
@@ -782,61 +887,170 @@ const PortalPage = () => {
                 )}
 
                 <Card className="overflow-hidden p-0">
-                  <div className="p-4 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/50">
-                    <h3 className="font-semibold text-white">Annotation Results</h3>
-                    <Button
-                      variant="secondary"
-                      onClick={downloadResults}
-                      icon={Download}
-                      className="py-1.5 px-4 text-sm"
-                    >
-                      Export CSV
-                    </Button>
+                  <div className="p-4 border-b border-slate-700/50 flex flex-wrap justify-between items-center gap-4 bg-slate-800/50">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="font-semibold text-white">
+                        {annotationView === 'predictions'
+                          ? 'Annotation Results'
+                          : 'Embedding Matches'}
+                      </h3>
+                      <div className="flex gap-2 bg-slate-900/60 border border-slate-700/70 p-1 rounded-full">
+                        <button
+                          type="button"
+                          onClick={() => setAnnotationView('predictions')}
+                          className={`px-3 py-1 rounded-full text-xs transition ${
+                            annotationView === 'predictions'
+                              ? 'bg-indigo-500 text-white'
+                              : 'text-slate-300 hover:text-white'
+                          }`}
+                        >
+                          Annotations
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAnnotationView('embeddings')}
+                          className={`px-3 py-1 rounded-full text-xs transition ${
+                            annotationView === 'embeddings'
+                              ? 'bg-indigo-500 text-white'
+                              : 'text-slate-300 hover:text-white'
+                          }`}
+                        >
+                          Embeddings
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {annotationView === 'predictions' ? (
+                        <Button
+                          variant="secondary"
+                          onClick={downloadResults}
+                          icon={Download}
+                          className="py-1.5 px-4 text-sm"
+                        >
+                          Export CSV
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant="secondary"
+                            onClick={fetchEmbeddingMatches}
+                            className="py-1.5 px-4 text-sm"
+                          >
+                            Refresh
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            onClick={downloadEmbeddingMatches}
+                            icon={Download}
+                            className="py-1.5 px-4 text-sm"
+                            disabled={!embeddingMatches?.rows?.length}
+                          >
+                            Export CSV
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="overflow-x-auto max-h-[600px]">
-                    <table className="w-full text-left text-sm text-slate-300">
-                      <thead className="bg-slate-900/50 text-slate-400 sticky top-0 z-10">
-                        <tr>
-                          <th className="p-4 font-medium">Cell ID</th>
-                          <th className="p-4 font-medium">Prediction</th>
-                          <th className="p-4 font-medium">Confidence</th>
-                          <th className="p-4 font-medium hidden sm:table-cell">Top Matches</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-700/50">
-                        {results.annotations.slice(0, 100).map((cell) => (
-                          <tr
-                            key={cell.cell_id}
-                            className="hover:bg-slate-700/30 transition-colors"
-                          >
-                            <td className="p-4 font-mono text-xs text-slate-500">
-                              {cell.cell_id}
-                            </td>
-                            <td className="p-4 font-medium text-white">
-                              {cell.predicted_annotation}
-                            </td>
-                            <td className="p-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full"
-                                  style={{ width: `${cell.confidence_score * 100}%` }}
-                                />
-                                </div>
-                                <span className="text-xs">
-                                  {(cell.confidence_score * 100).toFixed(6)}%
-                                </span>
-                              </div>
-                            </td>
-                            <td className="p-4 text-xs text-slate-500 hidden sm:table-cell">
-                              {cell.top_matches.slice(0, 2).map((m) => m.annotation).join(', ')}
-                            </td>
+                  {annotationView === 'predictions' ? (
+                    <div className="overflow-x-auto max-h-[600px]">
+                      <table className="w-full text-left text-sm text-slate-300">
+                        <thead className="bg-slate-900/50 text-slate-400 sticky top-0 z-10">
+                          <tr>
+                            <th className="p-4 font-medium">Cell ID</th>
+                            <th className="p-4 font-medium">Prediction</th>
+                            <th className="p-4 font-medium">Confidence</th>
+                            <th className="p-4 font-medium hidden sm:table-cell">Top Matches</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/50">
+                          {results.annotations.slice(0, 100).map((cell) => (
+                            <tr
+                              key={cell.cell_id}
+                              className="hover:bg-slate-700/30 transition-colors"
+                            >
+                              <td className="p-4 font-mono text-xs text-slate-500">
+                                {cell.cell_id}
+                              </td>
+                              <td className="p-4 font-medium text-white">
+                                {cell.predicted_annotation}
+                              </td>
+                              <td className="p-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full"
+                                      style={{ width: `${cell.confidence_score * 100}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs">
+                                    {(cell.confidence_score * 100).toFixed(6)}%
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="p-4 text-xs text-slate-500 hidden sm:table-cell">
+                                {cell.top_matches.slice(0, 2).map((m) => m.annotation).join(', ')}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="p-4 space-y-4">
+                      {embeddingMatchesStatus && (
+                        <div
+                          className={`p-3 rounded-xl border text-sm ${
+                            embeddingMatchesStatus.type === 'error'
+                              ? 'bg-red-500/10 border-red-500/20 text-red-200'
+                              : embeddingMatchesStatus.type === 'success'
+                              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'
+                              : 'bg-blue-500/10 border-blue-500/20 text-blue-200'
+                          }`}
+                        >
+                          {embeddingMatchesStatus.message}
+                        </div>
+                      )}
+                      {embeddingMatches?.rows?.length ? (
+                        <div className="overflow-x-auto max-h-[600px] border border-slate-700/50 rounded-xl">
+                          <table className="w-full text-left text-sm text-slate-300">
+                            <thead className="bg-slate-900/60 text-slate-400 sticky top-0 z-10">
+                              <tr>
+                                {embeddingMatches.columns.map((col) => (
+                                  <th key={col} className="p-3 font-medium">
+                                    {col}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50">
+                              {embeddingMatches.rows.map((row, index) => (
+                                <tr
+                                  key={index}
+                                  className="hover:bg-slate-700/30 transition-colors"
+                                >
+                                  {embeddingMatches.columns.map((col) => (
+                                    <td key={`${col}-${index}`} className="p-3 text-xs">
+                                      {row?.[col] ?? '—'}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-400">
+                          Embedding matches will appear here once the pipeline finishes.
+                        </p>
+                      )}
+                      {embeddingMatchesJob?.status && (
+                        <p className="text-xs text-slate-500">
+                          Pipeline status: {embeddingMatchesJob.status}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </Card>
               </div>
             )

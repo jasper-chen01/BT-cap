@@ -5,8 +5,16 @@ import numpy as np
 import pandas as pd
 
 
+def _read_csv_safe(path: str, **kwargs) -> pd.DataFrame:
+    try:
+        return pd.read_csv(path, **kwargs)
+    except pd.errors.ParserError:
+        # Fallback for malformed rows or mixed delimiters.
+        return pd.read_csv(path, engine="python", on_bad_lines="warn", **kwargs)
+
+
 def load_embeddings(path: str, id_col: str):
-    df = pd.read_csv(path)
+    df = _read_csv_safe(path)
     # Prefer explicit cell id column if present
     if id_col in df.columns:
         df = df.set_index(id_col)
@@ -62,7 +70,7 @@ def main():
 
     results = []
     # Read new embeddings in chunks to limit memory
-    for chunk in pd.read_csv(args.input, chunksize=args.chunk_size):
+    for chunk in _read_csv_safe(args.input, chunksize=args.chunk_size):
         first_col = chunk.columns[0]
         if args.id_col in chunk.columns:
             chunk = chunk.set_index(args.id_col)
