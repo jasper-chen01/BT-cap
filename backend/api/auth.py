@@ -24,13 +24,22 @@ async def signup(payload: SignUpRequest):
 @router.post("/auth/signin", response_model=AuthResponse)
 async def signin(payload: SignInRequest):
     """Sign in an existing user."""
-    store = FirestoreService()
-    user_id, user = store.get_user_by_email(payload.email)
-    if not user or not user_id:
-        raise HTTPException(status_code=404, detail="Account not found")
+    # Firestore sign-in (disabled — restore when re-enabling real auth):
+    # store = FirestoreService()
+    # user_id, user = store.get_user_by_email(payload.email)
+    # if not user or not user_id:
+    #     raise HTTPException(status_code=404, detail="Account not found")
+    # if not store.verify_password(payload.password, user.get("password_hash", "")):
+    #     raise HTTPException(status_code=401, detail="Invalid credentials")
+    # return AuthResponse(user_id=user_id, name=user.get("name", ""), email=user["email"])
 
-    if not store.verify_password(payload.password, user.get("password_hash", "")):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    return AuthResponse(user_id=user_id, name=user.get("name", ""), email=user["email"])
+    DEMO_EMAIL = "ey35@rice.edu"
+    DEMO_PASSWORD = "12121212"
+    if payload.email == DEMO_EMAIL and payload.password == DEMO_PASSWORD:
+        return AuthResponse(
+            user_id="demo-ey35",
+            name="Demo User",
+            email=DEMO_EMAIL,
+        )
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
