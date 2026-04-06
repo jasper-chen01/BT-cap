@@ -6,6 +6,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import math
 import os
 import re
 import urllib.request
@@ -16,9 +17,28 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import scanpy as sc
+from scipy import stats
 
 from backend.config import settings
 from backend.services.supptable_service import SupptableService
+
+
+def _sanitize_for_json(obj):
+    """Replace inf/nan and NumPy scalars so json.dumps / FastAPI responses stay valid."""
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_for_json(v) for v in obj]
+    if isinstance(obj, np.ndarray):
+        return _sanitize_for_json(obj.tolist())
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating, float)):
+        f = float(obj)
+        return f if math.isfinite(f) else None
+    if isinstance(obj, (np.bool_,)):
+        return bool(obj)
+    return obj
 
 
 class VisualizationService:
@@ -162,6 +182,10 @@ class VisualizationService:
             except Exception as exc:
                 self.logger.warning("Failed to apply embedding matches: %s", exc)
 
+        # Use embedding predictions as cell_type when supptable (or file) did not provide labels,
+        # so UMAP coloring and DE-by-cell-type work without a separate annotate + supptable step.
+        self._coalesce_cell_type_obs(adata)
+
         programs: Dict[str, List[str]] = {}
         program_columns: Dict[str, str] = {}
         program_details: Dict[str, Dict] = {}
@@ -222,14 +246,14 @@ class VisualizationService:
 
             s = adata.obs[score_name]
             score_stats = {
-                "min": float(s.min()),
-                "max": float(s.max()),
-                "mean": float(s.mean()),
-                "median": float(s.median()),
-                "p01": float(s.quantile(0.01)),
-                "p05": float(s.quantile(0.05)),
-                "p95": float(s.quantile(0.95)),
-                "p99": float(s.quantile(0.99)),
+                "min": self._safe_float(s.min()),
+                "max": self._safe_float(s.max()),
+                "mean": self._safe_float(s.mean()),
+                "median": self._safe_float(s.median()),
+                "p01": self._safe_float(s.quantile(0.01)),
+                "p05": self._safe_float(s.quantile(0.05)),
+                "p95": self._safe_float(s.quantile(0.95)),
+                "p99": self._safe_float(s.quantile(0.99)),
             }
 
             self.logger.warning(
@@ -321,7 +345,7 @@ class VisualizationService:
             }
         )
 
-        return {
+        payload = {
             "total_cells": adata.n_obs,
             "umap_points": points,
             "cluster_labels": cluster_labels,
@@ -347,6 +371,7 @@ class VisualizationService:
                 **embedding_meta,
             },
         }
+        return _sanitize_for_json(payload)
 
     def _write_analysis_summary(self, summary: Dict) -> str:
         analysis_root = settings.DATA_DIR / "analysis_runs"
@@ -354,7 +379,7 @@ class VisualizationService:
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         summary_path = analysis_root / f"visualization_summary_{timestamp}.json"
         with open(summary_path, "w", encoding="utf-8") as handle:
-            json.dump(summary, handle, indent=2)
+            json.dump(_sanitize_for_json(summary), handle, indent=2)
         return str(summary_path)
 
     def _preprocess(
@@ -500,7 +525,7 @@ class VisualizationService:
             if "cell_type_score" in adata.obs:
                 scores = adata.obs.loc[adata.obs["cell_type"] == name, "cell_type_score"]
                 if scores.notna().any():
-                    avg_score = float(scores.mean())
+                    avg_score = self._safe_float(scores.mean())
             summary.append(
                 {
                     "name": str(name),
@@ -603,6 +628,19 @@ class VisualizationService:
 
         return True
 
+    def _coalesce_cell_type_obs(self, adata) -> None:
+        """Fill `cell_type` from `predicted_cell_type` where missing."""
+        if "predicted_cell_type" not in adata.obs.columns:
+            return
+        pred = pd.Series(adata.obs["predicted_cell_type"], dtype="string")
+        pred = pred.mask(pred.str.strip() == "", pd.NA)
+        if "cell_type" not in adata.obs.columns:
+            adata.obs["cell_type"] = pred
+            return
+        ct = pd.Series(adata.obs["cell_type"], dtype="string")
+        ct = ct.mask(ct.str.strip() == "", pd.NA)
+        adata.obs["cell_type"] = ct.where(ct.notna(), pred)
+
     def _build_umap_points(
         self,
         adata,
@@ -642,10 +680,13 @@ class VisualizationService:
             if predicted_scores is not None:
                 predicted_score = self._safe_float(predicted_scores.iloc[idx])
 
+            x_coord = self._safe_float(coords[idx, 0])
+            y_coord = self._safe_float(coords[idx, 1])
+
             point = {
                 "cell_id": str(cell_id),
-                "x": float(coords[idx, 0]),
-                "y": float(coords[idx, 1]),
+                "x": x_coord if x_coord is not None else 0.0,
+                "y": y_coord if y_coord is not None else 0.0,
                 "cluster": str(clusters.iloc[idx]),
                 "cell_type": cell_type,
                 "predicted_cell_type": predicted_cell_type,
@@ -664,6 +705,153 @@ class VisualizationService:
 
         return points
 
+    def _expression_log2fc_for_genes(
+        self, adata, groupby: str, group_id: str, genes: List[str]
+    ) -> List[Optional[float]]:
+        """
+        log2 fold change from pseudocount-protected means. The Scanpy workflow stores
+        log1p-normalized counts in ``X``; averaging in log space then taking log2 of
+        a ratio often yields NaN (e.g. negative means on corrected data). Here we use
+        mean(expm1(X)) per group — on log1p data this approximates mean raw scale, so
+        log2((mean_g + eps) / (mean_r + eps)) is finite and comparable to standard DE FC.
+        """
+        obs_groups = adata.obs[groupby].astype(str)
+        mask = (obs_groups == str(group_id)).to_numpy()
+        ref = ~mask
+        if not mask.any() or not ref.any():
+            return [None] * len(genes)
+        eps = 1e-9
+        out: List[Optional[float]] = []
+        for gene in genes:
+            idx_arr = adata.var_names.get_indexer([str(gene)])
+            if idx_arr[0] < 0:
+                out.append(None)
+                continue
+            col = adata.X[:, int(idx_arr[0])]
+            if hasattr(col, "toarray"):
+                v = col.toarray().ravel()
+            else:
+                v = np.asarray(col).ravel()
+            v = v.astype(np.float64, copy=False)
+            vmin = float(np.min(v))
+            vmax = float(np.max(v))
+            # After ``log1p``, values are small and non-negative; expm1 undoes log1p for a
+            # pseudo-count mean. Skip expm1 for likely raw/linear or strongly corrected X.
+            if vmin >= -0.05 and vmax <= 40.0:
+                v_in = np.expm1(np.maximum(v[mask], 0.0))
+                v_out = np.expm1(np.maximum(v[ref], 0.0))
+            else:
+                v_in = np.maximum(v[mask], 0.0)
+                v_out = np.maximum(v[ref], 0.0)
+            mg = float(np.mean(v_in))
+            mr = float(np.mean(v_out))
+            if not np.isfinite(mg) or not np.isfinite(mr):
+                out.append(None)
+                continue
+            num = max(mg, 0.0) + eps
+            den = max(mr, 0.0) + eps
+            ratio = num / den
+            if ratio <= 0:
+                out.append(None)
+                continue
+            lfc = float(np.log2(ratio))
+            out.append(lfc if np.isfinite(lfc) else None)
+        return out
+
+    def _mannwhitney_p_for_gene(
+        self, adata, groupby: str, group_id: str, gene: str
+    ) -> Optional[float]:
+        idx_arr = adata.var_names.get_indexer([str(gene)])
+        if idx_arr[0] < 0:
+            return None
+        col = adata.X[:, int(idx_arr[0])]
+        if hasattr(col, "toarray"):
+            v = col.toarray().ravel()
+        else:
+            v = np.asarray(col).ravel()
+        obs_groups = adata.obs[groupby].astype(str)
+        mask = obs_groups == str(group_id)
+        g_in = v[mask.to_numpy()]
+        g_out = v[(~mask).to_numpy()]
+        if len(g_in) < 3 or len(g_out) < 3:
+            return None
+        try:
+            _, p = stats.mannwhitneyu(g_in, g_out, alternative="two-sided")
+            return float(p) if np.isfinite(p) else None
+        except ValueError:
+            return None
+
+    def _backfill_de_statistics(
+        self,
+        adata,
+        groupby: str,
+        group_id: str,
+        genes: List[str],
+        group_logfold: Optional[List[Optional[float]]],
+        group_pvals_adj: Optional[List[Optional[float]]],
+        group_pvals_unc: Optional[List[Optional[float]]],
+    ) -> Tuple[List[Optional[float]], List[Optional[float]]]:
+        """
+        Wilcoxon logFC from Scanpy is often NaN when group means are zero; recompute from
+        observed means. Fill missing adjusted p-values from uncorrected Scanpy p-values,
+        then Mann--Whitney, and Benjamini--Hochberg on values that were not already
+        Scanpy FDR-adjusted.
+        """
+        n = len(genes)
+        lfc_in = list(group_logfold or [])[:n]
+        if len(lfc_in) < n:
+            lfc_in.extend([None] * (n - len(lfc_in)))
+        computed_lfc = self._expression_log2fc_for_genes(adata, groupby, group_id, genes)
+        merged_lfc: List[Optional[float]] = []
+        for i in range(n):
+            v = lfc_in[i] if i < len(lfc_in) else None
+            if v is not None and np.isfinite(v):
+                merged_lfc.append(v)
+            else:
+                merged_lfc.append(computed_lfc[i] if i < len(computed_lfc) else None)
+
+        def _get(lst: Optional[List[Optional[float]]], i: int) -> Optional[float]:
+            if lst is None or i >= len(lst):
+                return None
+            return lst[i]
+
+        p_out: List[Optional[float]] = [None] * n
+        scanpy_adj_indices = set()
+        for i in range(n):
+            pa = _get(group_pvals_adj, i)
+            if pa is not None and np.isfinite(pa):
+                p_out[i] = pa
+                scanpy_adj_indices.add(i)
+                continue
+            pu = _get(group_pvals_unc, i)
+            if pu is not None and np.isfinite(pu):
+                p_out[i] = pu
+
+        for i in range(n):
+            if p_out[i] is None or not np.isfinite(p_out[i]):
+                p_out[i] = self._mannwhitney_p_for_gene(
+                    adata, groupby, group_id, genes[i]
+                )
+
+        to_adjust = [
+            i
+            for i in range(n)
+            if i not in scanpy_adj_indices
+            and p_out[i] is not None
+            and np.isfinite(p_out[i])
+        ]
+        if to_adjust:
+            batch = np.array([float(p_out[i]) for i in to_adjust], dtype=float)
+            batch = np.clip(batch, 0.0, 1.0)
+            try:
+                adj_batch = stats.false_discovery_control(batch)
+            except Exception:
+                adj_batch = np.minimum(batch * len(batch), 1.0)
+            for j, i in enumerate(to_adjust):
+                p_out[i] = float(adj_batch[j])
+
+        return merged_lfc, p_out
+
     def _rank_genes(
         self,
         adata,
@@ -676,6 +864,9 @@ class VisualizationService:
         series = adata.obs[groupby]
         if series.dropna().nunique() < 2:
             return None
+
+        if not annotation_data:
+            annotation_data = self._load_ligand_receptor_drug_annotations()
 
         sc.tl.rank_genes_groups(adata, groupby=groupby, method="wilcoxon", use_raw=False)
         result = adata.uns.get("rank_genes_groups", {})
@@ -704,13 +895,10 @@ class VisualizationService:
         scores = result.get("scores")
         logfold = result.get("logfoldchanges")
         pvals_adj = result.get("pvals_adj")
-        ligand_genes = set()
-        receptor_genes = set()
-        drug_targets = {}
-        if annotation_data:
-            ligand_genes = annotation_data.get("ligands", set())
-            receptor_genes = annotation_data.get("receptors", set())
-            drug_targets = annotation_data.get("drug_targets", {})
+        pvals_unc = result.get("pvals")
+        ligand_genes = annotation_data.get("ligands", set())
+        receptor_genes = annotation_data.get("receptors", set())
+        drug_targets = annotation_data.get("drug_targets", {})
 
         for group in groups:
             raw_genes = np.asarray(names[group])[:top_n].tolist()
@@ -719,7 +907,8 @@ class VisualizationService:
                 genes = [gene_symbol_map.get(gene, gene) for gene in genes]
             group_scores = None
             group_logfold = None
-            group_pvals = None
+            group_pvals_adj_list = None
+            group_pvals_unc_list = None
 
             if scores is not None:
                 group_scores = [
@@ -730,25 +919,37 @@ class VisualizationService:
                     self._safe_float(x) for x in np.asarray(logfold[group])[:top_n].tolist()
                 ]
             if pvals_adj is not None:
-                group_pvals = [
+                group_pvals_adj_list = [
                     self._safe_float(x) for x in np.asarray(pvals_adj[group])[:top_n].tolist()
                 ]
+            if pvals_unc is not None:
+                group_pvals_unc_list = [
+                    self._safe_float(x) for x in np.asarray(pvals_unc[group])[:top_n].tolist()
+                ]
+
+            merged_logfc, merged_pvals = self._backfill_de_statistics(
+                adata,
+                groupby,
+                str(group),
+                genes,
+                group_logfold,
+                group_pvals_adj_list,
+                group_pvals_unc_list,
+            )
 
             output.append(
                 {
                     "group": str(group),
                     "genes": genes,
                     "scores": group_scores,
-                    "logfoldchanges": group_logfold,
-                    "pvals_adj": group_pvals,
+                    "logfoldchanges": merged_logfc,
+                    "pvals_adj": merged_pvals,
                     "gene_annotations": self._build_gene_annotations(
                         genes,
                         ligand_genes=ligand_genes,
                         receptor_genes=receptor_genes,
                         drug_targets=drug_targets,
-                    )
-                    if annotation_data
-                    else None,
+                    ),
                 }
             )
 

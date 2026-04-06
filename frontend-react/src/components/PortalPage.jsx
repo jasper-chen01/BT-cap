@@ -13,6 +13,7 @@ import {
   Layers,
   Palette,
   Play,
+  Radio,
   Settings,
   Upload,
 } from 'lucide-react';
@@ -21,6 +22,16 @@ import Card from './ui/Card';
 import ChatPage from './ChatPage';
 
 const API_URL = 'http://localhost:8000/api';
+
+const EPHYS_FILE_EXTENSIONS = [
+  '.csv',
+  '.abf',
+  '.nex',
+  '.mat',
+  '.nwb',
+  '.edf',
+  '.h5',
+];
 
 const PortalPage = () => {
   const [file, setFile] = useState(null);
@@ -31,6 +42,7 @@ const PortalPage = () => {
   const [results, setResults] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnnotating, setIsAnnotating] = useState(false);
+  const [isGeneSetScoring, setIsGeneSetScoring] = useState(false);
   const fileInputRef = useRef(null);
   const [showChat, setShowChat] = useState(false);
   const [activeTab, setActiveTab] = useState('annotation');
@@ -54,6 +66,17 @@ const PortalPage = () => {
   const [deSortBy, setDeSortBy] = useState('score');
   const [deSortDir, setDeSortDir] = useState('desc');
   const [deGeneSearch, setDeGeneSearch] = useState('');
+
+  const [ephysFile, setEphysFile] = useState(null);
+  const [ephysFileName, setEphysFileName] = useState('');
+  const [ephysDragging, setEphysDragging] = useState(false);
+  const [ephysStatus, setEphysStatus] = useState(null);
+  const [ephysSamplingRateKhz, setEphysSamplingRateKhz] = useState(20);
+  const [ephysFilterLowHz, setEphysFilterLowHz] = useState(300);
+  const [ephysFilterHighHz, setEphysFilterHighHz] = useState(3000);
+  const [ephysSnrThreshold, setEphysSnrThreshold] = useState(4);
+  const [ephysShowPreview, setEphysShowPreview] = useState(false);
+  const ephysInputRef = useRef(null);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -111,6 +134,13 @@ const PortalPage = () => {
     setVizStatus({ message, type });
     if (type === 'success') {
       setTimeout(() => setVizStatus(null), 6000);
+    }
+  };
+
+  const showEphysStatus = (message, type) => {
+    setEphysStatus({ message, type });
+    if (type === 'success') {
+      setTimeout(() => setEphysStatus(null), 6000);
     }
   };
 
@@ -342,6 +372,15 @@ const PortalPage = () => {
   }, [vizResults, colorMode]);
 
   const overlapReport = vizResults?.metadata?.de_overlaps;
+
+  const formatDePadj = (p) => {
+    if (p == null || Number.isNaN(p)) return '—';
+    if (p === 0) return '0';
+    if (p < 1e-6) return p.toExponential(2);
+    if (p < 0.001) return '<0.001';
+    return p.toFixed(4);
+  };
+
   const deRows = useMemo(() => {
     if (!activeDeGroup) return [];
     const rows = activeDeGroup.genes.map((gene, index) => {
@@ -352,6 +391,7 @@ const PortalPage = () => {
       const drugCount = Array.isArray(drugTargets) ? drugTargets.length : 0;
       const score = activeDeGroup.scores?.[index];
       const logfc = activeDeGroup.logfoldchanges?.[index];
+      const padj = activeDeGroup.pvals_adj?.[index];
       return {
         gene,
         index,
@@ -360,8 +400,9 @@ const PortalPage = () => {
         hasReceptor,
         drugTargets,
         drugCount,
-        score: typeof score === 'number' ? score : null,
-        logfc: typeof logfc === 'number' ? logfc : null,
+        score: typeof score === 'number' && !Number.isNaN(score) ? score : null,
+        logfc: typeof logfc === 'number' && !Number.isNaN(logfc) ? logfc : null,
+        padj: typeof padj === 'number' && !Number.isNaN(padj) ? padj : null,
       };
     });
 
@@ -377,12 +418,17 @@ const PortalPage = () => {
     const sortMultiplier = deSortDir === 'asc' ? 1 : -1;
     const scoreValue = (value) =>
       typeof value === 'number' && !Number.isNaN(value) ? value : -Infinity;
+    const pvalSort = (value) =>
+      typeof value === 'number' && !Number.isNaN(value) ? value : Infinity;
     return filtered.sort((a, b) => {
       if (deSortBy === 'gene') {
         return sortMultiplier * a.gene.localeCompare(b.gene);
       }
       if (deSortBy === 'logfc') {
         return sortMultiplier * (scoreValue(a.logfc) - scoreValue(b.logfc));
+      }
+      if (deSortBy === 'padj') {
+        return sortMultiplier * (pvalSort(a.padj) - pvalSort(b.padj));
       }
       if (deSortBy === 'drug_count') {
         return sortMultiplier * (a.drugCount - b.drugCount);
@@ -423,11 +469,86 @@ const PortalPage = () => {
     }
   };
 
+  const processEphysFile = (selectedFile) => {
+    if (!selectedFile) return;
+    const lower = selectedFile.name.toLowerCase();
+    const ok = EPHYS_FILE_EXTENSIONS.some((ext) => lower.endsWith(ext));
+    if (ok) {
+      setEphysFile(selectedFile);
+      setEphysFileName(selectedFile.name);
+      setEphysShowPreview(false);
+      showEphysStatus('Recording file selected.', 'success');
+    } else {
+      showEphysStatus(
+        `Unsupported format. Use: ${EPHYS_FILE_EXTENSIONS.join(', ')}`,
+        'error',
+      );
+    }
+  };
+
+  const handleEphysFileChange = (event) => {
+    const selectedFile = event.target.files?.[0] || null;
+    processEphysFile(selectedFile);
+  };
+
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
+    setEphysDragging(false);
     const droppedFile = event.dataTransfer.files?.[0] || null;
-    processFile(droppedFile);
+    if (activeTab === 'electrophysiology') {
+      processEphysFile(droppedFile);
+    } else {
+      processFile(droppedFile);
+    }
+  };
+
+  const runEphysAnalysis = () => {
+    if (!ephysFile) {
+      showEphysStatus('Please select a recording file first.', 'error');
+      return;
+    }
+    showEphysStatus(
+      'Preview only: connect the electrophysiology API to run real analyses.',
+      'info',
+    );
+    setEphysShowPreview(true);
+  };
+
+  const buildVisualizeFormData = () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('de_top_n', deTopN);
+    formData.append('cluster_resolution', clusterResolution);
+    if (supptableUrl.trim()) {
+      formData.append('supptable_url', supptableUrl.trim());
+    }
+    return formData;
+  };
+
+  const applyVisualizationResult = (data) => {
+    setVizResults(data);
+    setAnalysisSummaryPath(data?.metadata?.analysis_summary_path || '');
+    const selected = data?.metadata?.selected_program || '';
+    if (selected) {
+      setColorMode(selected);
+    } else if (data?.cell_types?.length) {
+      setColorMode('cell_type');
+    } else {
+      setColorMode('cluster');
+    }
+  };
+
+  const postVisualize = async (formData) => {
+    const response = await fetch(`${API_URL}/visualize`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Visualization failed');
+    }
+    return response.json();
   };
 
   const annotateData = async () => {
@@ -440,7 +561,6 @@ const PortalPage = () => {
     formData.append('file', file);
     formData.append('top_k', topK);
     formData.append('similarity_threshold', threshold);
-    
 
     setIsAnnotating(true);
     showStatus('Processing data vectors...', 'info');
@@ -474,49 +594,45 @@ const PortalPage = () => {
     }
   };
 
+  const runGeneSetScoring = async () => {
+    if (!file) {
+      showStatus('Please select a .h5ad file first.', 'error');
+      return;
+    }
+
+    setIsGeneSetScoring(true);
+    showStatus(
+      'Running gene set scoring (Scanpy + supptable program scores; may take a while)...',
+      'info',
+    );
+
+    try {
+      const data = await postVisualize(buildVisualizeFormData());
+      applyVisualizationResult(data);
+      setActiveTab('visualization');
+      showVizStatus(
+        `Gene set scoring complete: ${data.total_cells} cells. Color the UMAP by program scores in Visualization.`,
+        'success',
+      );
+    } catch (error) {
+      showStatus(`Gene set scoring error: ${error.message}`, 'error');
+    } finally {
+      setIsGeneSetScoring(false);
+    }
+  };
+
   const visualizeData = async () => {
     if (!file) {
       showVizStatus('Please select a .h5ad file first.', 'error');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('de_top_n', deTopN);
-    formData.append('cluster_resolution', clusterResolution);
-    if (supptableUrl.trim()) {
-      formData.append('supptable_url', supptableUrl.trim());
-    }
-    
-  
-
     setIsVisualizing(true);
     showVizStatus('Running Scanpy workflow (normalize, cluster, UMAP)...', 'info');
 
     try {
-      const response = await fetch(`${API_URL}/visualize`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Visualization failed');
-      }
-
-      const data = await response.json();
-      setVizResults(data);
-      setAnalysisSummaryPath(data?.metadata?.analysis_summary_path || '');
-  
-      const selected = data?.metadata?.selected_program || '';
-      if (selected) {
-        setColorMode(selected);
-      } else if (data?.cell_types?.length) {
-        setColorMode('cell_type');
-      } else {
-        setColorMode('cluster');
-      }
-
+      const data = await postVisualize(buildVisualizeFormData());
+      applyVisualizationResult(data);
       showVizStatus(`Visualization ready: ${data.total_cells} cells processed.`, 'success');
     } catch (error) {
       showVizStatus(`Error: ${error.message}`, 'error');
@@ -607,7 +723,9 @@ const PortalPage = () => {
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-white">Analysis Dashboard</h2>
-          <p className="text-slate-400">Manage your datasets and run annotations or visualization</p>
+          <p className="text-slate-400">
+            Manage datasets: annotation, visualization, or electrophysiology (UI preview)
+          </p>
         </div>
         <div className="flex gap-2 bg-slate-900/60 border border-slate-700/70 p-1 rounded-full">
           <button
@@ -632,6 +750,17 @@ const PortalPage = () => {
           >
             Visualization
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('electrophysiology')}
+            className={`px-4 py-1.5 rounded-full text-sm transition ${
+              activeTab === 'electrophysiology'
+                ? 'bg-amber-500 text-slate-900'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            Electrophysiology
+          </button>
         </div>
       </div>
 
@@ -639,104 +768,208 @@ const PortalPage = () => {
         <div className="lg:col-span-1 space-y-6">
           <Card
             className={`relative overflow-hidden transition-all duration-300 group ${
-              isDragging ? 'border-indigo-500 bg-indigo-500/10' : ''
+              activeTab === 'electrophysiology'
+                ? ephysDragging
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : ''
+                : isDragging
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : ''
             }`}
           >
             <div
               onDragOver={(event) => {
                 event.preventDefault();
-                setIsDragging(true);
+                if (activeTab === 'electrophysiology') {
+                  setEphysDragging(true);
+                  setIsDragging(false);
+                } else {
+                  setIsDragging(true);
+                  setEphysDragging(false);
+                }
               }}
-              onDragLeave={() => setIsDragging(false)}
+              onDragLeave={() => {
+                setIsDragging(false);
+                setEphysDragging(false);
+              }}
               onDrop={handleDrop}
-              className="text-center p-8 border-2 border-dashed border-slate-600 rounded-xl hover:border-indigo-500/50 transition-colors"
+              className={`text-center p-8 border-2 border-dashed border-slate-600 rounded-xl transition-colors ${
+                activeTab === 'electrophysiology'
+                  ? 'hover:border-amber-500/50'
+                  : 'hover:border-indigo-500/50'
+              }`}
             >
-              <div className="mb-4 flex justify-center">
-                <div className="p-4 bg-slate-700/50 rounded-full group-hover:scale-110 transition-transform duration-300">
-                  {file ? (
-                    <FileText className="text-emerald-400" size={32} />
-                  ) : (
-                    <Upload className="text-indigo-400" size={32} />
-                  )}
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                {file ? 'File Selected' : 'Upload Data'}
-              </h3>
-              <p className="text-sm text-slate-400 mb-6">
-                {fileName || 'Drag & drop .h5ad file here'}
-              </p>
-
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".h5ad"
-                  onChange={handleFileChange}
-                  ref={fileInputRef}
-                  className="hidden"
-                />
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Browse Files
-                </Button>
-              </div>
+              {activeTab === 'electrophysiology' ? (
+                <>
+                  <div className="mb-4 flex justify-center">
+                    <div className="p-4 bg-slate-700/50 rounded-full group-hover:scale-110 transition-transform duration-300">
+                      {ephysFile ? (
+                        <Radio className="text-amber-400" size={32} />
+                      ) : (
+                        <Upload className="text-amber-400/90" size={32} />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {ephysFile ? 'Recording selected' : 'Upload recording'}
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-6">
+                    {ephysFileName ||
+                      `Drag & drop trace file (${EPHYS_FILE_EXTENSIONS.join(', ')})`}
+                  </p>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept={EPHYS_FILE_EXTENSIONS.join(',')}
+                      onChange={handleEphysFileChange}
+                      ref={ephysInputRef}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="w-full border-amber-700/40 hover:border-amber-500/60"
+                      type="button"
+                      onClick={() => ephysInputRef.current?.click()}
+                    >
+                      Browse files
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mb-4 flex justify-center">
+                    <div className="p-4 bg-slate-700/50 rounded-full group-hover:scale-110 transition-transform duration-300">
+                      {file ? (
+                        <FileText className="text-emerald-400" size={32} />
+                      ) : (
+                        <Upload className="text-indigo-400" size={32} />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {file ? 'File Selected' : 'Upload Data'}
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-6">
+                    {fileName || 'Drag & drop .h5ad file here'}
+                  </p>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".h5ad,.h5"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Browse Files
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
 
-          {activeTab === 'annotation' ? (
+          {activeTab === 'annotation' && (
             <Card>
               <div className="flex items-center gap-2 mb-6">
                 <Settings className="text-slate-400" size={20} />
                 <h3 className="text-lg font-semibold text-white">Parameters</h3>
               </div>
 
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-300">Neighbors (Top K)</span>
-                    <span className="text-indigo-400 font-mono">{topK}</span>
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white mb-1">
+                      Reference-based annotation
+                    </h4>
+                    <p className="text-xs text-slate-500 mb-3">
+                      Transformer similarity search against the reference atlas.
+                    </p>
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={topK}
-                    onChange={(event) => setTopK(Number(event.target.value))}
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                  />
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-300">Neighbors (Top K)</span>
+                      <span className="text-indigo-400 font-mono">{topK}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={topK}
+                      onChange={(event) => setTopK(Number(event.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-300">Similarity Threshold</span>
+                      <span className="text-indigo-400 font-mono">{threshold}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={threshold}
+                      onChange={(event) => setThreshold(Number(event.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={annotateData}
+                    disabled={
+                      isAnnotating ||
+                      isGeneSetScoring ||
+                      isVisualizing ||
+                      !file
+                    }
+                    className="w-full"
+                    icon={isAnnotating ? Activity : Play}
+                  >
+                    {isAnnotating ? 'Processing...' : 'Run Reference based Annotation'}
+                  </Button>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-300">Similarity Threshold</span>
-                    <span className="text-indigo-400 font-mono">{threshold}</span>
+                <div className="border-t border-slate-700/80 pt-6 space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white mb-1">Gene set scoring</h4>
+                    <p className="text-xs text-slate-500 mb-1">
+                      LLM-derived program genes from the supptable (server{' '}
+                      <span className="font-mono text-slate-400">data/SuppTable1.xlsx</span> when
+                      present, or optional URL under Visualization).
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Runs the same Scanpy + scoring pipeline as Visualization, then opens that tab
+                      to explore program scores on the UMAP.
+                    </p>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={threshold}
-                    onChange={(event) => setThreshold(Number(event.target.value))}
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                  />
-                </div>
 
-                <Button
-                  onClick={annotateData}
-                  disabled={isAnnotating || !file}
-                  className="w-full"
-                  icon={isAnnotating ? Activity : Play}
-                >
-                  {isAnnotating ? 'Processing...' : 'Run Annotation'}
-                </Button>
+                  <Button
+                    onClick={runGeneSetScoring}
+                    disabled={
+                      isGeneSetScoring ||
+                      isAnnotating ||
+                      isVisualizing ||
+                      !file
+                    }
+                    className="w-full bg-violet-600 hover:bg-violet-500"
+                    icon={isGeneSetScoring ? Activity : Play}
+                  >
+                    {isGeneSetScoring ? 'Processing...' : 'Run Gene Set Scoring'}
+                  </Button>
+                </div>
               </div>
             </Card>
-          ) : (
+          )}
+
+          {activeTab === 'visualization' && (
             <Card>
               <div className="flex items-center gap-2 mb-6">
                 <Settings className="text-slate-400" size={20} />
@@ -757,7 +990,7 @@ const PortalPage = () => {
                     className="w-full rounded-lg bg-slate-900/60 border border-slate-700/70 px-3 py-2 text-sm text-slate-200"
                   />
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-300">Cluster Resolution</span>
@@ -792,11 +1025,98 @@ const PortalPage = () => {
 
                 <Button
                   onClick={visualizeData}
-                  disabled={isVisualizing || !file}
+                  disabled={
+                    isVisualizing || isGeneSetScoring || isAnnotating || !file
+                  }
                   className="w-full"
                   icon={isVisualizing ? Activity : Play}
                 >
                   {isVisualizing ? 'Processing...' : 'Run Visualization'}
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {activeTab === 'electrophysiology' && (
+            <Card>
+              <div className="flex items-center gap-2 mb-6">
+                <Settings className="text-slate-400" size={20} />
+                <h3 className="text-lg font-semibold text-white">Acquisition & detection</h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-6">
+                Frontend preview only — parameters will map to the electrophysiology service once
+                the backend is available.
+              </p>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-300">Sampling rate (kHz)</span>
+                    <span className="text-amber-300 font-mono">{ephysSamplingRateKhz}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="50"
+                    step="1"
+                    value={ephysSamplingRateKhz}
+                    onChange={(event) =>
+                      setEphysSamplingRateKhz(Number(event.target.value))
+                    }
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-300">Bandpass low (Hz)</span>
+                    <span className="text-amber-300 font-mono">{ephysFilterLowHz}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    value={ephysFilterLowHz}
+                    onChange={(event) => setEphysFilterLowHz(Number(event.target.value))}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-300">Bandpass high (Hz)</span>
+                    <span className="text-amber-300 font-mono">{ephysFilterHighHz}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="500"
+                    max="10000"
+                    step="100"
+                    value={ephysFilterHighHz}
+                    onChange={(event) => setEphysFilterHighHz(Number(event.target.value))}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-300">Spike detection (SNR threshold)</span>
+                    <span className="text-amber-300 font-mono">{ephysSnrThreshold.toFixed(1)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="2"
+                    max="10"
+                    step="0.5"
+                    value={ephysSnrThreshold}
+                    onChange={(event) => setEphysSnrThreshold(Number(event.target.value))}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+                <Button
+                  onClick={runEphysAnalysis}
+                  disabled={!ephysFile}
+                  className="w-full bg-amber-600 hover:bg-amber-500 text-slate-900"
+                  icon={Play}
+                >
+                  Run analysis (preview)
                 </Button>
               </div>
             </Card>
@@ -845,10 +1165,31 @@ const PortalPage = () => {
             </div>
           )}
 
+          {activeTab === 'electrophysiology' && ephysStatus && (
+            <div
+              className={`p-4 rounded-xl border flex items-start gap-3 ${
+                ephysStatus.type === 'error'
+                  ? 'bg-red-500/10 border-red-500/20 text-red-200'
+                  : ephysStatus.type === 'success'
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'
+                  : 'bg-amber-500/10 border-amber-500/25 text-amber-100'
+              }`}
+            >
+              {ephysStatus.type === 'error' ? (
+                <AlertCircle size={20} />
+              ) : ephysStatus.type === 'success' ? (
+                <CheckCircle size={20} />
+              ) : (
+                <Activity size={20} />
+              )}
+              <p className="text-sm">{ephysStatus.message}</p>
+            </div>
+          )}
+
         </div>
 
         <div className="lg:col-span-2">
-          {activeTab === 'annotation' ? (
+          {activeTab === 'annotation' && (
             !results ? (
               <div className="h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20 text-slate-500">
                 <Cpu size={48} className="mb-4 opacity-50" />
@@ -1054,7 +1395,10 @@ const PortalPage = () => {
                 </Card>
               </div>
             )
-          ) : !vizResults ? (
+          )}
+
+          {activeTab === 'visualization' && (
+            !vizResults ? (
             <div className="h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20 text-slate-500">
               <Cpu size={48} className="mb-4 opacity-50" />
               <p className="text-lg">Visualization will appear here</p>
@@ -1387,6 +1731,7 @@ const PortalPage = () => {
                             >
                               <option value="score">Score</option>
                               <option value="logfc">LogFC</option>
+                              <option value="padj">Adj. p-value</option>
                               <option value="drug_count">Drug Count</option>
                               <option value="gene">Gene</option>
                             </select>
@@ -1410,6 +1755,7 @@ const PortalPage = () => {
                                 <th className="pb-2 pr-4">Gene</th>
                                 <th className="pb-2 pr-4">Score</th>
                                 <th className="pb-2 pr-4">LogFC</th>
+                                <th className="pb-2 pr-4">Adj. p</th>
                                 <th className="pb-2 pr-4">Annotations</th>
                                 <th className="pb-2 pr-4">Drug Count</th>
                                 <th className="pb-2">Drug Names</th>
@@ -1425,6 +1771,7 @@ const PortalPage = () => {
                                   hasReceptor,
                                   drugTargets,
                                   drugCount,
+                                  padj,
                                 } = row;
                                 const drugNames = Array.isArray(drugTargets)
                                   ? drugTargets
@@ -1445,10 +1792,19 @@ const PortalPage = () => {
                                       {gene}
                                     </td>
                                     <td className="py-2 pr-4 text-slate-400 text-xs">
-                                      {activeDeGroup.scores?.[index]?.toFixed(3) ?? '—'}
+                                      {activeDeGroup.scores?.[index] != null &&
+                                      !Number.isNaN(activeDeGroup.scores[index])
+                                        ? Number(activeDeGroup.scores[index]).toFixed(3)
+                                        : '—'}
                                     </td>
                                     <td className="py-2 pr-4 text-slate-400 text-xs">
-                                      {activeDeGroup.logfoldchanges?.[index]?.toFixed(3) ?? '—'}
+                                      {activeDeGroup.logfoldchanges?.[index] != null &&
+                                      !Number.isNaN(activeDeGroup.logfoldchanges[index])
+                                        ? Number(activeDeGroup.logfoldchanges[index]).toFixed(3)
+                                        : '—'}
+                                    </td>
+                                    <td className="py-2 pr-4 text-slate-400 text-xs font-mono">
+                                      {formatDePadj(padj)}
                                     </td>
                                     <td className="py-2 pr-4 text-xs text-slate-300">
                                       <div className="flex flex-wrap items-center gap-2">
@@ -1462,8 +1818,13 @@ const PortalPage = () => {
                                             Receptor
                                           </span>
                                         ) : null}
+                                        {!hasLigand && !hasReceptor && drugCount > 0 ? (
+                                          <span className="rounded-full bg-amber-500/15 text-amber-200 px-2 py-0.5 text-[10px] uppercase">
+                                            Druggable
+                                          </span>
+                                        ) : null}
                                       </div>
-                                      {!hasLigand && !hasReceptor ? (
+                                      {!hasLigand && !hasReceptor && !drugCount ? (
                                         <span className="text-slate-500 text-[10px]">—</span>
                                       ) : null}
                                     </td>
@@ -1507,6 +1868,103 @@ const PortalPage = () => {
               </div>
 
             </div>
+          )
+          )}
+          {activeTab === 'electrophysiology' && (
+            !ephysShowPreview ? (
+              <div className="h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20 text-slate-500">
+                <Radio size={48} className="mb-4 opacity-50 text-amber-400/70" />
+                <p className="text-lg">Traces & spike metrics</p>
+                <p className="text-sm opacity-60 text-center max-w-md px-4">
+                  Upload a recording, tune parameters, and run analysis to see the results layout.
+                  API wiring is not connected yet — the preview uses placeholder values.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card className="text-center p-4">
+                    <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">
+                      Spike rate (est.)
+                    </p>
+                    <p className="text-3xl font-bold text-amber-300">
+                      4.2{' '}
+                      <span className="text-lg font-normal text-slate-500">Hz</span>
+                    </p>
+                  </Card>
+                  <Card className="text-center p-4">
+                    <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">
+                      ISI CV
+                    </p>
+                    <p className="text-3xl font-bold text-amber-200/90">0.42</p>
+                  </Card>
+                  <Card className="text-center p-4">
+                    <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">
+                      Duration
+                    </p>
+                    <p className="text-3xl font-bold text-white">
+                      124<span className="text-lg font-normal text-slate-500">s</span>
+                    </p>
+                  </Card>
+                </div>
+                <Card className="overflow-hidden p-0">
+                  <div className="p-4 border-b border-slate-700/50 flex flex-wrap justify-between items-center gap-3 bg-slate-800/50">
+                    <div className="flex items-center gap-2">
+                      <Activity className="text-amber-400" size={18} />
+                      <h3 className="font-semibold text-white">Voltage trace</h3>
+                    </div>
+                    <span className="text-xs text-slate-500">Placeholder waveform</span>
+                  </div>
+                  <div className="p-4 bg-slate-900/40">
+                    <svg
+                      viewBox="0 0 800 200"
+                      className="w-full h-[240px] bg-slate-950 rounded-xl border border-slate-800/80"
+                      aria-hidden
+                    >
+                      <line
+                        x1="0"
+                        y1="100"
+                        x2="800"
+                        y2="100"
+                        stroke="#334155"
+                        strokeWidth="1"
+                        strokeDasharray="6 6"
+                      />
+                      <path
+                        d="M0,100 C80,30 120,170 160,100 S280,40 360,100 S440,160 520,100 S600,50 680,100 S760,140 800,95"
+                        fill="none"
+                        stroke="#f59e0b"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <h4 className="text-sm font-semibold text-white mb-3">Spike raster (preview)</h4>
+                  <div className="flex gap-0.5 flex-wrap h-16 items-end rounded-lg bg-slate-900/60 p-2 border border-slate-700/50">
+                    {[
+                      12, 28, 44, 58, 73, 88, 102, 118, 134, 150, 165, 182, 198, 214, 230, 246,
+                      262, 278, 292, 308,
+                    ].map((x) => (
+                      <div
+                        key={x}
+                        className="w-0.5 rounded-sm bg-amber-500/80"
+                        style={{ height: `${8 + (x % 11)}px` }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3">
+                    Mock raster — replace with detected events from the API.
+                  </p>
+                </Card>
+                <p className="text-xs text-slate-500">
+                  Selected file:{' '}
+                  <span className="font-mono text-slate-400">{ephysFileName}</span> · Sampling{' '}
+                  {ephysSamplingRateKhz} kHz · Bandpass {ephysFilterLowHz}–{ephysFilterHighHz} Hz
+                </p>
+              </div>
+            )
           )}
         </div>
       </div>
