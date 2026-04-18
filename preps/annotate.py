@@ -1,12 +1,56 @@
 import argparse
-parser = argparse.ArgumentParser(description='Annotate one dataset using fine-tuned models. Output cell embeddings (_preds.csv) and cell-type scores (_scores.csv).')
-parser.add_argument('test_name', help='Input the test dataset to be annotated (e.g., mouse, glioma).')
-parser.add_argument('-g', '--gpu_name', choices=list(map(str, range(1000))), default='0', help='Input the idle GPU on which to run the code (e.g., 0, 1, 2).')
+from pathlib import Path
+
+_PREPS_DIR = Path(__file__).resolve().parent
+DEFAULT_MODELS_ROOT = Path(
+    "/Users/akdes/Library/CloudStorage/Box-Box/baylor/capstone_project_012026/inhouse_glioma_data/fine-tuned_models"
+)
+# Geneformer pickles live next to these scripts: preps/dict/*.pkl
+DEFAULT_DICT_DIR = _PREPS_DIR / "dict"
+TOKEN_DICT_FILENAME = "token_dictionary_gc30M.pkl"
+GENE_MEDIAN_FILENAME = "gene_median_dictionary_gc30M.pkl"
+
+parser = argparse.ArgumentParser(
+    description="Annotate one dataset using fine-tuned models. Output cell embeddings (_preds.csv) and cell-type scores (_scores.csv)."
+)
+parser.add_argument("test_name", help="Input the test dataset to be annotated (e.g., mouse, glioma).")
+parser.add_argument(
+    "-g",
+    "--gpu_name",
+    choices=list(map(str, range(1000))),
+    default="0",
+    help="Input the idle GPU on which to run the code (e.g., 0, 1, 2).",
+)
+parser.add_argument(
+    "--models-root",
+    type=Path,
+    default=DEFAULT_MODELS_ROOT,
+    help=(
+        "Directory containing reference folders (each <ref_name>/finetune/...). "
+        f"Default: {DEFAULT_MODELS_ROOT}"
+    ),
+)
+parser.add_argument(
+    "--dict-dir",
+    type=Path,
+    default=DEFAULT_DICT_DIR,
+    help=(
+        f"Directory with Geneformer pickles (expects {TOKEN_DICT_FILENAME}). "
+        f"Default: <preps>/dict next to annotate.py ({DEFAULT_DICT_DIR})"
+    ),
+)
 args = parser.parse_args()
 test_name = args.test_name
 gpu_name = args.gpu_name
+models_root = args.models_root.expanduser().resolve()
+dict_dir = args.dict_dir.expanduser().resolve()
+# Allow *.pkl directly in preps/ if not under preps/dict/
+if not (dict_dir / TOKEN_DICT_FILENAME).is_file() and (_PREPS_DIR / TOKEN_DICT_FILENAME).is_file():
+    dict_dir = _PREPS_DIR
+    print(f"annotate.py: using dict pickles from {_PREPS_DIR} (not in dict/ subfolder)")
 
 import os
+import pickle
 os.environ['CUDA_VISIBLE_DEVICES'] = gpu_name
 os.environ['NCCL_DEBUG'] = 'INFO'
 
@@ -21,12 +65,66 @@ from scipy.special import softmax
 import shutil
 import numpy as np
 import pandas as pd
+import torch
 from tqdm import tqdm
 
 
-ann_output_directory = f'{test_name}_preds/'
-os.mkdir(ann_output_directory)
-shutil.copytree(f'{test_name}/{test_name}.dataset', ann_output_directory + 'tokenized_copy.dataset')
+def pick_device() -> torch.device:
+    """CUDA if available, else Apple Silicon MPS, else CPU (Mac has no CUDA)."""
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    mps = getattr(torch.backends, "mps", None)
+    if mps is not None and mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
+device = pick_device()
+print(f"annotate.py: using device = {device}")
+
+token_dictionary_path = dict_dir / TOKEN_DICT_FILENAME
+if not token_dictionary_path.is_file():
+    raise FileNotFoundError(
+        f"Missing token dictionary: {token_dictionary_path}\n"
+        f"Set --dict-dir to the folder containing {TOKEN_DICT_FILENAME} "
+        f"(e.g. {_PREPS_DIR / 'dict'})."
+    )
+with open(token_dictionary_path, "rb") as _tf:
+    token_dictionary = pickle.load(_tf)
+print(f"annotate.py: loaded token_dictionary from {token_dictionary_path}")
+
+gene_median_path = dict_dir / GENE_MEDIAN_FILENAME
+gene_median_dictionary = None
+if gene_median_path.is_file():
+    with open(gene_median_path, "rb") as _gf:
+        gene_median_dictionary = pickle.load(_gf)
+    print(f"annotate.py: loaded gene_median_dictionary from {gene_median_path}")
+else:
+    print(
+        f"annotate.py: optional {GENE_MEDIAN_FILENAME} not found in {dict_dir} "
+        "(collator may still work if only token_dictionary is required)."
+    )
+
+
+def make_data_collator():
+    """Build DataCollatorForCellClassification for newer Geneformer APIs."""
+    kwargs = {"token_dictionary": token_dictionary}
+    if gene_median_dictionary is not None:
+        kwargs["gene_median_dictionary"] = gene_median_dictionary
+    try:
+        return DataCollatorForCellClassification(**kwargs)
+    except TypeError:
+        return DataCollatorForCellClassification(token_dictionary=token_dictionary)
+
+
+data_collator = make_data_collator()
+
+ann_output_directory = f"{test_name}_preds/"
+os.makedirs(ann_output_directory, exist_ok=True)
+token_dst = os.path.join(ann_output_directory, "tokenized_copy.dataset")
+if os.path.isdir(token_dst):
+    shutil.rmtree(token_dst)
+shutil.copytree(f"{test_name}/{test_name}.dataset", token_dst)
 
 ref_num_tups = [('aldinger_2000perCellType', 21), 
                 ('allen_2000perCellType', 20), 
@@ -39,9 +137,12 @@ ref_num_tups = [('aldinger_2000perCellType', 21),
                 ('recurrent_gbm_1000perCellType', 14), 
                 ('TissueImmune_2000perCellType', 45)]
 
+FINETUNE_SUBDIR = "finetune/240605_geneformer_CellClassifier_0_L2048_B12_LR5e-05_LSlinear_WU500_E10_Oadamw_F0"
+
 for ref_name, num_classes in tqdm(ref_num_tups):
     output_prefix = f'preds_by_{ref_name}_num_classes_{num_classes}'
-    model_directory=f'{ref_name}/finetune/240605_geneformer_CellClassifier_0_L2048_B12_LR5e-05_LSlinear_WU500_E10_Oadamw_F0/'
+    model_directory = str(models_root / ref_name / FINETUNE_SUBDIR)
+    target_names_xlsx = str(models_root / ref_name / "finetune" / "target_names.xlsx")
 
 
     # load data, labels, model
@@ -50,7 +151,18 @@ for ref_name, num_classes in tqdm(ref_num_tups):
     labels = [0] * tokenized_dataset.num_rows
     tokenized_dataset = tokenized_dataset.add_column('label', labels)
 
-    df_target_names = pd.read_excel(f'{ref_name}/finetune/target_names.xlsx', header=None)
+    if not os.path.isfile(target_names_xlsx):
+        raise FileNotFoundError(
+            f"Missing target names file: {target_names_xlsx}\n"
+            f"Expected under --models-root: {models_root}"
+        )
+    if not os.path.isdir(model_directory):
+        raise FileNotFoundError(
+            f"Missing model directory: {model_directory}\n"
+            f"Expected under --models-root: {models_root}"
+        )
+
+    df_target_names = pd.read_excel(target_names_xlsx, header=None)
 
 
     def compute_metrics(pred):
@@ -73,13 +185,15 @@ for ref_name, num_classes in tqdm(ref_num_tups):
     # batch size for training and eval
     geneformer_batch_size = 12
 
-    model = BertForSequenceClassification.from_pretrained(model_directory, 
-                                                        num_labels=num_classes,
-                                                        output_attentions=False,
-                                                        output_hidden_states=False).to('cuda')
+    model = BertForSequenceClassification.from_pretrained(
+        model_directory,
+        num_labels=num_classes,
+        output_attentions=False,
+        output_hidden_states=False,
+    ).to(device)
 
-    # predict
-    training_args = {
+    # predict — Trainer must match device (CUDA / MPS / CPU)
+    training_args: dict = {
         "do_train": False,
         "do_eval": False,
         "evaluation_strategy": "epoch",
@@ -88,15 +202,25 @@ for ref_name, num_classes in tqdm(ref_num_tups):
         "disable_tqdm": False,
         "per_device_train_batch_size": geneformer_batch_size,
         "per_device_eval_batch_size": geneformer_batch_size,
-        "output_dir": ann_output_directory
+        "output_dir": ann_output_directory,
     }
-    training_args_init = TrainingArguments(**training_args)
+    if device.type == "cpu":
+        training_args["use_cpu"] = True
+    elif device.type == "mps":
+        # Apple Silicon GPU (not all transformers versions accept this kwarg)
+        training_args["use_mps_device"] = True
+
+    try:
+        training_args_init = TrainingArguments(**training_args)
+    except TypeError:
+        training_args.pop("use_mps_device", None)
+        training_args_init = TrainingArguments(**training_args)
     trainer = Trainer(
         model=model,
         args=training_args_init,
-        data_collator=DataCollatorForCellClassification(),
+        data_collator=data_collator,
         train_dataset=tokenized_dataset,
-        eval_dataset=tokenized_dataset
+        eval_dataset=tokenized_dataset,
     )
     predictions = trainer.predict(tokenized_dataset)
 

@@ -66,6 +66,25 @@ class Settings:
     )
     EMBEDDING_FINETUNE_SUBDIR: str = os.getenv("EMBEDDING_FINETUNE_SUBDIR", "")
     EMBEDDING_GENE_ID_TYPE: str = os.getenv("EMBEDDING_GENE_ID_TYPE", "symbol")
+
+    # PREPS pipeline (Geneformer tokenize + annotate via preps/generate_preds.py — do not edit preps/)
+    # Set PREPS_PYTHON to the conda "preps" env interpreter (see preps/HOWTO_PREPS.md).
+    PREPS_DIR: Path = Path(os.getenv("PREPS_DIR", str(BASE_DIR / "preps")))
+    PREPS_PYTHON: str = os.getenv("PREPS_PYTHON", "").strip()
+    PREPS_MODELS_ROOT: Path = Path(
+        os.getenv("PREPS_MODELS_ROOT", str(BASE_DIR / "preps" / "fine-tuned_models"))
+    )
+    PREPS_DICT_DIR: Path = Path(
+        os.getenv("PREPS_DICT_DIR", str(BASE_DIR / "preps" / "dict"))
+    )
+    PREPS_DEFAULT_REFERENCE_SUBSTRING: str = os.getenv(
+        "PREPS_DEFAULT_REFERENCE_SUBSTRING",
+        "dirks_primary_gbm_combined",
+    )
+    # After PREPS embeddings, run preps/patchseq_predict.py (set 0/false to skip).
+    PREPS_RUN_PATCHSEQ_PREDICT: bool = os.getenv(
+        "PREPS_RUN_PATCHSEQ_PREDICT", "1"
+    ).strip().lower() not in ("0", "false", "no", "")
     
     # Embedding settings
     EMBEDDING_LAYER: int = -1  # Use layer -1 from transformer

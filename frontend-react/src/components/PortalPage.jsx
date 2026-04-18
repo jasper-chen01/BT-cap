@@ -78,6 +78,26 @@ const PortalPage = () => {
   const [ephysShowPreview, setEphysShowPreview] = useState(false);
   const ephysInputRef = useRef(null);
 
+  const [prepsH5adFile, setPrepsH5adFile] = useState(null);
+  const [prepsH5adFileName, setPrepsH5adFileName] = useState('');
+  const [prepsSpecies, setPrepsSpecies] = useState('human');
+  const [prepsGpu, setPrepsGpu] = useState('0');
+  const [prepsRefSubstring, setPrepsRefSubstring] = useState('');
+  const [prepsJobId, setPrepsJobId] = useState(null);
+  const [prepsJobPayload, setPrepsJobPayload] = useState(null);
+  const [isPrepsRunning, setIsPrepsRunning] = useState(false);
+  const [ephysVizResults, setEphysVizResults] = useState(null);
+  const [prepsConfigured, setPrepsConfigured] = useState(null);
+  const prepsH5adInputRef = useRef(null);
+  const prepsEphysColorDefaultAppliedRef = useRef(false);
+
+  const sourceViz =
+    activeTab === 'electrophysiology' ? ephysVizResults : vizResults;
+
+  const showMainVizPanel =
+    (activeTab === 'visualization' && vizResults) ||
+    (activeTab === 'electrophysiology' && ephysVizResults);
+
   useEffect(() => {
     const checkHealth = async () => {
       try {
@@ -99,6 +119,23 @@ const PortalPage = () => {
     };
     checkHealth();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'electrophysiology') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`${API_URL}/preps/config`);
+        const data = await r.json();
+        if (!cancelled) setPrepsConfigured(data);
+      } catch {
+        if (!cancelled) setPrepsConfigured({ preps_available: false });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   const annotationStats = useMemo(() => {
     if (!results?.annotations?.length) return null;
@@ -145,14 +182,73 @@ const PortalPage = () => {
   };
 
   useEffect(() => {
-    if (!vizResults) return;
-    if (vizResults.cell_types?.length) {
+    if (!prepsJobId || !isPrepsRunning) return undefined;
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const r = await fetch(`${API_URL}/preps/jobs/${prepsJobId}?include_log_tail=40`);
+        if (!r.ok) return;
+        const data = await r.json();
+        if (cancelled) return;
+        setPrepsJobPayload(data);
+        if (data.status === 'succeeded' && data.visualization) {
+          setEphysVizResults(data.visualization);
+          setAnalysisSummaryPath(
+            data.visualization?.metadata?.analysis_summary_path || '',
+          );
+          setIsPrepsRunning(false);
+          const em = data.visualization?.metadata || {};
+          let doneMsg =
+            'PREPS finished. UMAP uses Scanpy; color by cell type to see Geneformer/PREPS labels.';
+          if (em.ephys_patchseq_ran && em.ephys_patchseq_output_dir) {
+            doneMsg += ` Predicted ephys tables: ${em.ephys_patchseq_output_dir}`;
+          } else if (em.ephys_patchseq_note) {
+            doneMsg += ` Ephys step: ${em.ephys_patchseq_note}`;
+          }
+          showEphysStatus(doneMsg, 'success');
+        } else if (data.status === 'failed') {
+          setIsPrepsRunning(false);
+          showEphysStatus(data.error_message || 'PREPS job failed.', 'error');
+        }
+      } catch {
+        /* keep polling */
+      }
+    };
+
+    poll();
+    const id = setInterval(poll, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [prepsJobId, isPrepsRunning]);
+
+  useEffect(() => {
+    if (
+      activeTab !== 'electrophysiology' ||
+      prepsEphysColorDefaultAppliedRef.current ||
+      !ephysVizResults?.metadata?.available_programs
+    ) {
+      return;
+    }
+    const programs = ephysVizResults.metadata.available_programs;
+    const firstEphys = programs.find((p) => String(p).startsWith('Ephys ·'));
+    if (firstEphys) {
+      setColorMode(firstEphys);
+      prepsEphysColorDefaultAppliedRef.current = true;
+    }
+  }, [activeTab, ephysVizResults]);
+
+  useEffect(() => {
+    if (!sourceViz) return;
+    if (sourceViz.cell_types?.length) {
       setColorMode((prev) => (prev === 'cluster' ? 'cell_type' : prev));
     }
     setSelectedCellTypes([]);
     setMinScore(0);
     setDeGroupby('cluster');
-  }, [vizResults]);
+  }, [sourceViz]);
 
   useEffect(() => {
     if (!results) {
@@ -221,13 +317,13 @@ const PortalPage = () => {
   };
 
   const filteredUmapPoints = useMemo(() => {
-    if (!vizResults?.umap_points) return [];
+    if (!sourceViz?.umap_points) return [];
 
-    const hasCellTypes = vizResults.cell_types?.length;
+    const hasCellTypes = sourceViz.cell_types?.length;
     const isProgramMode =
       colorMode !== 'cluster' && colorMode !== 'cell_type';
 
-    return vizResults.umap_points.filter((point) => {
+    return sourceViz.umap_points.filter((point) => {
       if (hasCellTypes && selectedCellTypes.length) {
         if (!selectedCellTypes.includes(point.cell_type)) {
           return false;
@@ -243,7 +339,7 @@ const PortalPage = () => {
 
       return true;
     });
-  }, [vizResults, selectedCellTypes, minScore, colorMode]);
+  }, [sourceViz, selectedCellTypes, minScore, colorMode]);
 
   const MAX_UMAP_POINTS = 40000;
   const sampledUmapPoints = useMemo(() => {
@@ -255,7 +351,7 @@ const PortalPage = () => {
   }, [filteredUmapPoints]);
 
   const colorMap = useMemo(() => {
-    if (!vizResults?.umap_points) return {};
+    if (!sourceViz?.umap_points) return {};
 
     const isProgramMode =
       colorMode !== 'cluster' && colorMode !== 'cell_type';
@@ -277,7 +373,7 @@ const PortalPage = () => {
     ];
 
     const labels = [];
-    vizResults.umap_points.forEach((point) => {
+    sourceViz.umap_points.forEach((point) => {
       const label = colorMode === 'cell_type' ? point.cell_type : point.cluster;
       if (label && !labels.includes(label)) {
         labels.push(label);
@@ -288,14 +384,14 @@ const PortalPage = () => {
       acc[label] = palette[index % palette.length];
       return acc;
     }, {});
-  }, [vizResults, colorMode]);
+  }, [sourceViz, colorMode]);
 
   const activeDeGroups = useMemo(() => {
-    if (!vizResults) return [];
+    if (!sourceViz) return [];
     return deGroupby === 'cell_type'
-      ? vizResults.de_by_cell_type || []
-      : vizResults.de_by_cluster || [];
-  }, [vizResults, deGroupby]);
+      ? sourceViz.de_by_cell_type || []
+      : sourceViz.de_by_cluster || [];
+  }, [sourceViz, deGroupby]);
 
   const umapBounds = useMemo(() => {
     if (!sampledUmapPoints.length) return null;
@@ -330,18 +426,18 @@ const PortalPage = () => {
   }, [annotationView]);
 
   const availablePrograms = useMemo(
-    () => vizResults?.metadata?.available_programs || [],
-    [vizResults]
+    () => sourceViz?.metadata?.available_programs || [],
+    [sourceViz]
   );
 
   const programScoreRange = useMemo(() => {
-    if (!vizResults?.umap_points?.length) return null;
+    if (!sourceViz?.umap_points?.length) return null;
 
     const isProgramMode =
       colorMode !== 'cluster' && colorMode !== 'cell_type';
     if (!isProgramMode) return null;
 
-    const scores = vizResults.umap_points
+    const scores = sourceViz.umap_points
       .map((p) =>
         typeof p.program_scores?.[colorMode] === 'number'
           ? p.program_scores[colorMode]
@@ -369,9 +465,9 @@ const PortalPage = () => {
       displayMin: getPercentile(scores, 0.05),
       displayMax: getPercentile(scores, 0.95),
     };
-  }, [vizResults, colorMode]);
+  }, [sourceViz, colorMode]);
 
-  const overlapReport = vizResults?.metadata?.de_overlaps;
+  const overlapReport = sourceViz?.metadata?.de_overlaps;
 
   const formatDePadj = (p) => {
     if (p == null || Number.isNaN(p)) return '—';
@@ -491,13 +587,82 @@ const PortalPage = () => {
     processEphysFile(selectedFile);
   };
 
+  const processPrepsH5adFile = (selectedFile) => {
+    if (!selectedFile) return;
+    const lower = selectedFile.name.toLowerCase();
+    if (lower.endsWith('.h5ad')) {
+      setPrepsH5adFile(selectedFile);
+      setPrepsH5adFileName(selectedFile.name);
+      showEphysStatus('.h5ad selected for PREPS + UMAP.', 'success');
+    } else {
+      showEphysStatus('PREPS expects a .h5ad file.', 'error');
+    }
+  };
+
+  const handlePrepsH5adChange = (event) => {
+    processPrepsH5adFile(event.target.files?.[0] || null);
+  };
+
+  const runPrepsPipeline = async () => {
+    if (!prepsH5adFile) {
+      showEphysStatus('Select a .h5ad file for PREPS first.', 'error');
+      return;
+    }
+    if (prepsConfigured && prepsConfigured.preps_available === false) {
+      showEphysStatus(
+        'Set PREPS_PYTHON in backend .env to your conda preps interpreter (see preps/HOWTO_PREPS.md).',
+        'error',
+      );
+      return;
+    }
+    setIsPrepsRunning(true);
+    setPrepsJobPayload(null);
+    setEphysVizResults(null);
+    setPrepsJobId(null);
+    prepsEphysColorDefaultAppliedRef.current = false;
+    showEphysStatus(
+      'PREPS job queued (tokenize + annotate + patchseq_predict ephys). This can take a long time — polling every 3s.',
+      'info',
+    );
+    try {
+      const formData = new FormData();
+      formData.append('file', prepsH5adFile);
+      formData.append('species', prepsSpecies);
+      formData.append('gpu', prepsGpu);
+      formData.append('de_top_n', String(deTopN));
+      formData.append('cluster_resolution', String(clusterResolution));
+      if (prepsRefSubstring.trim()) {
+        formData.append('reference_substring', prepsRefSubstring.trim());
+      }
+      const r = await fetch(`${API_URL}/preps/jobs`, { method: 'POST', body: formData });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        const d = body.detail;
+        let msg = r.statusText;
+        if (typeof d === 'string') msg = d;
+        else if (Array.isArray(d)) msg = d.map((x) => x?.msg || JSON.stringify(x)).join('; ');
+        else if (d != null) msg = JSON.stringify(d);
+        throw new Error(msg);
+      }
+      setPrepsJobId(body.job_id);
+    } catch (e) {
+      setIsPrepsRunning(false);
+      showEphysStatus(e.message || 'Failed to start PREPS job.', 'error');
+    }
+  };
+
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
     setEphysDragging(false);
     const droppedFile = event.dataTransfer.files?.[0] || null;
     if (activeTab === 'electrophysiology') {
-      processEphysFile(droppedFile);
+      const name = droppedFile?.name?.toLowerCase() || '';
+      if (name.endsWith('.h5ad')) {
+        processPrepsH5adFile(droppedFile);
+      } else {
+        processEphysFile(droppedFile);
+      }
     } else {
       processFile(droppedFile);
     }
@@ -642,8 +807,8 @@ const PortalPage = () => {
   };
 
   const downloadProgramScores = () => {
-    if (!vizResults?.umap_points?.length) return;
-    const rows = vizResults.umap_points.map((point) => ({
+    if (!sourceViz?.umap_points?.length) return;
+    const rows = sourceViz.umap_points.map((point) => ({
       cell_id: point.cell_id,
       cluster: point.cluster,
       cell_type: point.cell_type ?? null,
@@ -724,7 +889,8 @@ const PortalPage = () => {
         <div>
           <h2 className="text-2xl font-bold text-white">Analysis Dashboard</h2>
           <p className="text-slate-400">
-            Manage datasets: annotation, visualization, or electrophysiology (UI preview)
+            Annotation, visualization, or electrophysiology — including PREPS + UMAP on the
+            Electrophysiology tab when the backend PREPS env is configured
           </p>
         </div>
         <div className="flex gap-2 bg-slate-900/60 border border-slate-700/70 p-1 rounded-full">
@@ -815,7 +981,7 @@ const PortalPage = () => {
                   </h3>
                   <p className="text-sm text-slate-400 mb-6">
                     {ephysFileName ||
-                      `Drag & drop trace file (${EPHYS_FILE_EXTENSIONS.join(', ')})`}
+                      `Traces: ${EPHYS_FILE_EXTENSIONS.join(', ')} — or drop a .h5ad for PREPS (same zone)`}
                   </p>
                   <div className="relative">
                     <input
@@ -873,6 +1039,104 @@ const PortalPage = () => {
               )}
             </div>
           </Card>
+
+          {activeTab === 'electrophysiology' && (
+            <Card>
+              <div className="flex items-center gap-2 mb-4">
+                <Layers className="text-amber-400" size={20} />
+                <h3 className="text-lg font-semibold text-white">PREPS + UMAP</h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-4">
+                Runs <span className="font-mono text-slate-400">preps/generate_preds.py</span> then{' '}
+                <span className="font-mono text-slate-400">preps/patchseq_predict.py</span> (ephys
+                predictions) via your conda <span className="font-mono text-slate-400">preps</span>{' '}
+                interpreter (<span className="font-mono text-slate-400">PREPS_PYTHON</span>). The
+                server merges PREPS scores into the object, then runs the same Scanpy UMAP workflow
+                as the Visualization tab. Set{' '}
+                <span className="font-mono text-slate-400">PREPS_RUN_PATCHSEQ_PREDICT=0</span> in
+                .env to skip the ephys step.
+              </p>
+              {prepsConfigured && prepsConfigured.preps_available === false ? (
+                <p className="text-xs text-amber-100/90 mb-4 rounded-lg border border-amber-600/40 bg-amber-500/10 px-3 py-2">
+                  PREPS is not available: set PREPS_PYTHON and verify PREPS_MODELS_ROOT /
+                  PREPS_DICT_DIR. See <span className="font-mono">preps/HOWTO_PREPS.md</span>.
+                </p>
+              ) : null}
+              <div className="space-y-3 mb-4">
+                <p className="text-sm text-slate-300">Input .h5ad</p>
+                <p className="text-xs text-slate-500 font-mono truncate">
+                  {prepsH5adFileName || 'None selected'}
+                </p>
+                <input
+                  ref={prepsH5adInputRef}
+                  type="file"
+                  accept=".h5ad,.h5"
+                  className="hidden"
+                  onChange={handlePrepsH5adChange}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full border-amber-700/40"
+                  onClick={() => prepsH5adInputRef.current?.click()}
+                >
+                  Choose .h5ad
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Species</label>
+                  <select
+                    value={prepsSpecies}
+                    onChange={(e) => setPrepsSpecies(e.target.value)}
+                    className="w-full rounded-lg bg-slate-900/60 border border-slate-700/70 px-2 py-1.5 text-sm text-slate-200"
+                  >
+                    <option value="human">human</option>
+                    <option value="mouse">mouse</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">GPU id (-g)</label>
+                  <input
+                    value={prepsGpu}
+                    onChange={(e) => setPrepsGpu(e.target.value)}
+                    className="w-full rounded-lg bg-slate-900/60 border border-slate-700/70 px-2 py-1.5 text-sm text-slate-200 font-mono"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="text-xs text-slate-400 block mb-1">
+                  Scores CSV substring (optional)
+                </label>
+                <input
+                  value={prepsRefSubstring}
+                  onChange={(e) => setPrepsRefSubstring(e.target.value)}
+                  placeholder="e.g. dirks_primary_gbm_combined"
+                  className="w-full rounded-lg bg-slate-900/60 border border-slate-700/70 px-2 py-1.5 text-sm text-slate-200"
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={runPrepsPipeline}
+                disabled={!prepsH5adFile || isPrepsRunning}
+                className="w-full bg-amber-600 hover:bg-amber-500 text-slate-900"
+                icon={isPrepsRunning ? Activity : Play}
+              >
+                {isPrepsRunning ? 'PREPS running...' : 'Run PREPS + UMAP'}
+              </Button>
+              {prepsJobPayload?.status ? (
+                <p className="mt-3 text-xs text-slate-500">
+                  Status: {prepsJobPayload.status}
+                  {prepsJobPayload.test_name ? ` · ${prepsJobPayload.test_name}` : ''}
+                </p>
+              ) : null}
+              {prepsJobPayload?.log_tail ? (
+                <pre className="mt-2 max-h-32 overflow-auto rounded-lg bg-slate-950/80 p-2 text-[10px] text-slate-400 whitespace-pre-wrap">
+                  {prepsJobPayload.log_tail}
+                </pre>
+              ) : null}
+            </Card>
+          )}
 
           {activeTab === 'annotation' && (
             <Card>
@@ -1397,14 +1661,15 @@ const PortalPage = () => {
             )
           )}
 
-          {activeTab === 'visualization' && (
-            !vizResults ? (
+          {activeTab === 'visualization' && !vizResults && (
             <div className="h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20 text-slate-500">
               <Cpu size={48} className="mb-4 opacity-50" />
               <p className="text-lg">Visualization will appear here</p>
               <p className="text-sm opacity-60">Upload a file and run visualization to begin</p>
             </div>
-          ) : (
+          )}
+
+          {showMainVizPanel && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Card className="text-center p-4">
@@ -1412,7 +1677,7 @@ const PortalPage = () => {
                     Total Cells
                   </p>
                   <p className="text-3xl font-bold text-white">
-                    {vizResults.total_cells.toLocaleString()}
+                    {sourceViz.total_cells.toLocaleString()}
                   </p>
                 </Card>
                 <Card className="text-center p-4">
@@ -1420,7 +1685,7 @@ const PortalPage = () => {
                     Clusters
                   </p>
                   <p className="text-3xl font-bold text-cyan-300">
-                    {vizResults.cluster_labels.length}
+                    {sourceViz.cluster_labels.length}
                   </p>
                 </Card>
                 <Card className="text-center p-4">
@@ -1428,7 +1693,7 @@ const PortalPage = () => {
                     Cell Types
                   </p>
                   <p className="text-3xl font-bold text-emerald-400">
-                    {vizResults.cell_types?.length || 0}
+                    {sourceViz.cell_types?.length || 0}
                   </p>
                 </Card>
               </div>
@@ -1438,6 +1703,11 @@ const PortalPage = () => {
                   <div className="flex items-center gap-2">
                     <BarChart3 size={18} className="text-slate-400" />
                     <h3 className="font-semibold text-white">UMAP Projection</h3>
+                    {activeTab === 'electrophysiology' && ephysVizResults ? (
+                      <span className="text-xs font-normal text-amber-300/90 rounded-full border border-amber-600/40 px-2 py-0.5">
+                        PREPS + Scanpy
+                      </span>
+                    ) : null}
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
                     <label className="flex items-center gap-2">
@@ -1450,7 +1720,7 @@ const PortalPage = () => {
                       className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-sm text-slate-200"
                     >
                       <option value="cluster">Cluster</option>
-                      {vizResults.cell_types?.length ? (
+                      {sourceViz.cell_types?.length ? (
                         <option value="cell_type">Cell Type</option>
                       ) : null}
                       {availablePrograms.map((program) => (
@@ -1462,7 +1732,7 @@ const PortalPage = () => {
                     <span className="text-xs text-slate-400">
                       Showing {sampledUmapPoints.length.toLocaleString()} of{' '}
                       {filteredUmapPoints.length.toLocaleString()} filtered /{' '}
-                      {vizResults.total_cells.toLocaleString()}
+                      {sourceViz.total_cells.toLocaleString()}
                     </span>
                     <Button
                       variant="secondary"
@@ -1611,7 +1881,7 @@ const PortalPage = () => {
                     <Filter size={18} className="text-slate-400" />
                     <h3 className="font-semibold text-white">Cell Type Filters</h3>
                   </div>
-                  {vizResults.cell_types?.length ? (
+                  {sourceViz.cell_types?.length ? (
                     <>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Button
@@ -1628,7 +1898,7 @@ const PortalPage = () => {
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
-                        {vizResults.cell_types.map((cellType) => (
+                        {sourceViz.cell_types.map((cellType) => (
                           <label
                             key={cellType.name}
                             className="flex items-center gap-2 text-sm text-slate-300"
@@ -1679,7 +1949,7 @@ const PortalPage = () => {
                       className="bg-slate-900/70 border border-slate-700/70 rounded-lg px-2 py-1 text-sm text-slate-200"
                     >
                       <option value="cluster">Cluster</option>
-                      {vizResults.de_by_cell_type?.length ? (
+                      {sourceViz.de_by_cell_type?.length ? (
                         <option value="cell_type">Cell Type</option>
                       ) : null}
                     </select>
@@ -1868,16 +2138,15 @@ const PortalPage = () => {
               </div>
 
             </div>
-          )
           )}
-          {activeTab === 'electrophysiology' && (
+          {activeTab === 'electrophysiology' && !ephysVizResults && (
             !ephysShowPreview ? (
               <div className="h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20 text-slate-500">
                 <Radio size={48} className="mb-4 opacity-50 text-amber-400/70" />
                 <p className="text-lg">Traces & spike metrics</p>
                 <p className="text-sm opacity-60 text-center max-w-md px-4">
-                  Upload a recording, tune parameters, and run analysis to see the results layout.
-                  API wiring is not connected yet — the preview uses placeholder values.
+                  Trace preview only. For single-cell, use PREPS + UMAP in the left column, or drop a
+                  .h5ad on the upload area above.
                 </p>
               </div>
             ) : (

@@ -4,9 +4,70 @@ The Brain Tumor Annotation Portal (BAT Portal) is a web platform and API for
 annotating glioma single-cell RNA-seq data with Geneformer-derived embeddings,
 FAISS similarity search, and Scanpy-based visualization. The main user-facing
 experience is the **NeuroAnnotate** React portal (`frontend-react/`): landing
-page, sign-in, analysis dashboard (annotation + visualization), optional
-assistant chat, and profile. The FastAPI backend powers uploads, jobs, chat,
-and auth.
+page, sign-in, analysis dashboard (annotation, visualization, electrophysiology
+/ PREPS), optional assistant chat, and profile. The FastAPI backend powers
+uploads, jobs, chat, and auth.
+
+## What's implemented
+
+This repository is a **working full stack** for glioma scRNA-seq annotation and
+downstream analysis. The items below reflect what is built and merged today.
+
+### NeuroAnnotate (`frontend-react/`)
+
+- **Landing** (`LandingPage`) with auth entry.
+- **Hash routing** in `App.jsx`: `#/portal` (dashboard), `#/chat`, `#/profile`;
+  gated routes for signed-in users.
+- **Auth modal** (`AuthModal.jsx`): `POST /api/auth/signup` (Firestore) and
+  `POST /api/auth/signin`. **Sign-in:** Firestore verification is currently
+  disabled in `backend/api/auth.py`; only the **demo email/password pair**
+  defined there succeeds (replace before production).
+- **Analysis dashboard** (`PortalPage.jsx`): shared `.h5ad` upload for
+  annotation/visualization tabs; **three tabs** — Annotation, Visualization,
+  Electrophysiology (see below); **gene set scoring** shortcut from Annotation;
+  optional **embedded chat** (FAB) using `ChatPage` against `/api/chat/...`.
+- **Full-page chat** (`ChatPage.jsx`): sessions, messages, optional `.h5ad` +
+  annotate flow; optional Gemini / Vertex when env vars are set.
+- **Profile** (`ProfilePage.jsx`): editable research profile fields (session-local
+  in the browser unless you extend the API).
+- **Header**: branding, sign-in/out, profile link, settings placeholder.
+
+### Backend (FastAPI, `backend/`)
+
+- **Health** (`GET /api/health`) and annotation status (`GET /api/annotate/status`).
+- **Annotation** (`POST /api/annotate`): upload `.h5ad`, FAISS neighbor search,
+  predictions + metadata; optional **embedding pipeline job** hooks in responses.
+- **Visualization** (`POST /api/visualize`): Scanpy-style workflow (UMAP,
+  Leiden, DE, ligand/receptor/drug overlays, optional supptable / program
+  scoring); summaries and static assets under `/analysis_runs/`.
+- **Embedding jobs** (`POST/GET /api/embeddings/...`): background
+  `run_embeddings.py`; **pipeline jobs** add matching + cell-type mapping.
+- **PREPS integration** (`/api/preps/...`): optional subprocess pipeline
+  (`preps/generate_preds.py` via `PREPS_PYTHON`); job polling returns Scanpy
+  visualization JSON when the job succeeds (see `preps/HOWTO_PREPS.md`).
+- **Chat API** (`/api/chat/...`): sessions, messages, optional file upload and
+  annotate helper endpoints.
+- **Auth API** (`/api/auth/signup`, `/api/auth/signin`) as above.
+- **Static mount**: `GET /analysis_runs/...` from `data/analysis_runs/`.
+- **CORS** in `main.py` for localhost dev origins and regex for local ports.
+
+### Other UI and tooling
+
+- **Legacy static site** (`frontend/`): `index.html` + `chat.html` served with any
+  static file server.
+- **Scripts**: `scripts/prepare_reference_embeddings.py` (FAISS + reference
+  artifacts), `scripts/example_usage.py`, `scripts/annotate_embedding_matches.py`.
+- **Offline / prep assets**: `preps/` (Geneformer dict + fine-tuned trees used by
+  PREPS when configured), `CODE_FOR_PREDICTING_CELL_TYPE/` for default embedding
+  paths, notebooks and helpers under `preps/` as applicable.
+
+### Known gaps (not “done”)
+
+- **Electrophysiology trace analysis**: the portal accepts recording formats
+  (e.g. `.csv`, `.abf`, `.nex`, `.mat`, `.nwb`, `.edf`, `.h5`) but **Run analysis**
+  is **preview-only** in the UI (“connect the electrophysiology API…”); there is
+  no separate backend ephys processing route yet. **PREPS + UMAP** on the same
+  tab **is** wired end-to-end when `PREPS_PYTHON` and model/dict paths are valid.
 
 ## Web portal (NeuroAnnotate)
 
@@ -35,20 +96,27 @@ Marketing-style landing with **Get started**, which opens the auth modal.
 - **Sign up** calls `POST /api/auth/signup` (Firestore-backed; requires a
   working Firestore setup—see [Configuration](#configuration-environment-variables)).
 
-**Development sign-in:** Firestore-backed sign-in is currently bypassed in
-`backend/api/auth.py`. Valid demo credentials are defined there as
-`DEMO_EMAIL` and `DEMO_PASSWORD`. Replace or remove this bypass before any
-production use.
+**Development sign-in:** Firestore-backed verification in `signin` is
+**commented out**; only the demo `email` / `password` constants in
+`backend/api/auth.py` succeed. Restore the Firestore block and remove the demo
+branch before production.
 
 ### Analysis dashboard (`PortalPage`)
 
-Single **Upload** area for `.h5ad` files (drag-and-drop or browse). Two main
-tabs:
+**Upload** for `.h5ad` (drag-and-drop or browse) on the **Annotation** and
+**Visualization** tabs. The **Electrophysiology** tab uses the same drop zone
+for either a **recording file** (see formats below) or a **`.h5ad`** for PREPS
+(when dropped, the file is routed to the PREPS flow).
+
+Three main tabs:
 
 1. **Annotation**
    - Parameters: **Top K** neighbors, **similarity threshold**.
    - Runs **`POST /api/annotate`**; shows per-cell predictions, confidence,
      stats, and embedding-pipeline / match status when returned by the API.
+   - Optional **Gene set scoring**: **`POST /api/visualize`** with the same
+     `.h5ad` to run supptable program scoring (cached `data/SuppTable1.xlsx` or
+     URL from the Visualization tab), then switches to that tab for UMAP.
    - Views for predictions vs embedding matches; export of embedding match
      tables (CSV via client-side generation).
    - Backend health is checked with **`GET /api/health`**; warnings appear if
@@ -60,6 +128,17 @@ tabs:
      supptable URL, differential expression filters and sorting).
    - Displays UMAP-style outputs and summaries when the API returns them;
      analysis summaries may be exposed under `/analysis_runs/` on the backend.
+
+3. **Electrophysiology**
+   - **Recording upload** (`.csv`, `.abf`, `.nex`, `.mat`, `.nwb`, `.edf`, `.h5`):
+     UI controls (sampling rate, bandpass, SNR) and a **local preview** only;
+     server-side trace analysis is **not** implemented yet.
+   - **PREPS + UMAP** (separate `.h5ad` picker + **Run PREPS + UMAP**): calls
+     **`POST /api/preps/jobs`** when PREPS is configured; polls
+     **`GET /api/preps/jobs/{job_id}`**; on success the response includes the same
+     style of **visualization JSON** as **`/api/visualize`**, shown in the main
+     results panel. **`GET /api/preps/config`** drives the “PREPS available” hint
+     in the UI.
 
 **Assistant chat (large screens):** A floating action button opens an **embedded**
 chat panel (right side on `lg+` breakpoints) using the same **`ChatPage`**
@@ -94,6 +173,8 @@ menu with **Profile**, **Settings** (placeholder), and **Sign out**.
   mapping as a background job.
 - **Visualization API**: UMAP, Leiden clustering, differential expression, and
   ligand/receptor/drug target overlays.
+- **PREPS API** (optional): Geneformer tokenize + predict via the `preps/`
+  environment, then Scanpy UMAP packaging for the portal.
 - **Chat agent**: Natural language interaction with file upload and optional
   Gemini/Vertex-powered responses.
 - **Auth API**: Sign-up uses Firestore; sign-in behavior is defined in
@@ -103,8 +184,8 @@ menu with **Profile**, **Settings** (placeholder), and **Sign out**.
 
 ```
 ├── backend/                     FastAPI app + services
-│   ├── api/                     REST routers (annotate, chat, auth, visualize, embeddings, health)
-│   ├── services/                Annotation, chat, visualization, Firestore, pipelines
+│   ├── api/                     REST routers (annotate, chat, auth, visualize, embeddings, preps, health)
+│   ├── services/                Annotation, chat, visualization, Firestore, pipelines, PREPS jobs
 │   ├── main.py                  App entry + CORS + static mount for analysis_runs
 │   ├── config.py                Paths and environment settings
 │   ├── run_embeddings.py        Geneformer embedding extraction (wrapper)
@@ -114,8 +195,8 @@ menu with **Profile**, **Settings** (placeholder), and **Sign out**.
 ├── data/                        Reference data + generated outputs
 ├── frontend/                    Legacy static HTML UI (index + chat)
 ├── frontend-react/              NeuroAnnotate — Vite + React + Tailwind (primary UI)
-├── preps/                       Offline prep scripts + notebooks
-├── scripts/                     Utilities (e.g. prepare_reference_embeddings.py)
+├── preps/                       PREPS Geneformer assets + generate_preds; see preps/HOWTO_PREPS.md
+├── scripts/                     prepare_reference_embeddings.py, example_usage.py, annotate_embedding_matches.py
 ├── requirements.txt             Python dependencies for the API
 ├── SETUP.md                     Step-by-step setup
 ├── CHAT_AGENT.md                Chat interface / agent notes
@@ -274,6 +355,14 @@ Embeddings:
 - `GET /api/embeddings/pipeline/jobs/{job_id}`
 - `GET /api/embeddings/pipeline/jobs/{job_id}/log`
 
+PREPS (optional; requires `PREPS_PYTHON` and valid dict/model paths):
+
+- `GET /api/preps/status`
+- `GET /api/preps/config`
+- `POST /api/preps/jobs` (multipart: `file`, optional `species`, `gpu`, `reference_substring`, `de_top_n`, `cluster_resolution`)
+- `GET /api/preps/jobs/{job_id}` (optional `include_log_tail`)
+- `GET /api/preps/jobs/{job_id}/log`
+
 Auth:
 
 - `POST /api/auth/signup` (Firestore)
@@ -316,9 +405,21 @@ flowchart TD
   E --> F[JSON response + analysis summary]
 ```
 
+### PREPS (`/api/preps/jobs`, when configured)
+
+```mermaid
+flowchart TD
+  A[Upload .h5ad] --> B[preps/generate_preds.py subprocess]
+  B --> C[Geneformer tokenize + cell labels]
+  C --> D[Merge scores into AnnData]
+  D --> E[Scanpy UMAP + same viz packaging as /visualize]
+  E --> F[JSON on job poll GET /preps/jobs/id]
+```
+
 ## Files written to disk
 
 - `data/uploads/` — temporary uploads for `/api/annotate`
+- `data/preps_jobs/<uuid>/` — PREPS job workspace (upload + logs/outputs)
 - `data/embedding_jobs/*.log` — embedding job logs
 - `data/embedding_runs/<h5ad_stem>_embs/`
   - `embs_by_*_emb_layer_-1.csv`
@@ -344,6 +445,13 @@ Embedding paths (optional overrides):
 - `EMBEDDING_MODELS_ROOT`
 - `EMBEDDING_FINETUNE_SUBDIR`
 - `EMBEDDING_GENE_ID_TYPE`
+
+PREPS (optional; see `preps/HOWTO_PREPS.md`):
+
+- `PREPS_PYTHON` — path to the conda `preps` environment `python` (required for jobs)
+- `PREPS_DIR` — defaults to repo `preps/`
+- `PREPS_MODELS_ROOT`, `PREPS_DICT_DIR` — Geneformer assets (defaults under `preps/`)
+- `PREPS_DEFAULT_REFERENCE_SUBSTRING` — reference dataset filter substring
 
 Gemini / Vertex AI (optional, for chat):
 
@@ -391,6 +499,11 @@ python scripts/prepare_reference_embeddings.py
 - Leiden clustering needs `leidenalg` and `python-igraph` (included in `requirements.txt`).
 - Missing `data/annotations/*` files cause annotation overlay issues.
 
+### PREPS jobs return 503
+
+- Set `PREPS_PYTHON` in `.env` to the interpreter that can run `preps/generate_preds.py`.
+- Confirm `PREPS_MODELS_ROOT` and `PREPS_DICT_DIR` exist. See `preps/HOWTO_PREPS.md`.
+
 ### Sign up fails with Firestore errors
 
 - Configure `GOOGLE_APPLICATION_CREDENTIALS` and Firestore env vars, or use
@@ -407,4 +520,6 @@ python scripts/prepare_reference_embeddings.py
 - `SETUP.md` — step-by-step setup
 - `CHAT_AGENT.md` — chat interface usage
 - `backend/HOWTO_EMBEDDINGS.md` — embedding extraction
+- `preps/HOWTO_PREPS.md` — PREPS conda env and job wiring
 - `METHODOLOGY_AND_DISCUSSION.md` — methodology and discussion
+- `PROJECT_SUMMARY.md` — high-level project write-up (may lag the live stack; prefer this README for current behavior)

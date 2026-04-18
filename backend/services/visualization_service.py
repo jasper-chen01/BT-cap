@@ -289,6 +289,12 @@ class VisualizationService:
                 "top_clusters": top_clusters,
             }
 
+        ephys_labels = adata.uns.get("ephys_column_labels")
+        if isinstance(ephys_labels, dict):
+            for obs_key, display_name in ephys_labels.items():
+                if obs_key in adata.obs.columns and display_name:
+                    program_columns[str(display_name)] = str(obs_key)
+
         available_programs = sorted(program_columns.keys())
 
         resolved_selected_program = None
@@ -339,6 +345,9 @@ class VisualizationService:
                     "program_columns": program_columns,
                     "selected_program": resolved_selected_program,
                     "has_program_scores": bool(program_columns),
+                    "has_ephys_predictions": bool(ephys_labels)
+                    if isinstance(ephys_labels, dict)
+                    else False,
                     **supptable_meta,
                     **embedding_meta,
                 },
@@ -366,6 +375,9 @@ class VisualizationService:
                 "program_columns": program_columns,
                 "selected_program": resolved_selected_program,
                 "has_program_scores": bool(program_columns),
+                "has_ephys_predictions": bool(ephys_labels)
+                if isinstance(ephys_labels, dict)
+                else False,
                 "program_details": program_details,
                 **supptable_meta,
                 **embedding_meta,

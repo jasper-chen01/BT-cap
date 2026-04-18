@@ -18,3 +18,22 @@ __pycache__/
 *.pyd
 Geneformer/
 adata_embs/
+
+# ML / generated data under preps (multi-GB; keep locally)
+preps/fine-tuned_models/
+preps/glioma2_preds/
+preps/glioma_sub/
+preps/glioma_sub_patchseq/
+preps/glioma_sub_preds/
+preps/combined_patchseq_all_preds/
+preps/dict/
+preps/dirks_primary_gbm_combined_2000perCellType/
+preps/portal_*/
+preps/__pycache__/
+preps/**/*.arrow
+preps/**/*.h5ad
+preps/**/*.csv
+preps/**/*.xlsx
+preps/**/*.loom
+preps/**/*.pt
+preps/**/*.joblib

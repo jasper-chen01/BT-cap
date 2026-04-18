@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
-from backend.api import annotation, health, chat, auth, visualization, embeddings
+from backend.api import annotation, health, chat, auth, visualization, embeddings, preps
 from backend.config import settings
 
 app = FastAPI(
@@ -47,6 +47,7 @@ app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(visualization.router, prefix="/api", tags=["visualization"])
 app.include_router(embeddings.router, prefix="/api", tags=["embeddings"])
+app.include_router(preps.router, prefix="/api", tags=["preps"])
 
 
 @app.exception_handler(Exception)

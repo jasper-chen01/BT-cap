@@ -18,8 +18,35 @@ random.seed(0)
 np.random.seed(0)
 
 
+def _find_predictor_joblib(ref_base: str, model_directory: str, model_name: str):
+    """
+    Load path for the ElasticNet .joblib. Tries the exact filename, then any file in the
+    same folder whose name starts with the same ``prediction of … by `` prefix (handles
+    MAE/float string drift). Returns None if missing.
+    """
+    subdir = ref_base + model_directory
+    exact = subdir + model_name
+    if os.path.isfile(exact):
+        return exact
+    if not os.path.isdir(subdir):
+        return None
+    parts = model_name.split(" by ")
+    if len(parts) < 2:
+        return None
+    prefix = parts[0] + " by "
+    skip = {"scaler.joblib", "pca.joblib", "label_encoder.joblib"}
+    matches = [
+        fn
+        for fn in os.listdir(subdir)
+        if fn.endswith(".joblib") and fn not in skip and fn.startswith(prefix)
+    ]
+    if len(matches) == 1:
+        return subdir + matches[0]
+    return None
+
+
 pred_output_directory = f'{test_name}_{models}/'
-os.mkdir(pred_output_directory)
+os.makedirs(pred_output_directory, exist_ok=True)
 
 # ref_embs_directory = 'allen_preds/'
 # model_tups = [['v_baseline threshold_v_long_square trough_v_long_square_rel ElasticNet_emb_layer_preds/', 'prediction of v_baseline by embs alpha 0.25 l1_ratio 0.95 MAE 4.523.joblib'], 
@@ -52,7 +79,6 @@ elif models == 'patchseq':
                 ['Fitted MP (mV) AP threshold (mV) Afterhyperpolarization (mV) ElasticNet_emb_layer_preds/', 'prediction of AP threshold (mV) by pcs alpha 0.95 l1_ratio 0.7 MAE 8.599.joblib'], 
                 ['Rheobase (pA) Sag ratio Membrane time constant (ms) ElasticNet_emb_layer_scores/', 'prediction of Sag ratio_log by embs alpha 0.2 l1_ratio 0.0 MAE 0.086.joblib'], 
                 ['AP width (ms) Upstroke-to-downstroke ratio Latency (ms) ElasticNet_emb_layer_preds/', 'prediction of Latency (ms)_log by embs alpha 0.05 l1_ratio 0.85 MAE 58.346.joblib'], 
-                ['AP width (ms) Upstroke-to-downstroke ratio Latency (ms) ElasticNet_emb_layer_preds/', 'prediction of Upstroke-to-downstroke ratio by embs alpha 0.85 l1_ratio 0.05 MAE 1.596.joblib'], 
                 ['AP width (ms) Upstroke-to-downstroke ratio Latency (ms) ElasticNet_emb_layer_preds/', 'prediction of AP width (ms)_log by embs alpha 0.3 l1_ratio 0.05 MAE 0.915.joblib'], 
                 ['Input resistance (MOhm) AP amplitude (mV) Max number of APs ElasticNet_emb_layer_preds/', 'prediction of Input resistance (MOhm)_log by embs alpha 0.95 l1_ratio 0.0 MAE 470.228.joblib'], 
                 ['Rheobase (pA) Sag ratio Membrane time constant (ms) ElasticNet_emb_layer_scores/', 'prediction of Rheobase (pA)_log by embs alpha 0.05 l1_ratio 0.0 MAE 34.342.joblib'], 
@@ -73,7 +99,14 @@ for model_directory, model_name in tqdm(model_tups):
 
     scaler = load(ref_embs_directory + model_directory + 'scaler.joblib')
     pca = load(ref_embs_directory + model_directory + 'pca.joblib')
-    preps_model = load(ref_embs_directory + model_directory + model_name)
+    model_path = _find_predictor_joblib(ref_embs_directory, model_directory, model_name)
+    if not model_path:
+        print(
+            "WARNING: missing predictor .joblib for "
+            f"{model_directory!r} (expected {model_name!r}). Skipping."
+        )
+        continue
+    preps_model = load(model_path)
     if models == 'celltype':
         label_encoder = load(ref_embs_directory + model_directory + 'label_encoder.joblib')
 
