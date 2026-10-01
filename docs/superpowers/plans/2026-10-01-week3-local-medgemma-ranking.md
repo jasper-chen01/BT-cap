@@ -115,5 +115,5 @@
 
 - [x] Perform a whole-branch review against the spec and fix Important findings with RED-GREEN tests.
 - [x] Verify no secrets, raw data, model weights, or run cache files are staged.
-- [ ] Commit scoped Week 3 files and push `codex/week3-local-medgemma-ranking` to the user's GitHub remote.
+- [x] Commit scoped Week 3 files and push `codex/week3-local-medgemma-ranking` to the user's GitHub remote.
 - [x] Upload answer artifacts to the user-selected Box folder when authenticated; otherwise report the exact ready archive path.
