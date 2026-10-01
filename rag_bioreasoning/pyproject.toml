@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ephys-rag"
+version = "0.3.0"
+description = "Evidence-grounded bioreasoning over glioma Ephys, CellChat, DEG, and cell-count data"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.1",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.4",
+    "numpy>=1.26",
+    "streamlit>=1.32",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+local = [
+    "openai>=1.50",
+]
+cloud = [
+    "google-cloud-aiplatform>=1.84",
+    "google-genai>=1.0",
+]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ephys-rag = "ephys_rag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

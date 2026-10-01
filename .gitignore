@@ -10,12 +10,20 @@ __pycache__/
 .env
 backend/credentials/
 backend/credentials/*.json
+.superpowers/sdd/
+rag_bioreasoning/.venv/
+rag_bioreasoning/.env
+rag_bioreasoning/analysis_runs/
+rag_bioreasoning/.artifacts/
+rag_bioreasoning/runs/
+rag_bioreasoning/week3_bundle.zip
 
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
 Geneformer/
 adata_embs/
 
