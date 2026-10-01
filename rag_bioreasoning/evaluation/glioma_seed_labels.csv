@@ -1,0 +1,34 @@
+gene,compartment,label,basis
+NRXN1,tumor,1,supervisor synaptic-like tumor hypothesis
+NRXN2,tumor,1,supervisor synaptic-like tumor hypothesis
+NLGN1,tumor,1,supervisor synaptic-like tumor hypothesis
+NLGN3,tumor,1,supervisor synaptic-like tumor hypothesis
+GRIA2,tumor,1,supervisor glutamate tumor hypothesis
+GRIA3,tumor,1,supervisor glutamate tumor hypothesis
+GRIA4,tumor,1,supervisor glutamate tumor hypothesis
+GRIK2,tumor,1,supervisor glutamate tumor hypothesis
+CNTN1,tumor,1,supervisor contactin tumor hypothesis
+NRCAM,tumor,1,supervisor contactin tumor hypothesis
+NOTCH1,tumor,1,supervisor contactin tumor hypothesis
+NCAM1,tumor,1,supervisor adhesion tumor hypothesis
+NCAM2,tumor,1,supervisor adhesion tumor hypothesis
+PTN,tumor,1,supervisor synaptic-like scaffold hypothesis
+PTPRZ1,tumor,1,supervisor synaptic-like scaffold hypothesis
+MDK,tumor,1,supervisor MK pathway hypothesis
+NCL,tumor,1,supervisor MK pathway hypothesis
+APOE,TAM_microglia,1,supervisor myeloid bridge hypothesis
+TREM2,TAM_microglia,1,supervisor myeloid bridge hypothesis
+TYROBP,TAM_microglia,1,supervisor myeloid bridge hypothesis
+SPP1,TAM_microglia,1,supervisor immune synapse hypothesis
+CD44,TAM_microglia,1,supervisor immune synapse hypothesis
+MIF,TAM_microglia,1,supervisor immune synapse hypothesis
+CD74,TAM_microglia,1,supervisor immune synapse hypothesis
+CXCR4,TAM_microglia,1,supervisor immune synapse hypothesis
+LGALS9,TAM_microglia,1,supervisor GALECTIN hypothesis
+HAVCR2,TAM_microglia,1,supervisor GALECTIN hypothesis
+KLRB1,T_cell,1,supervisor CLEC immune synapse hypothesis
+CD69,T_cell,1,supervisor CLEC immune synapse hypothesis
+CD4,T_cell,1,supervisor MHC-II immune synapse hypothesis
+AREG,T_cell,1,supervisor EGF Ephys_2 hypothesis
+EGFR,T_cell,1,supervisor EGF Ephys_2 hypothesis
+CD99,T_cell,1,supervisor immune synapse hypothesis

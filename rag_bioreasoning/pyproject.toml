@@ -20,6 +20,10 @@ dependencies = [
 local = [
     "openai>=1.50",
 ]
+ranking = [
+    "lightgbm>=4.5",
+    "tabulate>=0.9",
+]
 cloud = [
     "google-cloud-aiplatform>=1.84",
     "google-genai>=1.0",

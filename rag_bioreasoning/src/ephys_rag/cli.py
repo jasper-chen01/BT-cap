@@ -15,6 +15,11 @@ from ephys_rag.evaluation import (
     write_evaluation_reports,
 )
 from ephys_rag.ingest import file_inventory, load_interactions
+from ephys_rag.ranking import (
+    build_candidate_features,
+    evaluate_ranking,
+    write_ranking_outputs,
+)
 from ephys_rag.providers.factory import (
     SUPPORTED_PROVIDERS,
     ProviderSettings,
@@ -28,6 +33,7 @@ from ephys_rag.week3_runner import load_cached_runs, run_repeated_evaluation
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_WEEK3_RUNS = PACKAGE_ROOT / "runs"
 DEFAULT_WEEK3_OUTPUTS = PACKAGE_ROOT / "week3_outputs"
+DEFAULT_SEED_LABELS = PACKAGE_ROOT / "evaluation" / "glioma_seed_labels.csv"
 
 
 def _cmd_stats(_: argparse.Namespace) -> None:
@@ -172,6 +178,21 @@ def _cmd_week3_replay(args: argparse.Namespace) -> None:
         print(f"{name}={path}")
 
 
+def _cmd_rank_genes(args: argparse.Namespace) -> None:
+    seeds = tuple(int(value.strip()) for value in args.seeds.split(",") if value.strip())
+    frame = build_candidate_features(args.data_dir, args.labels)
+    result = evaluate_ranking(
+        frame,
+        seeds=seeds,
+        n_splits=args.n_splits,
+        top_k=args.top_k,
+    )
+    paths = write_ranking_outputs(result, frame, args.output_dir)
+    print(result.metrics.to_string(index=False))
+    for name, path in paths.items():
+        print(f"{name}={path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Bioreasoning RAG over fall_semester/data")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -273,6 +294,20 @@ def build_parser() -> argparse.ArgumentParser:
     week3_replay.add_argument("--gemini-cache", default=None)
     week3_replay.add_argument("--table", action="store_true")
     week3_replay.set_defaults(func=_cmd_week3_replay)
+
+    rank = sub.add_parser(
+        "rank-genes",
+        help="Build and evaluate the leakage-aware Week 3 gene ranking",
+    )
+    rank.add_argument("--data-dir", default=str(DATA_DIR))
+    rank.add_argument("--labels", default=str(DEFAULT_SEED_LABELS))
+    rank.add_argument(
+        "--output-dir", default=str(DEFAULT_WEEK3_OUTPUTS / "ranking")
+    )
+    rank.add_argument("--seeds", default="11,23,37,53,71")
+    rank.add_argument("--n-splits", type=int, default=5)
+    rank.add_argument("--top-k", type=int, default=25)
+    rank.set_defaults(func=_cmd_rank_genes)
     return parser
 
 

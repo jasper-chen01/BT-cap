@@ -173,3 +173,12 @@ def test_week3_cli_exposes_five_run_and_replay_table_commands():
     assert run_args.provider == "ollama"
     assert run_args.repeats == 5
     assert replay_args.table is True
+
+
+def test_rank_genes_cli_exposes_reproducible_defaults():
+    """Week 3 ranking must be reproducible from a stable command."""
+    args = build_parser().parse_args(["rank-genes"])
+
+    assert args.n_splits == 5
+    assert args.top_k == 25
+    assert args.seeds == "11,23,37,53,71"
