@@ -1,0 +1,92 @@
+qid,question,tools_fired,required_terms_in_traces,medgemma_faithful,medgemma_hit,gemini_cached_answer,inventions,unstable,audit_basis,audit_note
+Q33,What does MIF bind in this table?,"cellchat_lookup, deg_lookup",yes,0/5,5/5,"Based on the provided CellChat lookup tool traces, the observations and interpretations are as follows:
+
+### Observations
+* **Tool Name:** `cellchat_lookup` (File: `all_significant_interactions.csv`)
+* **Interactions:** The tool trace results show significant interactions for the ligand-receptor pair **MIF_CD74_CXCR4** within the MIF pathway. Examples of these interactions include:
+  * Source `cycling_tumor / Ephys_2` (814 cells) interacting with target `TAM1/TAM2/microglia / Ephys_1` (12,086 cells) with a CellChat probability of 0.0917.
+  * Source `OPC_GABA_like_tumor / Ephys_2` (14,114 cells) interacting with target `TAM1/TAM2/microglia / Ephys_1` (12,086 cells) with a CellChat probability of 0.0707.
+  * Source `cycling_tumor / Ephys_2` (814 cells) interacting with target `T cell / Ephys_1` (2,662 cells) with a CellChat probability of 0.0486.
+* **Neurons:** ""Neurons"" are not a labeled identity in the retrieved data (the cell identities shown are tumors, TAM1/TAM2/microglia, and T cells).
+
+### Interpretation
+In this table, the ligand **MIF** binds to the receptor complex **CD74_CXCR4** (as represented by the multi-subunit interaction pair **MIF_CD74_CXCR4**).",none,False,human-reviewed,All runs name CD74 and CXCR4 but incorrectly add TAM/microglia as a binding partner.
+Q34,What does LGALS9 (GALECTIN) bind?,"cellchat_lookup, deg_lookup",yes,0/5,0/5,"Based on the provided tool traces and retrieved database rows, the binding partners of LGALS9 (Galectin-9) are identified as follows:
+
+### Observation (Data from Retrieved Sources)
+1. **CellChat Interactions** (`cellchat_lookup` in `all_significant_interactions.csv`):
+   * **CD45** (encoded by *PTPRC*): Identified in the ligand-receptor pair `LGALS9_CD45` (e.g., source `TAM1/TAM2/microglia / Ephys_2` to target `T cell / Ephys_1`, $n_{cells} = 2662$; and target `T cell / Ephys_2`, $n_{cells} = 1463$).
+   * **HAVCR2** (TIM-3): Identified in the pair `LGALS9_HAVCR2` (e.g., source `TAM1/TAM2/microglia / Ephys_2` to target `TAM1/TAM2/microglia / Ephys_1`, $n_{cells} = 12086$).
+   * **CD44**: Identified in the pair `LGALS9_CD44` (e.g., source `TAM1/TAM2/microglia / Ephys_2` to target `T cell / Ephys_1`, $n_{cells} = 2662$).
+   * **P4HB**: Identified in the pair `LGALS9_P4HB` (e.g., source `TAM1/TAM2/microglia / Ephys_2` to target `cycling_tumor / Ephys_2`, $n_{cells} = 814$; and target `OPC_GABA_like_tumor / Ephys_2`, $n_{cells} = 14114$).
+
+2. **Pathway Knowledge** (`pathway_knowledge`, Pathway: GALECTIN):
+   * Explicitly states that Galectin-9 (LGALS9) binds **TIM-3 (HAVCR2)**, **CD44**, **CD45**, and **P4HB**.
+
+### Interpretation
+Within the GALECTIN pathway, LGALS9 binds to **CD45** (PTPRC), **HAVCR2** (TIM-3), **CD44**, and **P4HB**.
+
+*(Note: ""Neurons"" are not a labeled identity in the retrieved cell-type interaction pairs or DEG tables.)*",none,False,human-reviewed,All runs give only CD45 and omit the requested trace-supported HAVCR2 and CD44 partners.
+Q35,"Name a glutamate ligand on the sender side, not just a receptor.",pathway_filter,yes,0/5,0/5,"Based on the provided tool traces and retrieved rows, we can make the following observations:
+
+### Observations
+
+1. **Pathways and Interactions**:
+   - In the tool trace `pathway_filter` for the file `all_significant_interactions.csv`, multiple interactions are listed under the ""Glutamate"" pathway [1].
+   - Examples of interaction pairs include:
+     - `Glutamate-Glu-SLC1A3_GLS_GRIA2`
+     - `Glutamate-Glu-SLC1A3_GLS_GRIA4`
+     - `Glutamate-Glu-SLC1A1_GLS_GRIA2`
+   - In the detailed interaction entries (e.g., interactions [2], [3], [6], and [9]), the sender side is explicitly shown as sending **Glu-SLC1A3_GLS** (or **Glu-SLC1A1_GLS** as seen in the pathway filter table) to the receiver's AMPA/kainate receptors (such as GRIA2 or GRIA4).
+   - In interaction [2], the sender cell type `cycling_tumor` ($n\_cells = 814$) sends **Glu-SLC1A3_GLS** to the target cell type `OPC_GABA_like_tumor` ($n\_cells = 6741$).
+   - Similarly, in interaction [9], the sender cell type `TAM1/TAM2/microglia` ($n\_cells = 25922$) sends **Glu-SLC1A3_GLS** to target `cycling_tumor` ($n\_cells = 814$).
+
+### Interpretation
+
+* **Glutamate Ligand (Sender Side)**: The sender-side glutamate release complex/ligand is represented as **Glu-SLC1A3_GLS** (or **Glu-SLC1A1_GLS**).
+
+*(Note: ""Neurons"" are not listed as a labeled identity among the sender/receiver cell types in the provided interaction traces; instead, the senders and targets are identified as tumor subtypes or myeloid cells, such as `cycling_tumor`, `OPC_GABA_like_tumor`, and `TAM1/TAM2/microglia`.)*",none,False,human-reviewed,All runs decline despite SLC1A1/SLC1A3-GLS sender complexes in the traces.
+Q36,Do T cells send NRXN or Glutamate in this table?,"cellchat_lookup, pathway_filter",yes,1/5,5/5,"Based on the provided tool traces and retrieved table rows from `all_significant_interactions.csv`, we can make the following observations:
+
+### Observations:
+* **NRXN Pathway Lookup:** A query searching for interactions where `gene=NRXN`, `celltype=T cell`, and the T cell acts as the `source` (sender) returned 0 hits (empty result in `cellchat_lookup` Trace [1]).
+* **Glutamate Pathway Lookup:** A query searching for interactions where `pathway=Glutamate`, `celltype=T cell`, and the T cell acts as the `source` returned 0 hits (empty result in `cellchat_lookup` Trace [2]).
+* **Alternative Pathway Lookup:** Under `pathway_filter` [Trace 3], which searched for the theme `neuron_tumor` with T cells in the compartment, T cells act as a source only for the `PTN_PTPRZ1` and `PTN_SDC3` pairs (pathway `PTN`).
+* **Glutamate Interactions:** In the listed significant interactions involving Glutamate (Traces [1]–[10] at the bottom), the sources are identified as `cycling_tumor / Ephys_2` (n_cells = 814) or `TAM1/TAM2/microglia / Ephys_2` (n_cells = 25,922), rather than T cells.
+
+### Interpretation:
+In this dataset, T cells do not send NRXN or Glutamate. All lookups for T cells serving as the source for either the NRXN gene or the Glutamate pathway returned empty results.",none,True,human-reviewed,Only run 3 correctly reports zero T-cell-sent NRXN or Glutamate interactions; the other four assert the opposite.
+Q37,Is NCAM used as a tumor-tumor adhesion pair?,"cellchat_lookup, deg_lookup",yes,5/5,5/5,"Based on the provided evidence, the observation and interpretation regarding the use of NCAM as a tumor-tumor adhesion pair are as follows:
+
+### Observations
+1. **CellChat Intermolecular Interactions**:
+   According to the tool trace `cellchat_lookup` in `all_significant_interactions.csv`, there are multiple significant homophilic interactions involving the ligand-receptor pair **NCAM1_NCAM1** within the NCAM pathway ($p = 0.0$ for all listed interactions) between various tumor cell populations:
+   * **OPC_GABA_like_tumor / Ephys_2** ($n\_cells = 14,114$) interacting with itself (probability = 0.0937).
+   * **cycling_tumor / Ephys_2** ($n\_cells = 814$) interacting with **OPC_GABA_like_tumor / Ephys_2** ($n\_cells = 14,114$) (probability = 0.0539).
+   * **cycling_tumor / Ephys_2** ($n\_cells = 814$) interacting with itself (probability = 0.0304).
+   * **AC_like_tumor / Ephys_2** ($n\_cells = 446$) interacting with **OPC_GABA_like_tumor / Ephys_2** ($n\_cells = 14,114$) (probability = 0.0241).
+   * **OPC_GABA_AC_like_tumor / Ephys_2** ($n\_cells = 1,012$) interacting with **OPC_GABA_like_tumor / Ephys_2** ($n\_cells = 14,114$) (probability = 0.0229).
+   * **OPC_GABA_like_tumor / Ephys_1** ($n\_cells = 6,741$) interacting with **OPC_GABA_like_tumor / Ephys_2** ($n\_cells = 14,114$) (probability = 0.0163).
+   * **AC_like_tumor / Ephys_2** ($n\_cells = 446$) interacting with **cycling_tumor / Ephys_2** ($n\_cells = 814$) (probability = 0.0134).
+
+2. **Pathway Knowledge**:
+   As detailed in the pathway biology documentation for the NCAM pathway (under Theme: neuron_tumor, adhesion), Neural Cell Adhesion Molecule (NCAM1/2) mediates biological functions including axon–glia contact, synaptic stabilization, and glioma invasion.
+
+3. **Missing Identities**:
+   Neurons are not a labeled identity in any of the listed interactions. Additionally, the lookup for NCAM in `combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv` was empty.
+
+### Interpretation
+Yes, NCAM is used as a tumor-tumor adhesion pair. The computational evidence demonstrates that tumor subpopulations (including OPC-GABA-like, cycling, AC-like, and OPC-GABA-AC-like tumor cells) extensively exhibit significant homophilic NCAM1–NCAM1 interactions. These interactions, combined with the biological annotation of NCAM as an adhesion pathway, indicate that it functions as a tumor-tumor adhesion pair in this context.",none,False,human-reviewed,All runs correctly identify the NCAM1-NCAM1 tumor-tumor adhesion interaction.
+Q38,"If a model claims T-cell Ephys_2 is the synaptic NRXN/GRIA program, what would refute it?","cellchat_lookup, deg_lookup, pathway_filter",yes,0/5,2/5,"Based on the provided computational biology tool traces and retrieved evidence, the claim that T-cell **Ephys_2** represents a synaptic NRXN/GRIA program is refuted by the following observations:
+
+### 1. Observations
+* **Absence of NRXN Interactions:** A CellChat query looking for `NRXN` interactions involving T cells in the `Ephys_2` state yielded zero hits (`n_hits=0`) in `all_significant_interactions.csv` ([1]).
+* **Absence of NRXN Differentially Expressed Genes (DEGs):** A lookup in `combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv` for `NRXN` in T cells yielded zero significant DEGs (`n_hits=0`) ([2]).
+* **Alternative Active Programs in T-cell Ephys_2:**
+  * The actual high-significance DEGs and interactions for T-cell `Ephys_2` point toward EGF signaling via `AREG_EGFR` (`n_cells=1463` for T cell / Ephys_2 as source) ([3]).
+  * `AREG` is highly upregulated in T-cell `Ephys_2` compared to `Ephys_1` in both IDH-Mutant ($avg\_log2FC = 2.622$, $p_{adj} = 5.89 \times 10^{-46}$) and IDH-WT ($avg\_log2FC = 0.9672$, $p_{adj} = 3.66 \times 10^{-5}$) contexts ([4]).
+  * Other verified interactions involving `Ephys_2` T cells fall under different themes, such as `PTN_PTPRZ1` and `PTN_SDC3` (PTN pathway) or `MIF` and `SPP1` interactions categorized under the `immune_synapse` theme ([5], [1]-[6]).
+* **Lack of Labeled Neurons:** As noted in the hypothesis text ([7]), ""neurons"" are not a labeled identity in the source or target cell-type columns of these datasets.
+
+### 2. Interpretation
+The claim is refuted because there is a complete absence of evidence for `NRXN` expression or participation in signaling interactions within T-cell Ephys_2. Instead, T-cell Ephys_2 is characterized by EGF/AREG signaling and classical immune synapse/growth-related pathways rather than a trans-synaptic neuronal adhesion program.",none,True,human-reviewed,All runs use the incorrect phrase does not refute even while citing evidence that does refute the claim.

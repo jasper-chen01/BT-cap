@@ -42,9 +42,9 @@
 **Interfaces:**
 - Produces: `OllamaProvider.generate(prompt: str) -> GenerationResult`, `MockTraceProvider.generate(prompt: str) -> GenerationResult`, and `RAGEngine.ask(...)` result field `context`.
 
-- [ ] Write provider/factory/context tests and verify they fail because local providers do not exist.
-- [ ] Implement minimal Ollama and mock providers plus configuration and CLI choices.
-- [ ] Run the focused tests and the entire `rag_bioreasoning/tests` suite.
+- [x] Write provider/factory/context tests and verify they fail because local providers do not exist.
+- [x] Implement minimal Ollama and mock providers plus configuration and CLI choices.
+- [x] Run the focused tests and the entire `rag_bioreasoning/tests` suite.
 
 ### Task 2: Atomic cache, replay, and Week 3 audit
 
@@ -61,10 +61,10 @@
 - Consumes: `RAGEngine.ask(...)` results with exact `context`.
 - Produces: `write_run_atomic`, `load_run`, `score_run`, `run_fivefold_evaluation`, and `build_week3_reports`.
 
-- [ ] Write cache/replay/scoring tests, including corrupt cache and no-live-call replay tests, and verify RED.
-- [ ] Implement atomic cache records and deterministic audit scoring.
-- [ ] Implement the five-run/resume runner and CLI `week3-run`/`week3-replay` commands.
-- [ ] Run focused tests and the full package suite.
+- [x] Write cache/replay/scoring tests, including corrupt cache and no-live-call replay tests, and verify RED.
+- [x] Implement atomic cache records and deterministic audit scoring.
+- [x] Implement the five-run/resume runner and CLI `week3-run`/`week3-replay` commands.
+- [x] Run focused tests and the full package suite.
 
 ### Task 3: Glioma evidence feature matrix and grouped LightGBM evaluation
 
@@ -78,11 +78,11 @@
 **Interfaces:**
 - Produces: `build_candidate_features(data_dir) -> DataFrame`, `evaluate_rankers(features, seeds) -> RankingEvaluation`, and `write_ranking_outputs(...)`.
 
-- [ ] Write parsing, 1,368-style candidate construction, 39-feature schema, label, leakage, baseline, and metric tests; verify RED.
-- [ ] Implement the minimum feature builder and documented compartment-aware seed labels.
-- [ ] Implement grouped five-fold/five-seed LightGBM evaluation and two baselines.
-- [ ] Export feature matrix, OOF scores, rankings, importances, metrics, and model card.
-- [ ] Run focused tests and the full package suite.
+- [x] Write parsing, 1,368-style candidate construction, 39-feature schema, label, leakage, baseline, and metric tests; verify RED.
+- [x] Implement the minimum feature builder and documented compartment-aware seed labels.
+- [x] Implement grouped five-fold/five-seed LightGBM evaluation and two baselines.
+- [x] Export feature matrix, OOF scores, rankings, importances, metrics, and model card.
+- [x] Run focused tests and the full package suite.
 
 ### Task 4: Installation, live runs, reports, and documentation
 
@@ -97,12 +97,12 @@
 - Consumes: Tasks 1-3 CLIs and output schemas.
 - Produces: replayable audit/ranking deliverables and exact reproduction commands.
 
-- [ ] Install Ollama and pull the pinned 4B quantization; record the version and model digest.
-- [ ] Run the mock loop, then five local MedGemma runs for Q9-Q38 with resume enabled.
-- [ ] Replay Q9-Q32 plus appendix and audit unstable/wrong runs.
-- [ ] Run the LightGBM benchmark and generate the model card.
-- [ ] Update documentation and build a Box-ready answer archive.
-- [ ] Run the full focused suite, replay command, ranking command, and a repository-wide test inventory.
+- [x] Install Ollama and pull the pinned 4B quantization; record the version and model digest.
+- [x] Run the mock loop, then five local MedGemma runs for Q9-Q38 with resume enabled.
+- [x] Replay Q9-Q32 plus appendix and audit unstable/wrong runs.
+- [x] Run the LightGBM benchmark and generate the model card.
+- [x] Update documentation and build a Box-ready answer archive.
+- [x] Run the full focused suite, replay command, ranking command, and a repository-wide test inventory.
 
 ### Task 5: Review and delivery
 
@@ -113,7 +113,7 @@
 - Consumes: verified code and deliverables.
 - Produces: scoped Git commit(s), remote branch, and Box upload or ready archive.
 
-- [ ] Perform a whole-branch review against the spec and fix Important findings with RED-GREEN tests.
-- [ ] Verify no secrets, raw data, model weights, or run cache files are staged.
+- [x] Perform a whole-branch review against the spec and fix Important findings with RED-GREEN tests.
+- [x] Verify no secrets, raw data, model weights, or run cache files are staged.
 - [ ] Commit scoped Week 3 files and push `codex/week3-local-medgemma-ranking` to the user's GitHub remote.
-- [ ] Upload answer artifacts to the user-selected Box folder when authenticated; otherwise report the exact ready archive path.
+- [x] Upload answer artifacts to the user-selected Box folder when authenticated; otherwise report the exact ready archive path.

@@ -1,0 +1,122 @@
+{
+  "Q9": {
+    "faithful_runs": [],
+    "note": "All runs misread within-cell-type Ephys DEGs as comparisons between cell types and do not answer shared scaffold versus discriminator."
+  },
+  "Q10": {
+    "faithful_runs": [],
+    "note": "All runs reverse the HLA-DRA ligand and CD4 receptor roles."
+  },
+  "Q11": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs identify the trace-supported TREM2-TYROBP receptor complex."
+  },
+  "Q12": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs identify EGF and the AREG-EGFR interaction as T-cell Ephys_2-private."
+  },
+  "Q13": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify ANNEXIN as an Ephys_1-only tumor-sender pathway."
+  },
+  "Q14": {
+    "faithful_runs": [],
+    "note": "All runs give CD44 but omit the second trace-supported receptor complex ITGAV-ITGB1."
+  },
+  "Q15": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify KLRB1."
+  },
+  "Q16": {
+    "faithful_runs": [1, 2, 3, 5],
+    "note": "Runs 1, 2, 3, and 5 report the varying p-values; run 4 ends with a contradictory statement that the p-values are 0.0."
+  },
+  "Q17": {
+    "faithful_runs": [],
+    "note": "All runs identify NRCAM but omit the expected NOTCH1 partner."
+  },
+  "Q18": {
+    "faithful_runs": [],
+    "note": "All runs decline to answer despite the APOE-TREM2-TYROBP myeloid self-loop in the traces."
+  },
+  "Q19": {
+    "faithful_runs": [],
+    "note": "Runs mention the interactions but do not deliver the required interpretation that labeled neurons are unnecessary and absent."
+  },
+  "Q20": {
+    "faithful_runs": [],
+    "note": "No run supplies the refuting 10 versus 50 tumor-sender interaction counts; several state the opposite conclusion."
+  },
+  "Q21": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly state that NRXN1 is Ephys_2-high in IDH-mutant cycling tumor."
+  },
+  "Q22": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly state that HLA-DRA is Ephys_1-high in tumor."
+  },
+  "Q23": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly answer the T-cell-scoped question that AREG is Ephys_2-high, although they omit the literal words T cell."
+  },
+  "Q24": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly state that GRIA2 has the same Ephys direction in both IDH groups."
+  },
+  "Q25": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly distinguish Ephys_2-high IDH-mutant cycling tumor from Ephys_1-high IDH-WT OPC-like tumor."
+  },
+  "Q26": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify HLA-DRA as Ephys_1-high in IDH-mutant TAM/microglia."
+  },
+  "Q27": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify MES-like tumor/TAM1/microglia Ephys_2 as the six-cell group."
+  },
+  "Q28": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs report the correct T-cell counts, 2662 versus 1463; four rely on the question for the T-cell scope."
+  },
+  "Q29": {
+    "faithful_runs": [2, 3, 4, 5],
+    "note": "Runs 2-5 correctly use 446 cells to call the group adequate; run 1 is truncated before a supported conclusion."
+  },
+  "Q30": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify NRXN1 as both a CellChat ligand and DEG in the query's IDH-mutant cycling Ephys_2 context."
+  },
+  "Q31": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly join the AREG-EGFR CellChat evidence with the T-cell DEG evidence."
+  },
+  "Q32": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly join HLA-DRA MHC-II ligand and Ephys_1-high tumor DEG evidence."
+  },
+  "Q33": {
+    "faithful_runs": [],
+    "note": "All runs name CD74 and CXCR4 but incorrectly add TAM/microglia as a binding partner."
+  },
+  "Q34": {
+    "faithful_runs": [],
+    "note": "All runs give only CD45 and omit the requested trace-supported HAVCR2 and CD44 partners."
+  },
+  "Q35": {
+    "faithful_runs": [],
+    "note": "All runs decline despite SLC1A1/SLC1A3-GLS sender complexes in the traces."
+  },
+  "Q36": {
+    "faithful_runs": [3],
+    "note": "Only run 3 correctly reports zero T-cell-sent NRXN or Glutamate interactions; the other four assert the opposite."
+  },
+  "Q37": {
+    "faithful_runs": [1, 2, 3, 4, 5],
+    "note": "All runs correctly identify the NCAM1-NCAM1 tumor-tumor adhesion interaction."
+  },
+  "Q38": {
+    "faithful_runs": [],
+    "note": "All runs use the incorrect phrase does not refute even while citing evidence that does refute the claim."
+  }
+}

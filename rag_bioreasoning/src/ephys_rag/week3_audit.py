@@ -16,6 +16,12 @@ _DEG_RE = re.compile(
     re.IGNORECASE,
 )
 _PAIR_IGNORE_PREFIXES = ("IDH_", "OPC_", "TAM_", "EPHYS_")
+_DEG_FIELD_WORDS = {"BOTH", "CSV", "DIRECTION", "FILE", "GENE", "PAIR", "ROW", "TOOL"}
+
+
+def _clean_multiline_text(value: Any) -> str:
+    """Remove line-end padding without flattening readable model prose."""
+    return "\n".join(line.rstrip() for line in str(value).splitlines()).strip()
 
 
 def _contains_all(text: str, terms: Iterable[str]) -> bool:
@@ -37,7 +43,17 @@ def _valid_pairs(rows: list[dict[str, Any]]) -> set[str]:
         for key in ("pair", "interaction", "interaction_name"):
             value = row.get(key)
             if value:
-                pairs.add(str(value).upper())
+                rendered = str(value).upper()
+                pairs.add(rendered)
+                # Neurotransmitter complexes carry descriptive prefixes, while
+                # the conservative regex sees only the final gene-like suffix.
+                # Treat each hyphen-delimited suffix containing an underscore
+                # as an alias of the trace-supported full interaction name.
+                pieces = rendered.split("-")
+                for index in range(1, len(pieces)):
+                    suffix = "-".join(pieces[index:])
+                    if "_" in suffix:
+                        pairs.add(suffix)
         ligand = row.get("ligand")
         receptor = row.get("receptor")
         if ligand and receptor:
@@ -67,6 +83,8 @@ def _invented_degs(answer: str, rows: list[dict[str, Any]]) -> list[str]:
     }
     invented: set[str] = set()
     for gene, direction in _DEG_RE.findall(answer):
+        if gene.upper() in _DEG_FIELD_WORDS:
+            continue
         normalized = _normalize_direction(direction)
         if (gene.upper(), normalized.casefold()) not in valid:
             invented.add(f"{gene.upper()}:{normalized}")
@@ -164,6 +182,18 @@ def load_gemini_answers(path: str | Path | None) -> dict[str, str]:
     }
 
 
+def load_audit_overrides(path: str | Path | None) -> dict[str, dict[str, Any]]:
+    if path is None:
+        return {}
+    source = Path(path)
+    if not source.exists():
+        return {}
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Human audit override file must contain a JSON object")
+    return {str(qid).upper(): value for qid, value in payload.items() if isinstance(value, dict)}
+
+
 def _question_number(qid: str) -> int:
     match = re.search(r"\d+", qid)
     return int(match.group()) if match else -1
@@ -189,10 +219,14 @@ def build_week3_reports(
     *,
     output_dir: str | Path,
     gemini_answers: dict[str, str] | None = None,
+    audit_overrides: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Path]:
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     gemini_answers = gemini_answers or {}
+    audit_overrides = {
+        str(qid).upper(): value for qid, value in (audit_overrides or {}).items()
+    }
     by_qid: dict[str, list[dict[str, Any]]] = {}
     for record in records:
         by_qid.setdefault(str(record.get("qid", "")).upper(), []).append(record)
@@ -204,6 +238,15 @@ def build_week3_reports(
         qid = question.id.upper()
         q_records = sorted(by_qid.get(qid, []), key=lambda item: int(item.get("run", 0)))
         scores = [score_run(record, question) for record in q_records]
+        override = audit_overrides.get(qid)
+        if override is not None:
+            faithful_runs = {int(run) for run in override.get("faithful_runs", [])}
+            for score in scores:
+                score["automatic_faithful"] = score["faithful"]
+                score["faithful"] = int(score.get("run", 0)) in faithful_runs
+        else:
+            for score in scores:
+                score["automatic_faithful"] = score["faithful"]
         score_map[qid] = scores
         aggregate = aggregate_question(question, scores)
         tools = sorted(
@@ -220,7 +263,11 @@ def build_week3_reports(
                 "required_terms_in_traces": (
                     "yes" if scores and all(score["trace_terms"] for score in scores) else "no"
                 ),
-                "gemini_cached_answer": gemini_answers.get(qid, "not available"),
+                "gemini_cached_answer": _clean_multiline_text(
+                    gemini_answers.get(qid, "not available")
+                ),
+                "audit_basis": "human-reviewed" if override is not None else "automatic",
+                "audit_note": str(override.get("note", "")) if override is not None else "",
             }
         )
         rows.append(aggregate)
@@ -229,12 +276,13 @@ def build_week3_reports(
                 {
                     "qid": qid,
                     "run": score["run"],
-                    "faithful": score["faithful"],
+                    "automatic_faithful": score["automatic_faithful"],
+                    "audited_faithful": score["faithful"],
                     "hit": score["hit"],
                     "trace_terms": score["trace_terms"],
                     "invented_pairs": ", ".join(score["invented_pairs"]) or "none",
                     "invented_degs": ", ".join(score["invented_degs"]) or "none",
-                    "answer": score["answer"],
+                    "answer": _clean_multiline_text(score["answer"]),
                 }
             )
 
@@ -248,6 +296,8 @@ def build_week3_reports(
         "gemini_cached_answer",
         "inventions",
         "unstable",
+        "audit_basis",
+        "audit_note",
     ]
     frame = pd.DataFrame(rows, columns=ordered_columns)
     numbers = frame["qid"].map(_question_number) if not frame.empty else pd.Series(dtype=int)

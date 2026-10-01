@@ -26,7 +26,11 @@ from ephys_rag.providers.factory import (
     provider_status,
 )
 from ephys_rag.tools import ToolRegistry
-from ephys_rag.week3_audit import build_week3_reports, load_gemini_answers
+from ephys_rag.week3_audit import (
+    build_week3_reports,
+    load_audit_overrides,
+    load_gemini_answers,
+)
 from ephys_rag.week3_runner import load_cached_runs, run_repeated_evaluation
 
 
@@ -34,6 +38,7 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_WEEK3_RUNS = PACKAGE_ROOT / "runs"
 DEFAULT_WEEK3_OUTPUTS = PACKAGE_ROOT / "week3_outputs"
 DEFAULT_SEED_LABELS = PACKAGE_ROOT / "evaluation" / "glioma_seed_labels.csv"
+DEFAULT_WEEK3_AUDIT = PACKAGE_ROOT / "evaluation" / "week3_human_audit.json"
 
 
 def _cmd_stats(_: argparse.Namespace) -> None:
@@ -173,6 +178,7 @@ def _cmd_week3_replay(args: argparse.Namespace) -> None:
         records,
         output_dir=args.output_dir,
         gemini_answers=load_gemini_answers(args.gemini_cache),
+        audit_overrides=load_audit_overrides(args.audit_overrides),
     )
     for name, path in paths.items():
         print(f"{name}={path}")
@@ -292,6 +298,7 @@ def build_parser() -> argparse.ArgumentParser:
     week3_replay.add_argument("--cache-label", default="medgemma")
     week3_replay.add_argument("--repeats", type=int, default=5)
     week3_replay.add_argument("--gemini-cache", default=None)
+    week3_replay.add_argument("--audit-overrides", default=str(DEFAULT_WEEK3_AUDIT))
     week3_replay.add_argument("--table", action="store_true")
     week3_replay.set_defaults(func=_cmd_week3_replay)
 

@@ -1,0 +1,354 @@
+qid,run,automatic_faithful,audited_faithful,hit,trace_terms,invented_pairs,invented_degs,answer
+Q9,1,False,False,False,True,none,none,"PTN is a significant DEG in cycling_tumor vs. OPC_GABA_like_tumor, with a log2FC of 3.4586 and a p-value of 8.860968400118968e-53. PTN is also a significant DEG in cycling_tumor vs. T cell, with a log2FC of 1.327 and a p-value of 3.1067484259998565e-17"
+Q9,2,False,False,False,True,none,none,"PTN is a significant DEG in cycling_tumor vs. OPC_GABA_like_tumor, with a log2FC of 3.4586 and p_val_adj of 8.860968400118968e-53. PTN is also a significant DEG in cycling_tumor vs. T cell, with a log2FC of 1.327 and p_val_adj of 3.1067484259998565e-"
+Q9,3,False,False,False,True,none,none,"PTN is a significant DEG in cycling_tumor vs. OPC_GABA_like_tumor, with a log2FC of 3.4586 and a p-value of 8.860968400118968e-53. PTN is also a significant DEG in cycling_tumor vs. T cell, with a log2FC of 1.327 and a p-value of 3.1067484259998565e-17"
+Q9,4,False,False,False,True,none,none,"PTN is a significant DEG in cycling_tumor vs. OPC_GABA_like_tumor, with a log2FC of 3.4586 and a p-value of 8.860968400118968e-53. PTN is also a significant DEG in cycling_tumor vs. T cell, with a log2FC of 1.327 and a p-value of 3.1067484259998565e-17"
+Q9,5,False,False,False,True,none,none,"PTN is a significant DEG in cycling tumor cells compared to T cell cells.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=PTN, n_cells=270
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=PTN, n_cells=1681"
+Q10,1,True,False,True,True,none,none,"The receptor used by MHC-II is HLA-DRA.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=HLA-DRA_CD4, n_cells=88"
+Q10,2,True,False,True,True,none,none,"HLA-DRA_CD4
+tool=cellchat_lookup
+file=all_significant_interactions.csv
+pair=HLA-DRA_CD4
+n_cells=12086"
+Q10,3,True,False,True,True,none,none,"HLA-DRA_CD4
+tool=cellchat_lookup
+file=all_significant_interactions.csv
+pair=HLA-DRA_CD4
+n_cells=88"
+Q10,4,True,False,True,True,none,none,"HLA-DRA_CD4
+tool=cellchat_lookup, source=all_significant_interactions.csv, pair=HLA-DRA_CD4, n_cells=88"
+Q10,5,True,False,True,True,none,none,"HLA-DRA_CD4
+tool=cellchat_lookup
+file=all_significant_interactions.csv
+pair=HLA-DRA_CD4
+n_cells=88"
+Q11,1,True,True,True,True,none,none,"The APOE receptor complex in this table is APOE-TREM2-TYROBP.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=APOE_TREM2_TYROBP, n_cells=12086
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=APOE, direction=Ephys_1_high, n_cells=1658"
+Q11,2,True,True,True,True,none,none,"The APOE receptor complex is APOE-TREM2-TYROBP.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=APOE_TREM2_TYROBP, n_cells=12086
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=APOE, direction=Ephys_1_high, n_cells=1658
+tool=deg"
+Q11,3,True,True,True,True,none,none,"The APOE receptor complex is APOE-TREM2-TYROBP.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=APOE_TREM2_TYROBP, n_cells=12086
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=APOE, direction=Ephys_1_high, n_cells=1658
+tool=deg"
+Q11,4,True,True,True,True,none,none,"The APOE receptor complex is APOE-TREM2-TYROBP.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=APOE_TREM2_TYROBP, n_cells=12086
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=APOE, direction=Ephys_1_high, n_cells=1658
+tool=deg"
+Q11,5,True,True,True,True,none,none,"The APOE receptor complex is APOE-TREM2-TYROBP.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=APOE_TREM2_TYROBP, n_cells=12086
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=APOE, direction=Ephys_1_high, n_cells=1658
+tool=deg"
+Q12,1,True,True,True,True,none,none,"The T-cell-sent pathway private to Ephys_2 is EGF.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=EGF, n_cells=7
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7"
+Q12,2,True,True,True,True,none,none,"The T-cell-sent pathway private to Ephys_2 is EGF.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=EGF, n_cells=7
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7"
+Q12,3,True,True,True,True,none,none,"The T-cell-sent pathway private to Ephys_2 is EGF.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=EGF, n_cells=7
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7"
+Q12,4,True,True,True,True,none,none,"The T-cell-sent pathway private to Ephys_2 is EGF.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=EGF, n_cells=7
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7"
+Q12,5,True,True,True,True,none,none,"The T-cell-sent pathway EGF is private to Ephys_2.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=EGF, n_cells=7
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7"
+Q13,1,True,True,True,True,none,none,"The tumor-sender pathway exclusive to Ephys_1 is ANNEXIN.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=ANNEXIN, n_cells=4"
+Q13,2,True,True,True,True,none,none,"The tumor-sender pathway exclusive to Ephys_1 is ANNEXIN.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=ANNEXIN, n_cells=4
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=MHC-I, n_cells=1"
+Q13,3,True,True,True,True,none,none,"The tumor-sender pathway exclusive to Ephys_1 is ANNEXIN.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=ANNEXIN, n_cells=4
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=MHC-I, n_cells=1"
+Q13,4,True,True,True,True,none,none,"The tumor-sender pathway exclusive to Ephys_1 is ANNEXIN.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=ANNEXIN, n_cells=4
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=MHC-I, n_cells=1"
+Q13,5,True,True,True,True,none,none,"The tumor-sender pathway exclusive to Ephys_1 is ANNEXIN.
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=ANNEXIN, n_cells=4
+tool=sender_pathway_contrast, file=all_significant_interactions.csv, pair=MHC-I, n_cells=1"
+Q14,1,False,False,False,True,none,none,"SPP1 interacts with CD44.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=SPP1_CD44, n_cells=85627
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=SPP1, direction=Ephys_1_high, n_Ephys_1=270
+tool=deg_lookup, file=combined_E"
+Q14,2,False,False,False,True,none,none,"SPP1 interacts with CD44.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=SPP1_CD44, n_cells=55
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=SPP1, direction=Ephys_1_high, n_Ephys_1=270
+tool=deg_lookup, file=combined_Ephys2_"
+Q14,3,False,False,False,True,none,none,"SPP1 interacts with CD44.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=SPP1_CD44, n_cells=85627
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=SPP1, direction=Ephys_1_high, n_Ephys_1=270
+tool=deg_lookup, file=combined_E"
+Q14,4,False,False,False,True,none,none,"SPP1 interacts with CD44.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=SPP1_CD44, n_cells=85627
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=SPP1, direction=Ephys_1_high, n_Ephys_1=270
+tool=deg_lookup, file=combined_E"
+Q14,5,False,False,False,True,none,none,"SPP1 interacts with CD44.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=SPP1_CD44, n_cells=85627
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=SPP1, direction=Ephys_1_high, n_Ephys_1=270
+tool=deg_lookup, file=combined_E"
+Q15,1,True,True,True,True,none,none,"CLEC2C binds to KLRB1 on T cells.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CLEC2C_KLRB1, n_cells=2662"
+Q15,2,True,True,True,True,none,none,"CLEC2C binds to KLRB1 on T cells.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CLEC2C_KLRB1, n_cells=2662"
+Q15,3,True,True,True,True,none,none,"CLEC2C binds to KLRB1 on T cells.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CLEC2C_KLRB1, n_cells=2662"
+Q15,4,True,True,True,True,none,none,"CLEC2C binds to KLRB1 on T cells.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CLEC2C_KLRB1, n_cells=2662"
+Q15,5,True,True,True,True,none,none,"CLEC2C binds to KLRB1 on T cells.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CLEC2C_KLRB1, n_cells=2662"
+Q16,1,False,True,False,True,none,none,"The cellchat_lookup tool returned p-values of 0.0, 0.01, 0.02, 0.03, 0.04.
+The annotation_lookup tool returned celltype_id values of TAM1/TAM2/microglia, T cell, astrocyte, endothelial, fibroblast, oligodendrocytes, vascular, AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, cycling_tumor.
+n"
+Q16,2,False,True,False,True,none,none,"The cellchat_lookup tool returned p-values of 0.0, 0.01, 0.02, 0.03, 0.04.
+The annotation_lookup tool returned celltype_id values of TAM1/TAM2/microglia, T cell, astrocyte, endothelial, fibroblast, oligodendrocytes, vascular, AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, cycling_tumor.
+The"
+Q16,3,False,True,False,True,none,none,"The cellchat_lookup tool returned p-values of 0.0, 0.01, 0.02, 0.03, 0.04.
+The annotation_lookup tool returned celltype_id values of TAM1/TAM2/microglia, T cell, astrocyte, endothelial, fibroblast, oligodendrocytes, vascular, AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, cycling_tumor.
+The"
+Q16,4,False,False,False,True,none,none,"The cellchat_lookup tool returned p-values of 0.0, 0.01, 0.02, 0.03, 0.04.
+The annotation_lookup tool returned celltype_id and n_cells values.
+The p-values are 0.0."
+Q16,5,False,True,False,True,none,none,"The cellchat_lookup tool returned p-values of 0.0, 0.01, 0.02, 0.03, 0.04.
+The annotation_lookup tool returned celltype_id values of TAM1/TAM2/microglia, T cell, astrocyte, endothelial, fibroblast, oligodendrocytes, vascular, AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, cycling_tumor.
+The"
+Q17,1,False,False,False,True,none,none,"CNTN1 binds NRCAM.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CNTN1_NRCAM, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=CNTN1, direction=Ephys_2_high, n_cells=663"
+Q17,2,False,False,False,True,none,none,"CNTN1 binds NRCAM.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CNTN1_NRCAM, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=CNTN1, direction=Ephys_2_high, n_cells=663"
+Q17,3,False,False,False,True,none,none,"CNTN1 binds NRCAM.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CNTN1_NRCAM, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=CNTN1_NRCAM, n_cells=2185"
+Q17,4,False,False,False,True,none,none,"CNTN1 binds NRCAM.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CNTN1_NRCAM, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=CNTN1, direction=Ephys_2_high, n_cells=663"
+Q17,5,False,False,False,True,none,none,"CNTN1 binds NRCAM.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=CNTN1_NRCAM, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=CNTN1_NRCAM, n_cells=2185"
+Q18,1,False,False,False,True,none,none,"I am sorry, but I cannot answer the research question based on the provided evidence. The evidence only contains cell type annotations and does not include any information about self-loops or their probabilities."
+Q18,2,False,False,False,True,none,none,"The evidence block does not contain information about the highest-probability myeloid self-loop. The tool `cellchat_lookup` returned 399 hits, but the specific self-loop information is not available. The `annotation_lookup` tool returned 0 hits for myeloid cells."
+Q18,3,False,False,False,True,none,none,"I am sorry, but I cannot answer the research question using only the evidence provided. The evidence block is incomplete and does not contain information about the highest-probability myeloid self-loop."
+Q18,4,False,False,False,True,none,none,"I am sorry, but I cannot answer the research question using only the evidence block provided. The evidence block is incomplete and does not contain information about the highest-probability myeloid self-loop."
+Q18,5,False,False,False,True,none,none,"I am sorry, but I cannot answer the research question using the provided evidence. The evidence only contains information about cell types and pathways, but it does not provide enough information to determine the highest-probability myeloid self-loop."
+Q19,1,True,False,True,True,none,none,NRXN1-NLGN1 and glutamate-GRIA are both present in the dataset. NRXN1-NLGN1 is present in OPC_GABA_like_tumor / Ephys_2 and NRXN1-LRRTM2 is present in OPC_GABA_like_tumor / Ephys_2. Glutamate-Glu-SLC1A3_GLS_GRIA2 is present in TAM1/TAM2/microglia / Ephys_2 and Glutamate-Glu-SLC1A3_GLS_GRIA4
+Q19,2,True,False,True,True,none,none,NRXN1-NLGN1 and glutamate-GRIA are both present in the dataset. NRXN1-NLGN1 is present in OPC_GABA_like_tumor / Ephys_2 and NRXN1-LRRTM2 is present in OPC_GABA_like_tumor / Ephys_2. Glutamate-Glu-SLC1A3_GLS_GRIA2 is present in TAM1/TAM2/microglia / Ephys_2 and Glutamate-Glu-SLC1A3_GLS_GRIA4
+Q19,3,True,False,True,True,none,none,"NRXN1-NLGN1 and glutamate-GRIA are present in the dataset. NRXN1-NLGN1 is associated with OPC_GABA_like_tumor / Ephys_2 and OPC_GABA_like_tumor / Ephys_2. Glutamate-GRIA is associated with TAM1/TAM2/microglia / Ephys_2 and OPC_GABA_like_tumor / Ephys_2.
+
+The evidence does not contain any information about neurons."
+Q19,4,True,False,True,True,none,none,"NRXN1-NLGN1 and glutamate-GRIA are both present in the dataset. NRXN1-NLGN1 is a significant interaction with pval=0.0. Glutamate-GRIA is a significant interaction with pval=0.0.
+
+The evidence block does not contain any information about neurons."
+Q19,5,True,False,True,True,none,none,"NRXN1-NLGN1 and glutamate-GRIA are both present in the dataset. NRXN1-NLGN1 is associated with OPC_GABA_like_tumor / Ephys_2 and OPC_GABA_like_tumor / Ephys_2. Glutamate-GRIA is associated with TAM1/TAM2/microglia / Ephys_2 and OPC_GABA_like_tumor / Ephys_2. The number of cells is 1543 and 2661, respectively.
+
+Interpretation:
+NRX"
+Q20,1,True,False,True,True,none,none,"The evidence shows that NRXN1 is significantly enriched in the tumor compartment compared to Ephys_2, with a p-value of 0.0. There is no evidence to refute the claim that NRXN is Ephys_1-enriched in tumor.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN, ephys=Ephys_1, compartment=tumor, role=either] n_cells=10
+pair=NRXN1_NLGN1; pathway=NRXN; source"
+Q20,2,True,False,True,True,none,none,The evidence shows that NRXN1 is significantly enriched in the tumor compartment compared to Ephys_2. The number of hits is 10.
+Q20,3,True,False,True,True,none,none,"The evidence shows that NRXN1 is significantly enriched in the tumor compartment compared to Ephys_2, with a p-value of 0.0. There is no evidence to refute the claim that NRXN is Ephys_1-enriched in tumor."
+Q20,4,True,False,True,True,none,none,"The evidence shows that NRXN1 is significantly enriched in the tumor compartment compared to Ephys_2. The tool cellchat_lookup shows that NRXN1 interacts with NLGN1 and LRRTM2 in the tumor compartment. The tool deg_lookup shows that there are no significant DEGs for NRXN in Ephys2 vs Ephys1. The tool pathway_filter shows that PTN is significantly enriched in the tumor compartment compared to Ephys_2.
+
+Therefore, the evidence refutes the claim that NRXN is Ephys_1-enriched in tumor"
+Q20,5,True,False,True,True,none,none,"The evidence shows that NRXN1 is significantly enriched in the tumor compartment in Ephys_1 cells. There is no evidence that NRXN is enriched in Ephys_1.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN, ephys=Ephys_1, compartment=tumor, role=either] n_cells=10
+pair=NRXN1_NLGN1; pathway=NRXN; source=OPC_GABA_like_tumor / Ephys_1; target"
+Q21,1,True,True,True,True,none,none,"NRXN1 is DEG-supported as Ephys_2-high in IDH-mutant cycling tumor.
+tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=NRXN1, celltype=cycling_tumor, idh=IDH_Mutant, pooled=False] n_hits=1
+gene=NRXN1; direction=Ephys_2_high; avg_log2FC=3.70"
+Q21,2,False,True,False,True,none,none,"NRXN1 is DEG-supported as Ephys_2-high in IDH-mutant cycling tumor.
+tool=deg_lookup, source file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=NRXN1, n_cells=136"
+Q21,3,False,True,False,True,none,none,"NRXN1 is DEG-supported as Ephys_2-high in IDH-mutant cycling tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=NRXN1, n_cells=136
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NRXN1_NLGN1, n_cells=30
+tool=cellchat_lookup, file="
+Q21,4,False,True,False,True,none,none,"NRXN1 is DEG-supported as Ephys_2-high in IDH-mutant cycling tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=NRXN1, n_cells=136"
+Q21,5,False,True,False,True,none,none,"NRXN1 is DEG-supported as Ephys_2-high in IDH-mutant cycling tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=NRXN1, n_cells=136
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NRXN1_NLGN1, n_cells=30
+tool=cellchat_lookup, file="
+Q22,1,True,True,True,True,none,none,"HLA-DRA is Ephys_1-high in tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=HLA-DRA, n_cells=5847"
+Q22,2,True,True,True,True,none,none,"HLA-DRA is Ephys_1-high in tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=HLA-DRA, n_cells=5847"
+Q22,3,True,True,True,True,none,none,"HLA-DRA is Ephys_1-high in tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=HLA-DRA, n_cells=5847"
+Q22,4,True,True,True,True,none,none,"HLA-DRA is Ephys_1-high in tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=HLA-DRA, n_cells=5847"
+Q22,5,True,True,True,True,none,none,"HLA-DRA is Ephys_1-high in tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=HLA-DRA, n_cells=5847"
+Q23,1,False,True,False,True,none,none,"AREG is an Ephys_2-high DEG.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=AREG, n_cells=334"
+Q23,2,False,True,False,True,none,none,"AREG is an Ephys_2-high DEG.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=AREG, n_cells=334"
+Q23,3,False,True,False,True,none,none,"AREG is an Ephys_2-high DEG.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=AREG, n_cells=334"
+Q23,4,False,True,False,True,none,none,"AREG is an Ephys_2-high DEG.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=AREG, n_cells=334"
+Q23,5,False,True,False,True,none,none,"AREG is an Ephys_2-high DEG.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=AREG, n_cells=334"
+Q24,1,False,True,False,True,none,none,"GRIA2 goes the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2, n_cells=11741
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2,"
+Q24,2,False,True,False,True,none,none,"GRIA2 goes the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2, n_cells=11741
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2,"
+Q24,3,False,True,False,True,none,none,"GRIA2 goes the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2, n_cells=11741
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2,"
+Q24,4,False,True,False,True,none,none,"GRIA2 goes the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2, n_cells=11741
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair=GRIA2,"
+Q24,5,False,True,False,True,none,none,"GRIA2 goes the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor.
+tool=deg_lookup, source file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=GRIA2, n_cells=11741
+tool=deg_lookup, source file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/"
+Q25,1,False,True,False,True,none,none,EGFR is Ephys_1_high in IDH-WT OPC-like tumor. EGFR is Ephys_2_high in cycling tumor.
+Q25,2,False,True,False,True,none,none,EGFR is Ephys_1_high in IDH-WT OPC-like tumor. EGFR is Ephys_2_high in cycling tumor.
+Q25,3,False,True,False,True,none,none,EGFR is Ephys_1_high in IDH-WT OPC-like tumor. EGFR is Ephys_2_high in cycling tumor.
+Q25,4,False,True,False,True,none,none,EGFR is Ephys_1_high in IDH-WT OPC-like tumor. EGFR is Ephys_2_high in cycling tumor.
+Q25,5,False,True,False,True,none,none,EGFR is Ephys_1_high in IDH-WT OPC-like tumor. EGFR is Ephys_2_high in cycling tumor.
+Q26,1,False,True,False,True,none,none,"HLA-DRA is Ephys_1-high in IDH-mutant TAM/microglia.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=HLA-DRA, n_cells=2106"
+Q26,2,False,True,False,True,none,none,"HLA-DRA is Ephys_1-high in IDH-mutant TAM/microglia.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=HLA-DRA, n_cells=1"
+Q26,3,False,True,False,True,none,none,"HLA-DRA is Ephys_1-high in IDH-mutant TAM/microglia.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=HLA-DRA, n_cells=1"
+Q26,4,False,True,False,True,none,none,"HLA-DRA is Ephys_1-high in IDH-mutant TAM/microglia.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=HLA-DRA, n_cells=2106"
+Q26,5,False,True,False,True,none,none,"HLA-DRA is Ephys_1-high in IDH-mutant TAM/microglia.
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, pair/gene=HLA-DRA, n_cells=1"
+Q27,1,True,True,True,True,none,none,The group MES_like_tumor/TAM1/microglia / Ephys_2 has 6 cells.
+Q27,2,True,True,True,True,none,none,"The labeled group with only 6 cells is MES_like_tumor/TAM1/microglia / Ephys_2.
+tool=count_lookup, file=cellchat_group_counts.csv, pair=MES_like_tumor/TAM1/microglia / Ephys_2, n_cells=6"
+Q27,3,True,True,True,True,none,none,The group MES_like_tumor/TAM1/microglia / Ephys_2 has 6 cells.
+Q27,4,True,True,True,True,none,none,"The labeled group with only 6 cells is MES_like_tumor/TAM1/microglia / Ephys_2.
+tool=count_lookup, file=cellchat_group_counts.csv, pair=MES_like_tumor/TAM1/microglia / Ephys_2, n_cells=6"
+Q27,5,True,True,True,True,none,none,"The labeled group with only 6 cells is MES_like_tumor/TAM1/microglia / Ephys_2.
+tool=count_lookup, file=cellchat_group_counts.csv, pair=MES_like_tumor/TAM1/microglia / Ephys_2, n_cells=6"
+Q28,1,False,True,False,True,none,none,"Ephys_1: 2662
+Ephys_2: 1463"
+Q28,2,False,True,False,True,none,none,"Ephys_1: 2662
+Ephys_2: 1463"
+Q28,3,False,True,False,True,none,none,"Ephys_1: 2662
+Ephys_2: 1463"
+Q28,4,True,True,True,True,none,none,"Ephys_1: 2662 T cells
+Ephys_2: 1463 T cells"
+Q28,5,False,True,False,True,none,none,"Ephys_1: 2662
+Ephys_2: 1463"
+Q29,1,True,False,True,True,none,none,The `count_lookup` tool found 7 hits for the pair `OPC_GABA_like_tumor / Ephys_2` with `n_cells` of 14114. The `AC_like_tumor / Ephys_2` group has `n_cells` of 446. The `OPC_GABA_AC_like_tumor / Ephys_2` group has `n_cells` of 1012. The `AC_like_tumor / Ephys_2` group has `n
+Q29,2,True,True,True,True,none,none,"The `count_lookup` tool returned 7 hits with `n_cells` greater than or equal to 50. The `AC_like_tumor / Ephys_2` group has `n_cells` = 446.
+Observation: AC-like tumor / Ephys_2 has n_cells = 446.
+Interpretation: AC-like tumor / Ephys_2 is large enough to treat as a trusted sender."
+Q29,3,False,True,False,True,none,none,The `count_lookup` tool returned 7 hits for the `Ephys_2` group. The `AC_like_tumor / Ephys_2` group has 446 cells. The `AC_like_tumor / Ephys_2` group is considered a trusted sender.
+Q29,4,True,True,True,True,none,none,"The `count_lookup` tool returned 7 hits with `n_cells` greater than or equal to 50. The `AC_like_tumor / Ephys_2` group has `n_cells` = 446. Therefore, `AC_like_tumor / Ephys_2` is large enough to treat as a trusted sender.
+tool=count_lookup, file=cellchat_group_counts.csv, pair=AC_like_tumor / Ephys_2, n_cells=446"
+Q29,5,True,True,True,True,none,none,"The `count_lookup` tool returned 7 hits with `n_cells` greater than or equal to 50. The `AC_like_tumor / Ephys_2` group has `n_cells` = 446.
+Observation: AC-like tumor / Ephys_2 has n_cells = 446.
+Interpretation: AC-like tumor / Ephys_2 is a trusted sender."
+Q30,1,False,True,False,True,none,none,"NRXN1 is a CellChat ligand in cycling Ephys_2. NRXN1 is a DEG in cycling Ephys_2.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN1, celltype=cycling_tumor, ephys=Ephys_2, compartment=tumor, role=source] n_cells=10
+tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters"
+Q30,2,False,True,False,True,none,none,"NRXN1 is a CellChat ligand in cycling Ephys_2. NRXN1 is a DEG in cycling Ephys_2.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN1, celltype=cycling_tumor, ephys=Ephys_2, compartment=tumor, role=source] n_cells=10
+pair=NRXN1_NLGN1; pathway=NRXN; source=cycling_tumor / Ephys_2; target=OPC_GABA"
+Q30,3,False,True,False,True,none,none,"NRXN1 is a CellChat ligand in cycling Ephys_2. NRXN1 is a DEG in cycling Ephys_2.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN1, celltype=cycling_tumor, ephys=Ephys_2, compartment=tumor, role=source] n_cells=10
+tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters"
+Q30,4,False,True,False,True,none,none,"NRXN1 is a CellChat ligand in cycling Ephys_2. NRXN1 is a DEG in cycling Ephys_2.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN1, celltype=cycling_tumor, ephys=Ephys_2, compartment=tumor, role=source] n_cells=10
+tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters"
+Q30,5,False,True,False,True,none,none,NRXN1 is a CellChat ligand in cycling Ephys_2. NRXN1 is a DEG in cycling Ephys_2.
+Q31,1,True,True,True,True,none,none,"AREG is both the T-cell EGF ligand in CellChat and a T-cell DEG.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=AREG, n_hits=2"
+Q31,2,True,True,True,True,none,none,"AREG is both the T-cell EGF ligand in CellChat and a T-cell DEG.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=AREG, n_hits=2"
+Q31,3,True,True,True,True,none,none,"AREG is both the T-cell EGF ligand in CellChat and a T-cell DEG.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=AREG, n_hits=2"
+Q31,4,True,True,True,True,none,none,"AREG is both the T-cell EGF ligand in CellChat and a T-cell DEG.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=AREG, n_hits=2"
+Q31,5,True,True,True,True,none,none,"AREG is both the T-cell EGF ligand in CellChat and a T-cell DEG.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=AREG_EGFR, n_cells=7
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=AREG, n_hits=2"
+Q32,1,True,True,True,True,none,none,HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.
+Q32,2,True,True,True,True,none,none,HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.
+Q32,3,True,True,True,True,none,none,HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.
+Q32,4,True,True,True,True,none,none,HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.
+Q32,5,True,True,True,True,none,none,HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.
+Q33,1,True,False,True,True,none,none,"MIF binds to CXCR4, CD74, and TAM1/TAM2/microglia.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=MIF_CD74_CXCR4, n_cells=66
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=MIF, direction=Ephys_1_high, n_Ephys_1=9696"
+Q33,2,True,False,True,True,none,none,"MIF binds to CXCR4, CD74, and TAM1/TAM2/microglia.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=MIF_CD74_CXCR4, n_cells=66
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=MIF, direction=Ephys_1_high, n_Ephys_1=9696"
+Q33,3,True,False,True,True,none,none,"MIF binds to CXCR4, CD74, and TAM1/TAM2/microglia.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=MIF_CD74_CXCR4, n_cells=66
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=MIF, direction=Ephys_1_high, n_Ephys_1=9696"
+Q33,4,True,False,True,True,none,none,"MIF binds to CXCR4, CD74, and TAM1/TAM2/microglia.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=MIF_CD74_CXCR4, n_cells=66
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=MIF, direction=Ephys_1_high, n_Ephys_1=9696"
+Q33,5,True,False,True,True,none,none,"MIF binds to CXCR4, CD74, and TAM1/TAM2/microglia.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=MIF_CD74_CXCR4, n_cells=66
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=MIF, direction=Ephys_1_high, n_Ephys_1=9696"
+Q34,1,False,False,False,True,none,none,"LGALS9 binds CD45.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=LGALS9_CD45, n_cells=25922
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=LGALS9, direction=Ephys_1_high, n_Ephys_1=270, n_Ephys_2=136
+tool"
+Q34,2,False,False,False,True,none,none,"LGALS9 (GALECTIN) binds CD45.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=LGALS9_CD45, n_cells=25922
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=LGALS9, direction=Ephys_1_high, n_Ephys_1=270, n_Ephys_2="
+Q34,3,False,False,False,True,none,none,"LGALS9 (GALECTIN) binds CD45.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=LGALS9_CD45, n_cells=25922
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=LGALS9, direction=Ephys_1_high, n_Ephys_1=270, n_Ephys_2="
+Q34,4,False,False,False,True,none,none,"LGALS9 (GALECTIN) binds CD45.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=LGALS9_CD45, n_cells=25922
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=LGALS9, direction=Ephys_1_high, n_Ephys_1=270, n_Ephys_2="
+Q34,5,False,False,False,True,none,none,"LGALS9 (GALECTIN) binds CD45.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=LGALS9_CD45, n_cells=25922
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=LGALS9, direction=Ephys_1_high, n_Ephys_1=270, n_Ephys_2="
+Q35,1,False,False,False,True,none,none,"I am sorry, but I cannot answer the question based on the provided evidence. The evidence only mentions glutamate as a pathway, but it does not provide any information about glutamate ligands or receptors."
+Q35,2,False,False,False,True,none,none,"I am sorry, I cannot answer the question based on the provided evidence. The evidence only contains information about glutamate-related pathways and interactions, but it does not provide specific glutamate ligands or receptors."
+Q35,3,False,False,False,True,none,none,"I am sorry, but I cannot answer the question based on the provided evidence. The evidence only contains information about pathways and interactions between cells, but it does not mention any specific glutamate ligands or receptors."
+Q35,4,False,False,False,True,none,none,"I am sorry, I cannot answer the research question. The evidence only contains information about glutamate receptors and pathways, but not about glutamate ligands."
+Q35,5,False,False,False,True,none,none,"I am sorry, but I cannot answer the research question using the provided evidence. The evidence only contains information about pathways and interactions between cells, but it does not provide any information about glutamate ligands or receptors."
+Q36,1,True,False,True,True,none,none,"T cells send NRXN.
+T cells send Glutamate."
+Q36,2,True,False,True,True,none,none,"T cells send NRXN in this table.
+T cells send Glutamate in this table."
+Q36,3,True,True,True,True,none,none,The tool `cellchat_lookup` found no significant interactions for NRXN or Glutamate from T cells.
+Q36,4,True,False,True,True,none,none,"T cells send NRXN in this table.
+T cells send Glutamate in this table."
+Q36,5,True,False,True,True,none,none,"T cells send NRXN in this table.
+T cells send Glutamate in this table."
+Q37,1,True,True,True,True,none,none,"NCAM is used as a tumor-tumor adhesion pair.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=14114
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=814"
+Q37,2,True,True,True,True,none,none,"NCAM1 is used as a tumor-tumor adhesion pair.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=NCAM, n_hits=0"
+Q37,3,True,True,True,True,none,none,"NCAM1 is used as a tumor-tumor adhesion pair.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=14114
+tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=NCAM, n_hits=0"
+Q37,4,True,True,True,True,none,none,"NCAM is used as a tumor-tumor adhesion pair.
+tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NCAM, compartment=tumor, role=either] n_cells=30
+pair=NCAM1_NCAM1; pathway=NCAM; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0937; pval=0.0; source_n=1"
+Q37,5,True,True,True,True,none,none,"NCAM is used as a tumor-tumor adhesion pair.
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=14114
+tool=cellchat_lookup, file=all_significant_interactions.csv, pair=NCAM1_NCAM1, n_cells=814"
+Q38,1,False,False,False,True,none,none,The evidence does not refute the claim that T-cell Ephys_2 is the synaptic NRXN/GRIA program. There is no evidence of NRXN or GRIA genes in the traces.
+Q38,2,False,False,False,True,none,none,The evidence does not refute the claim that T-cell Ephys_2 is the synaptic NRXN/GRIA program. There is no evidence that NRXN or GRIA are expressed in T cells.
+Q38,3,False,False,False,True,none,none,The evidence does not refute the claim that T-cell Ephys_2 is the synaptic NRXN/GRIA program. There are no hits for NRXN or GRIA in the cellchat_lookup or deg_lookup tools.
+Q38,4,True,False,True,True,none,none,"The evidence does not refute the claim that T-cell Ephys_2 is the synaptic NRXN/GRIA program. There is no evidence of NRXN or GRIA genes being significantly differentially expressed between Ephys_2 and Ephys_1 T cells. The only significant interaction found is between AREG and EGFR, which is not a known NRXN/GRIA interaction."
+Q38,5,True,False,True,True,none,none,"The evidence does not refute the claim that T-cell Ephys_2 is the synaptic NRXN/GRIA program. There is no evidence of NRXN or GRIA genes being significantly differentially expressed between Ephys_2 and Ephys_1 T cells. The only significant interaction found is between AREG and EGFR, which is not a known NRXN/GRIA interaction."

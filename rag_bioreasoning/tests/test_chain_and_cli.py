@@ -173,6 +173,7 @@ def test_week3_cli_exposes_five_run_and_replay_table_commands():
     assert run_args.provider == "ollama"
     assert run_args.repeats == 5
     assert replay_args.table is True
+    assert replay_args.audit_overrides.endswith("week3_human_audit.json")
 
 
 def test_rank_genes_cli_exposes_reproducible_defaults():
