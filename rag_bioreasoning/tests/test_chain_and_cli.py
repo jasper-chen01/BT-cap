@@ -161,3 +161,15 @@ def test_evaluate_parser_accepts_compact_context_controls():
     assert args.top_k == 0
     assert args.trace_limit == 2
     assert args.compact_traces is True
+
+
+def test_week3_cli_exposes_five_run_and_replay_table_commands():
+    """The assignment must be runnable and replayable from stable CLI commands."""
+    parser = build_parser()
+
+    run_args = parser.parse_args(["week3-run"])
+    replay_args = parser.parse_args(["week3-replay", "--table"])
+
+    assert run_args.provider == "ollama"
+    assert run_args.repeats == 5
+    assert replay_args.table is True

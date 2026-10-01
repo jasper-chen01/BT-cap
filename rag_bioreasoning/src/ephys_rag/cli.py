@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 from ephys_rag.chain import RAGEngine
 from ephys_rag.config import DATA_DIR
@@ -20,6 +21,13 @@ from ephys_rag.providers.factory import (
     provider_status,
 )
 from ephys_rag.tools import ToolRegistry
+from ephys_rag.week3_audit import build_week3_reports, load_gemini_answers
+from ephys_rag.week3_runner import load_cached_runs, run_repeated_evaluation
+
+
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_WEEK3_RUNS = PACKAGE_ROOT / "runs"
+DEFAULT_WEEK3_OUTPUTS = PACKAGE_ROOT / "week3_outputs"
 
 
 def _cmd_stats(_: argparse.Namespace) -> None:
@@ -128,6 +136,42 @@ def _cmd_evaluate(args: argparse.Namespace) -> None:
         raise SystemExit(1)
 
 
+def _cmd_week3_run(args: argparse.Namespace) -> None:
+    engine = RAGEngine.from_disk()
+    questions = load_question_manifest(args.manifest)
+    label = args.cache_label or ("medgemma" if args.provider == "ollama" else args.provider)
+    records = run_repeated_evaluation(
+        engine,
+        questions,
+        provider=args.provider,
+        cache_label=label,
+        runs_dir=args.runs_dir,
+        repeats=args.repeats,
+        top_k=args.top_k,
+        trace_limit=args.trace_limit,
+        include_trace_catalog=args.compact_traces,
+    )
+    print(f"cached_runs={len(records)} runs_dir={Path(args.runs_dir)}")
+
+
+def _cmd_week3_replay(args: argparse.Namespace) -> None:
+    questions = load_question_manifest(args.manifest)
+    records = load_cached_runs(
+        questions,
+        cache_label=args.cache_label,
+        runs_dir=args.runs_dir,
+        repeats=args.repeats,
+    )
+    paths = build_week3_reports(
+        questions,
+        records,
+        output_dir=args.output_dir,
+        gemini_answers=load_gemini_answers(args.gemini_cache),
+    )
+    for name, path in paths.items():
+        print(f"{name}={path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Bioreasoning RAG over fall_semester/data")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -200,6 +244,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="Add compact value catalogs so small prompts retain non-top-row evidence.",
     )
     evaluate.set_defaults(func=_cmd_evaluate)
+
+    week3_run = sub.add_parser(
+        "week3-run",
+        help="Run and cache the Week 3 repeated local evaluation",
+    )
+    week3_run.add_argument("--provider", choices=["ollama", "mock"], default="ollama")
+    week3_run.add_argument("--cache-label", default=None)
+    week3_run.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
+    week3_run.add_argument("--runs-dir", default=str(DEFAULT_WEEK3_RUNS))
+    week3_run.add_argument("--repeats", type=int, default=5)
+    week3_run.add_argument("--top-k", type=int, default=0)
+    week3_run.add_argument("--trace-limit", type=int, default=2)
+    week3_run.add_argument(
+        "--compact-traces", action=argparse.BooleanOptionalAction, default=True
+    )
+    week3_run.set_defaults(func=_cmd_week3_run)
+
+    week3_replay = sub.add_parser(
+        "week3-replay",
+        help="Rebuild Week 3 tables from cached runs without model calls",
+    )
+    week3_replay.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
+    week3_replay.add_argument("--runs-dir", default=str(DEFAULT_WEEK3_RUNS))
+    week3_replay.add_argument("--output-dir", default=str(DEFAULT_WEEK3_OUTPUTS))
+    week3_replay.add_argument("--cache-label", default="medgemma")
+    week3_replay.add_argument("--repeats", type=int, default=5)
+    week3_replay.add_argument("--gemini-cache", default=None)
+    week3_replay.add_argument("--table", action="store_true")
+    week3_replay.set_defaults(func=_cmd_week3_replay)
     return parser
 
 
