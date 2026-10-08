@@ -1,0 +1,15 @@
+QUESTION: Does GRIA2 go the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor?
+
+=== MedGemma ===
+[MedGemma returned chain-of-thought only / truncated. Re-run with higher MEDGEMMA_MAX_TOKENS or use Gemini for this item.]
+hys_1 and Ephys_2 states for the target cells, but do not explicitly state the direction of the Ephys state change for GRIA2 itself in the context of IDH-Mutant vs IDH-WT.
+
+8.  **Refine the answer:** Ensure it adheres to the constraints (only tool traces, cite tools, separate observation/interpretation, no invention, concise). The observation is clear. The interpretation needs to reflect the lack of direct comparison of Ephys directions for GRIA2 itself in the traces.<unused95>Observation: GRIA2
+
+=== Gemini ===
+**Observation:**
+For IDH-mutant OPC_GABA_like_tumor cells, GRIA2 expression is `Ephys_2_high` (deg_lookup + combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv + GRIA2 + 11741 cells).
+For IDH-WT OPC_GABA_like_tumor cells, GRIA2 expression is also `Ephys_2_high` (deg_lookup + combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv + GRIA2 + 1935 cells).
+
+**Interpretation:**
+GRIA2 goes in the same Ephys direction (Ephys_2_high) in both IDH-mutant and IDH-WT OPC-like tumor cells.

@@ -1,0 +1,82 @@
+{
+  "question_id": 4,
+  "question": "Name one program that myeloid Ephys_2 senders use and myeloid Ephys_1 senders do not.",
+  "required_terms": [
+    "GALECTIN",
+    "Glutamate"
+  ],
+  "term_found": {
+    "GALECTIN": true,
+    "Glutamate": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "exclusive_pathway_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "compartment": "myeloid",
+        "ephys": "Ephys_2"
+      },
+      "preview": [
+        "GALECTIN",
+        "Glutamate",
+        "CD39",
+        "PDGF",
+        "TNF",
+        "GAS",
+        "MPZ"
+      ]
+    },
+    {
+      "tool": "pathway_contrast_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 25,
+      "filters": {
+        "compartment": "myeloid"
+      },
+      "preview": [
+        "GALECTIN",
+        "Glutamate",
+        "MHC-II",
+        "PTN",
+        "EGF",
+        "MIF",
+        "SPP1",
+        "CypA"
+      ]
+    },
+    {
+      "tool": "exclusive_pathway_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "compartment": "myeloid",
+        "ephys": "Ephys_2"
+      },
+      "preview": [
+        "GALECTIN",
+        "Glutamate",
+        "CD39",
+        "PDGF",
+        "TNF",
+        "GAS",
+        "MPZ"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.985 [contrast] Pathways exclusive to Ephys_2 myeloid senders",
+    "0.862 [contrast] Pathways exclusive to Ephys_2 tcell senders",
+    "0.843 [contrast] Pathways exclusive to Ephys_2 tumor senders",
+    "0.799 [contrast] PDGF contrast in myeloid senders",
+    "0.799 [contrast] MPZ contrast in myeloid senders",
+    "0.795 [contrast] CD39 contrast in myeloid senders",
+    "0.793 [contrast] TNF contrast in myeloid senders",
+    "0.791 [contrast] GAS contrast in myeloid senders",
+    "0.791 [contrast] Glutamate contrast in myeloid senders",
+    "0.785 [contrast] GALECTIN contrast in myeloid senders"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: Name one program that myeloid Ephys_2 senders use and myeloid Ephys_1 senders do not.\n\n=== tool traces ===\n\n[1] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=myeloid, ephys=Ephys_2] n_hits=7\nPathways with sender events only in Ephys_2 for myeloid (0 on the other side).\n  pathway=GALECTIN; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; exclusive_to=Ephys_2\n  pathway=Glutamate; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; exclusive_to=Ephys_2\n  pathway=CD39; compartment=myeloid; Ephys_1=0; Ephys_2=4; delta=4; exclusive_to=Ephys_2\n  pathway=PDGF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; exclusive_to=Ephys_2\n  pathway=TNF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; exclusive_to=Ephys_2\n  pathway=GAS; compartment=myeloid; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=MPZ; compartment=myeloid; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n\n[2] tool=pathway_contrast_lookup file=all_significant_interactions.csv filters=[compartment=myeloid] n_hits=25\nSender-side pathway counts by Ephys class. Use to see ligand-program flips.\n  pathway=GALECTIN; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; mean_prob_e1=0.0; mean_prob_e2=0.0066\n  pathway=Glutamate; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; mean_prob_e1=0.0; mean_prob_e2=0.0142\n  pathway=MHC-II; compartment=myeloid; Ephys_1=30; Ephys_2=18; delta=-12; mean_prob_e1=0.0123; mean_prob_e2=0.0091\n  pathway=PTN; compartment=myeloid; Ephys_1=8; Ephys_2=0; delta=-8; mean_prob_e1=0.0372; mean_prob_e2=0.0\n  pathway=EGF; compartment=myeloid; Ephys_1=7; Ephys_2=0; delta=-7; mean_prob_e1=0.0076; mean_prob_e2=0.0\n  pathway=MIF; compartment=myeloid; Ephys_1=6; Ephys_2=0; delta=-6; mean_prob_e1=0.0168; mean_prob_e2=0.0\n  pathway=SPP1; compartment=myeloid; Ephys_1=10; Ephys_2=5; delta=-5; mean_prob_e1=0.0377; mean_prob_e2=0.0387\n  pathway=CypA; compartment=myeloid; Ephys_1=8; Ephys_2=3; delta=-5; mean_prob_e1=0.0427; mean_prob_e2=0.0396\n  pathway=CD39; compartment=myeloid; Ephys_1=0; Ephys_2=4; delta=4; mean_prob_e1=0.0; mean_prob_e2=0.0072\n  pathway=ApoE; compartment=myeloid; Ephys_1=6; Ephys_2=3; delta=-3; mean_prob_e1=0.2065; mean_prob_e2=0.1875\n  pathway=PDGF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; mean_prob_e1=0.0; mean_prob_e2=0.0097\n  pathway=TNF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; mean_prob_e1=0.0; mean_prob_e2=0.0056\n  ... 13 more rows omitted\n\n[3] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=myeloid, ephys=Ephys_2] n_hits=7\nPathways with sender events only in Ephys_2 for myeloid (0 on the other side).\n  pathway=GALECTIN; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; exclusive_to=Ephys_2\n  pathway=Glutamate; compartment=myeloid; Ephys_1=0; Ephys_2=13; delta=13; exclusive_to=Ephys_2\n  pathway=CD39; compartment=myeloid; Ephys_1=0; Ephys_2=4; delta=4; exclusive_to=Ephys_2\n  pathway=PDGF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; exclusive_to=Ephys_2\n  pathway=TNF; compartment=myeloid; Ephys_1=0; Ephys_2=3; delta=3; exclusive_to=Ephys_2\n  pathway=GAS; compartment=myeloid; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=MPZ; compartment=myeloid; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n\n[1] (contrast, score=0.985) Pathways exclusive to Ephys_2 myeloid senders\nSender pathways exclusive to Ephys_2 in the myeloid compartment (count > 0 on that side, 0 on the other): GALECTIN, Glutamate, CD39, PDGF, TNF, GAS, MPZ. Top by event count: GALECTIN, Glutamate, CD39, PDGF, TNF, GAS.\n\n[2] (contrast, score=0.862) Pathways exclusive to Ephys_2 tcell senders\nSender pathways exclusive to Ephys_2 in the tcell compartment (count > 0 on that side, 0 on the other): EGF, PTN. Top by event count: EGF, PTN.\n\n[3] (contrast, score=0.843) Pathways exclusive to Ephys_2 tumor senders\nSender pathways exclusive to Ephys_2 in the tumor compartment (count > 0 on that side, 0 on the other): MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN, PDGF, MPZ, PCDH, SLIT, THY1, CLDN, GRN, SLITRK. Top by event count: MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN.\n\n[4] (contrast, score=0.799) PDGF contrast in myeloid senders\nEphys contrast for pathway PDGF with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 3 (mean probability 0.0097). Delta Ephys_2 minus Ephys_1 = 3. Pathway PDGF is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[5] (contrast, score=0.799) MPZ contrast in myeloid senders\nEphys contrast for pathway MPZ with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0020). Delta Ephys_2 minus Ephys_1 = 2. Pathway MPZ is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[6] (contrast, score=0.795) CD39 contrast in myeloid senders\nEphys contrast for pathway CD39 with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 4 (mean probability 0.0072). Delta Ephys_2 minus Ephys_1 = 4. Pathway CD39 is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[7] (contrast, score=0.793) TNF contrast in myeloid senders\nEphys contrast for pathway TNF with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 3 (mean probability 0.0056). Delta Ephys_2 minus Ephys_1 = 3. Pathway TNF is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[8] (contrast, score=0.791) GAS contrast in myeloid senders\nEphys contrast for pathway GAS with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0080). Delta Ephys_2 minus Ephys_1 = 2. Pathway GAS is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[9] (contrast, score=0.791) Glutamate contrast in myeloid senders\nEphys contrast for pathway Glutamate with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 13 (mean probability 0.0142). Delta Ephys_2 minus Ephys_1 = 13. Pathway Glutamate is exclusive to Ephys_2 myeloid senders (absent from Ephys_1).\n\n[10] (contrast, score=0.785) GALECTIN contrast in myeloid senders\nEphys contrast for pathway GALECTIN with myeloid cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 13 (mean probability 0.0066). Delta Ephys_2 minus Ephys_1 = 13. Pathway GALECTIN is exclusive to Ephys_2 myeloid senders (absent from Ephys_1)."
+}

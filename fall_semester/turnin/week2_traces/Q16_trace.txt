@@ -1,0 +1,39 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[role=either] n_hits=922
+  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.262; pval=0.0; source_n=814; target_n=14114
+  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2436; pval=0.0; source_n=6202; target_n=14114
+  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.2412; pval=0.0; source_n=814; target_n=814
+  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2397; pval=0.0; source_n=72549; target_n=14114
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2392; pval=0.0; source_n=12086; target_n=12086
+  ... 910 more rows omitted
+
+[1] (interaction, score=0.047) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2620 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[2] (interaction, score=0.047) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2212 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[3] (interaction, score=0.047) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2115 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[4] (interaction, score=0.047) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1787 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[5] (interaction, score=0.046) PTN_NCL | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to NCL on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair PTN_NCL in pathway PTN with CellChat probability 0.1201 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[6] (interaction, score=0.046) PTN_NCL | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends PTN to NCL on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_NCL in pathway PTN with CellChat probability 0.1692 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[7] (interaction, score=0.046) PTN_NCL | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to NCL on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_NCL in pathway PTN with CellChat probability 0.1743 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[8] (interaction, score=0.046) PTN_NCL | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to NCL on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_NCL in pathway PTN with CellChat probability 0.1418 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[9] (interaction, score=0.046) PTN_PTPRZ1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_1, n_cells=6410) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1852 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[10] (interaction, score=0.046) PTN_NCL | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_1
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to NCL on cycling_tumor (tumor, Ephys_1, n_cells=6410). Pair PTN_NCL in pathway PTN with CellChat probability 0.0730 (p=0.0). Biological themes: neuron_tumor, growth.

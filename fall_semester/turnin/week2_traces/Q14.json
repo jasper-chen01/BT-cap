@@ -1,0 +1,80 @@
+{
+  "question_id": 14,
+  "question": "Which receptors does SPP1 use here?",
+  "required_terms": [
+    "CD44",
+    "ITGAV"
+  ],
+  "term_found": {
+    "CD44": true,
+    "ITGAV": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 55,
+      "filters": {
+        "gene": null,
+        "pathway": "SPP1",
+        "celltype": null,
+        "ephys": null,
+        "compartment": null,
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_ITGAV_ITGB1"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 55,
+      "filters": {
+        "theme": null,
+        "pathway": "SPP1",
+        "compartment": null,
+        "ephys": null
+      },
+      "preview": [
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_ITGAV_ITGB1"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.196 [pathway_knowledge] Pathway biology: SPP1",
+    "0.185 [pathway_knowledge] Pathway biology: LAIR1",
+    "0.158 [interaction] SPP1_ITGAV_ITGB1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.155 [interaction] SPP1_ITGAV_ITGB1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.155 [interaction] SPP1_ITGAV_ITGB1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.154 [interaction] SPP1_ITGAV_ITGB1 | T cell / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.154 [interaction] SPP1_ITGAV_ITGB1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.153 [interaction] SPP1_ITGAV_ITGB1 | OPC_GABA_AC_like_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.152 [interaction] SPP1_ITGAV_ITGB1 | OPC_GABA_AC_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.152 [interaction] SPP1_ITGAV_ITGB1 | AC_like_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2"
+  ],
+  "medgemma": "CD44, ITGAV_ITGB1",
+  "medgemma_error": null,
+  "gemini": "Observation:\nSPP1 interacts with the receptors CD44 and ITGAV_ITGB1.\n\nInterpretation:\nThe tool `cellchat_lookup` [1] and `pathway_filter` [2] from `all_significant_interactions.csv` show SPP1 as a ligand for CD44 and ITGAV_ITGB1. These interactions are observed across various cell types including T cells, TAM1/TAM2/microglia, MES_like_tumor, cycling_tumor, and AC_like_tumor. The `pathway_knowledge` tool [1] also states that SPP1 binds to CD44 or \u03b1v\u03b21 integrin (ITGAV_ITGB1). Neurons are not a labeled identity in the provided data.",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=SPP1, role=either] n_hits=55\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0602; pval=0.0; source_n=85627; target_n=2662\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_1; prob=0.0601; pval=0.0; source_n=25922; target_n=2662\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0571; pval=0.0; source_n=12086; target_n=2662\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0495; pval=0.0; source_n=85627; target_n=1463\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_2; prob=0.0494; pval=0.0; source_n=25922; target_n=1463\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0469; pval=0.0; source_n=12086; target_n=1463\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=cycling_tumor / Ephys_1; target=T cell / Ephys_1; prob=0.0364; pval=0.0; source_n=6410; target_n=2662\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; receptor=ITGAV_ITGB1; ligand=SPP1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0343; pval=0.0; source_n=85627; target_n=25922\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; receptor=ITGAV_ITGB1; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0342; pval=0.0; source_n=25922; target_n=25922\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.0327; pval=0.0; source_n=1463; target_n=2662\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; receptor=ITGAV_ITGB1; ligand=SPP1; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0324; pval=0.0; source_n=12086; target_n=25922\n  pair=SPP1_CD44; pathway=SPP1; receptor=CD44; ligand=SPP1; source=AC_like_tumor / Ephys_1; target=T cell / Ephys_1; prob=0.0305; pval=0.0; source_n=72549; target_n=2662\n  ... 43 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=SPP1] n_hits=55\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0602\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_1; prob=0.0601\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0571\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0495\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_2; prob=0.0494\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0469\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=cycling_tumor / Ephys_1; target=T cell / Ephys_1; prob=0.0364\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; themes=immune_synapse,myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0343\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0342\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.0327\n  pair=SPP1_ITGAV_ITGB1; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0324\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=AC_like_tumor / Ephys_1; target=T cell / Ephys_1; prob=0.0305\n  ... 43 more rows omitted\n\n[1] (pathway_knowledge, score=0.196) Pathway biology: SPP1\nPathway SPP1. Themes: immune_synapse, myeloid. Osteopontin (SPP1) \u00e2\u2020\u2019 CD44 or \u00ce\u00b1v\u00ce\u00b21 integrin. TAM-derived SPP1 is a major T-cell / myeloid immunosuppressive signal in glioma.\n\n[2] (pathway_knowledge, score=0.185) Pathway biology: LAIR1\nPathway LAIR1. Themes: myeloid, immune_synapse. LAIR1\u00e2\u20ac\u201cLILRB4 inhibitory myeloid receptors.\n\n[3] (interaction, score=0.158) SPP1_ITGAV_ITGB1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends SPP1 to ITGAV_ITGB1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0040 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[4] (interaction, score=0.155) SPP1_ITGAV_ITGB1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends SPP1 to ITGAV_ITGB1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0025 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[5] (interaction, score=0.155) SPP1_ITGAV_ITGB1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends SPP1 to ITGAV_ITGB1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0008 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[6] (interaction, score=0.154) SPP1_ITGAV_ITGB1 | T cell / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends SPP1 to ITGAV_ITGB1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0045 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[7] (interaction, score=0.154) SPP1_ITGAV_ITGB1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends SPP1 to ITGAV_ITGB1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0122 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[8] (interaction, score=0.153) SPP1_ITGAV_ITGB1 | OPC_GABA_AC_like_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2\nOPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202) sends SPP1 to ITGAV_ITGB1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0037 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[9] (interaction, score=0.152) SPP1_ITGAV_ITGB1 | OPC_GABA_AC_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202) sends SPP1 to ITGAV_ITGB1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0053 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[10] (interaction, score=0.152) SPP1_ITGAV_ITGB1 | AC_like_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends SPP1 to ITGAV_ITGB1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair SPP1_ITGAV_ITGB1 in pathway SPP1 with CellChat probability 0.0017 (p=0.0). Biological themes: immune_synapse, myeloid."
+}

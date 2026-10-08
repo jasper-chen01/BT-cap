@@ -1,0 +1,78 @@
+{
+  "question_id": 15,
+  "question": "What does CLEC bind on T cells in this table?",
+  "required_terms": [
+    "KLRB1"
+  ],
+  "term_found": {
+    "KLRB1": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 14,
+      "filters": {
+        "gene": null,
+        "pathway": "CLEC",
+        "celltype": "T cell",
+        "ephys": null,
+        "compartment": "tcell",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "CLEC2C_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2B_KLRB1"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 14,
+      "filters": {
+        "theme": null,
+        "pathway": "CLEC",
+        "compartment": "tcell",
+        "ephys": null
+      },
+      "preview": [
+        "CLEC2C_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2C_KLRB1",
+        "CLEC2B_KLRB1",
+        "CLEC2B_KLRB1"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.293 [contrast] CLEC contrast in tcell senders",
+    "0.196 [interaction] CLEC2C_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.195 [interaction] CLEC2B_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.195 [interaction] CLEC2B_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.194 [interaction] CLEC2C_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.192 [interaction] CLEC2D_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.191 [interaction] CLEC2B_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_2",
+    "0.191 [interaction] CLEC2B_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_1",
+    "0.190 [interaction] CLEC2C_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_2",
+    "0.190 [interaction] CLEC2C_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_1"
+  ],
+  "medgemma": "[MedGemma returned chain-of-thought only / truncated. Re-run with higher MEDGEMMA_MAX_TOKENS or use Gemini for this item.]\n  These traces detail specific interactions.\n    *   Trace [2] mentions `CLEC2C_KLRB1` binding `CD69` to `KLRB1` on `T cell / Ephys_2` -> `T cell / Ephys_1`.\n    *   Trace [3] mentions `CLEC2B_KLRB1` binding `CLEC2B` to `KLRB1` on `T cell / Ephys_1` -> `T cell / Ephys_2`.\n    *   Trace [4] mentions `CLEC2B_KLRB1` binding `CLEC2B` to `KLRB1` on `T cell / Ephys_2` -> `T cell / Ephys_1`.\n    *   Trace [5] mentions `CLEC2C_KLRB1` binding `CD69` to `KLRB1` on `T cell / Ephys_1` -> `T cell / Ephys_2`.",
+  "medgemma_error": null,
+  "gemini": "Observation:\nIn the CLEC pathway, KLRB1 acts as a receptor on T cells. Ligands CD69, CLEC2B, and CLEC2D bind to KLRB1.\nThese interactions were observed in both T cell / Ephys_1 (2662 cells) and T cell / Ephys_2 (1463 cells) populations, and between these populations, as well as from TAM1/TAM2/microglia (12086 cells) to T cells.\n\nInterpretation:\nCLEC ligands (CD69, CLEC2B, CLEC2D) bind to the KLRB1 receptor on T cells.\n(cellchat_lookup + all_significant_interactions.csv + CLEC2C_KLRB1 + 2662, 1463), (cellchat_lookup + all_significant_interactions.csv + CLEC2B_KLRB1 + 2662, 1463), (cellchat_lookup + all_significant_interactions.csv + CLEC2D_KLRB1 + 2662, 1463)",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=CLEC, celltype=T cell, compartment=tcell, role=either] n_hits=14\n  pair=CLEC2C_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CD69; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0319; pval=0.0; source_n=2662; target_n=1463\n  pair=CLEC2C_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CD69; source=T cell / Ephys_1; target=T cell / Ephys_1; prob=0.0255; pval=0.0; source_n=2662; target_n=2662\n  pair=CLEC2C_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CD69; source=T cell / Ephys_2; target=T cell / Ephys_2; prob=0.0107; pval=0.0; source_n=1463; target_n=1463\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0097; pval=0.0; source_n=2662; target_n=1463\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=T cell / Ephys_2; target=T cell / Ephys_2; prob=0.0087; pval=0.0; source_n=1463; target_n=1463\n  pair=CLEC2C_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CD69; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.0085; pval=0.0; source_n=1463; target_n=2662\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=T cell / Ephys_1; target=T cell / Ephys_1; prob=0.0077; pval=0.0; source_n=2662; target_n=2662\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.007; pval=0.0; source_n=1463; target_n=2662\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0068; pval=0.0; source_n=12086; target_n=1463\n  pair=CLEC2D_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2D; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0064; pval=0.0; source_n=2662; target_n=1463\n  pair=CLEC2C_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CD69; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_2; prob=0.0055; pval=0.0; source_n=25922; target_n=1463\n  pair=CLEC2B_KLRB1; pathway=CLEC; receptor=KLRB1; ligand=CLEC2B; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0054; pval=0.0; source_n=12086; target_n=2662\n  ... 2 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=CLEC, compartment=tcell] n_hits=14\n  pair=CLEC2C_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0319\n  pair=CLEC2C_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_1; target=T cell / Ephys_1; prob=0.0255\n  pair=CLEC2C_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_2; target=T cell / Ephys_2; prob=0.0107\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0097\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_2; target=T cell / Ephys_2; prob=0.0087\n  pair=CLEC2C_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.0085\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_1; target=T cell / Ephys_1; prob=0.0077\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_2; target=T cell / Ephys_1; prob=0.007\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0068\n  pair=CLEC2D_KLRB1; pathway=CLEC; themes=immune_synapse; source=T cell / Ephys_1; target=T cell / Ephys_2; prob=0.0064\n  pair=CLEC2C_KLRB1; pathway=CLEC; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_2; prob=0.0055\n  pair=CLEC2B_KLRB1; pathway=CLEC; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0054\n  ... 2 more rows omitted\n\n[1] (contrast, score=0.293) CLEC contrast in tcell senders\nEphys contrast for pathway CLEC with tcell cells as senders. Ephys_1 count 6 (mean probability 0.0144). Ephys_2 count 4 (mean probability 0.0087). Delta Ephys_2 minus Ephys_1 = -2.\n\n[2] (interaction, score=0.196) CLEC2C_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends CD69 to KLRB1 on T cell (tcell, Ephys_1, n_cells=2662). Pair CLEC2C_KLRB1 in pathway CLEC with CellChat probability 0.0085 (p=0.0). Biological themes: immune_synapse.\n\n[3] (interaction, score=0.195) CLEC2B_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends CLEC2B to KLRB1 on T cell (tcell, Ephys_2, n_cells=1463). Pair CLEC2B_KLRB1 in pathway CLEC with CellChat probability 0.0097 (p=0.0). Biological themes: immune_synapse.\n\n[4] (interaction, score=0.195) CLEC2B_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends CLEC2B to KLRB1 on T cell (tcell, Ephys_1, n_cells=2662). Pair CLEC2B_KLRB1 in pathway CLEC with CellChat probability 0.0070 (p=0.0). Biological themes: immune_synapse.\n\n[5] (interaction, score=0.194) CLEC2C_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends CD69 to KLRB1 on T cell (tcell, Ephys_2, n_cells=1463). Pair CLEC2C_KLRB1 in pathway CLEC with CellChat probability 0.0319 (p=0.0). Biological themes: immune_synapse.\n\n[6] (interaction, score=0.192) CLEC2D_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends CLEC2D to KLRB1 on T cell (tcell, Ephys_2, n_cells=1463). Pair CLEC2D_KLRB1 in pathway CLEC with CellChat probability 0.0064 (p=0.0). Biological themes: immune_synapse.\n\n[7] (interaction, score=0.191) CLEC2B_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends CLEC2B to KLRB1 on T cell (tcell, Ephys_2, n_cells=1463). Pair CLEC2B_KLRB1 in pathway CLEC with CellChat probability 0.0087 (p=0.0). Biological themes: immune_synapse.\n\n[8] (interaction, score=0.191) CLEC2B_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_1\nT cell (tcell, Ephys_1, n_cells=2662) sends CLEC2B to KLRB1 on T cell (tcell, Ephys_1, n_cells=2662). Pair CLEC2B_KLRB1 in pathway CLEC with CellChat probability 0.0077 (p=0.0). Biological themes: immune_synapse.\n\n[9] (interaction, score=0.190) CLEC2C_KLRB1 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends CD69 to KLRB1 on T cell (tcell, Ephys_2, n_cells=1463). Pair CLEC2C_KLRB1 in pathway CLEC with CellChat probability 0.0107 (p=0.0). Biological themes: immune_synapse.\n\n[10] (interaction, score=0.190) CLEC2C_KLRB1 | T cell / Ephys_1 -> T cell / Ephys_1\nT cell (tcell, Ephys_1, n_cells=2662) sends CD69 to KLRB1 on T cell (tcell, Ephys_1, n_cells=2662). Pair CLEC2C_KLRB1 in pathway CLEC with CellChat probability 0.0255 (p=0.0). Biological themes: immune_synapse."
+}

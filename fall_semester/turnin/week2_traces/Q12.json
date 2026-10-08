@@ -1,0 +1,47 @@
+{
+  "question_id": 12,
+  "question": "Which T-cell-sent pathway is private to Ephys_2?",
+  "required_terms": [
+    "EGF",
+    "AREG"
+  ],
+  "term_found": {
+    "EGF": true,
+    "AREG": false
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "exclusive_pathway_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 2,
+      "filters": {
+        "compartment": "tcell",
+        "ephys": "Ephys_2"
+      },
+      "preview": [
+        "EGF",
+        "PTN"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.497 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.497 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_2",
+    "0.494 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.491 [interaction] MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.491 [interaction] MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_2",
+    "0.483 [interaction] SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_2",
+    "0.482 [interaction] MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.478 [interaction] SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.477 [interaction] CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.477 [interaction] CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_2"
+  ],
+  "medgemma": "Tool: exclusive_pathway_lookup\nFile: all_significant_interactions.csv\nPathways private to Ephys_2:\n  pathway=EGF; compartment=tcell; Ephys_1=0; Ephys_2=7; delta=7; exclusive_to=Ephys_2\n  pathway=PTN; compartment=tcell; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2",
+  "medgemma_error": null,
+  "gemini": "Observation: The `exclusive_pathway_lookup` tool [1] identified two T-cell-sent pathways that are exclusive to Ephys_2. These pathways are EGF (with 7 events in Ephys_2 and 0 in Ephys_1) and PTN (with 2 events in Ephys_2 and 0 in Ephys_1).\n\nInterpretation: EGF and PTN pathways are uniquely initiated by T-cells in the Ephys_2 condition for cell communication.",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=tcell, ephys=Ephys_2] n_hits=2\nPathways with sender events only in Ephys_2 for tcell (0 on the other side).\n  pathway=EGF; compartment=tcell; Ephys_1=0; Ephys_2=7; delta=7; exclusive_to=Ephys_2\n  pathway=PTN; compartment=tcell; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n\n[1] (interaction, score=0.497) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0175 (p=0.0). Biological themes: immune_synapse.\n\n[2] (interaction, score=0.497) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0158 (p=0.0). Biological themes: immune_synapse.\n\n[3] (interaction, score=0.494) MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0150 (p=0.0). Biological themes: immune_synapse.\n\n[4] (interaction, score=0.491) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0082 (p=0.0). Biological themes: immune_synapse.\n\n[5] (interaction, score=0.491) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0080 (p=0.0). Biological themes: immune_synapse.\n\n[6] (interaction, score=0.483) SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends SPP1 to CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair SPP1_CD44 in pathway SPP1 with CellChat probability 0.0268 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[7] (interaction, score=0.482) MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0075 (p=0.0). Biological themes: immune_synapse.\n\n[8] (interaction, score=0.478) SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends SPP1 to CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair SPP1_CD44 in pathway SPP1 with CellChat probability 0.0327 (p=0.0). Biological themes: immune_synapse, myeloid.\n\n[9] (interaction, score=0.477) CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends CD99 to CD99 on T cell (tcell, Ephys_1, n_cells=2662). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0083 (p=0.0). Biological themes: immune_synapse, adhesion.\n\n[10] (interaction, score=0.477) CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends CD99 to CD99 on T cell (tcell, Ephys_2, n_cells=1463). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0078 (p=0.0). Biological themes: immune_synapse, adhesion."
+}

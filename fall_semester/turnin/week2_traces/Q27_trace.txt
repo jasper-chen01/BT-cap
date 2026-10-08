@@ -1,0 +1,52 @@
+=== tool traces ===
+
+[1] tool=count_lookup file=cellchat_group_counts.csv filters=[none] n_hits=14
+Flag any CellChat pair whose sender or receiver has n_cells < 50.
+  group=MES_like_tumor/TAM1/microglia / Ephys_1; n_cells=85627; compartment=myeloid
+  group=AC_like_tumor / Ephys_1; n_cells=72549; compartment=tumor
+  group=TAM1/TAM2/microglia / Ephys_2; n_cells=25922; compartment=myeloid
+  group=OPC_GABA_like_tumor / Ephys_2; n_cells=14114; compartment=tumor
+  group=TAM1/TAM2/microglia / Ephys_1; n_cells=12086; compartment=myeloid
+  group=OPC_GABA_like_tumor / Ephys_1; n_cells=6741; compartment=tumor
+  group=cycling_tumor / Ephys_1; n_cells=6410; compartment=tumor
+  group=OPC_GABA_AC_like_tumor / Ephys_1; n_cells=6202; compartment=tumor
+  group=T cell / Ephys_1; n_cells=2662; compartment=tcell
+  group=T cell / Ephys_2; n_cells=1463; compartment=tcell
+  group=OPC_GABA_AC_like_tumor / Ephys_2; n_cells=1012; compartment=tumor
+  group=cycling_tumor / Ephys_2; n_cells=814; compartment=tumor
+  ... 2 more rows omitted
+
+[2] tool=annotation_lookup file=glioma_tumor_tcell_tam_ephys_counts.csv filters=[celltype=MES] n_hits=2
+Identities present: AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, T cell, TAM1/TAM2/microglia, astrocyte, cycling_tumor, endothelial, fibroblast, oligodendrocytes, vascular. Neuron labels: none. Do not scan glioma_final_cell_id_celltype_ephys_annotation.csv (~255k rows); use this count table.
+  compartment=tumor; celltype_id=MES_like_tumor/TAM1/microglia; ephys=Ephys_1; n_cells=85627
+  compartment=tumor; celltype_id=MES_like_tumor/TAM1/microglia; ephys=Ephys_2; n_cells=6
+
+[1] (contrast, score=0.800) Pathways exclusive to Ephys_2 tumor senders
+Sender pathways exclusive to Ephys_2 in the tumor compartment (count > 0 on that side, 0 on the other): MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN, PDGF, MPZ, PCDH, SLIT, THY1, CLDN, GRN, SLITRK. Top by event count: MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN.
+
+[2] (contrast, score=0.800) Pathways exclusive to Ephys_1 tumor senders
+Sender pathways exclusive to Ephys_1 in the tumor compartment (count > 0 on that side, 0 on the other): ANNEXIN, MHC-I. Top by event count: ANNEXIN, MHC-I.
+
+[3] (contrast, score=0.800) Pathways exclusive to Ephys_2 tcell senders
+Sender pathways exclusive to Ephys_2 in the tcell compartment (count > 0 on that side, 0 on the other): EGF, PTN. Top by event count: EGF, PTN.
+
+[4] (contrast, score=0.800) Pathways exclusive to Ephys_2 myeloid senders
+Sender pathways exclusive to Ephys_2 in the myeloid compartment (count > 0 on that side, 0 on the other): GALECTIN, Glutamate, CD39, PDGF, TNF, GAS, MPZ. Top by event count: GALECTIN, Glutamate, CD39, PDGF, TNF, GAS.
+
+[5] (contrast, score=0.800) Pathways exclusive to Ephys_1 myeloid senders
+Sender pathways exclusive to Ephys_1 in the myeloid compartment (count > 0 on that side, 0 on the other): PTN, EGF, MIF, ANNEXIN. Top by event count: PTN, EGF, MIF, ANNEXIN.
+
+[6] (count, score=0.564) n_cells cycling_tumor / Ephys_2
+CellChat group cycling_tumor / Ephys_2 has n_cells=814 (compartment tumor). Groups with n_cells < 50 should not drive a biological story.
+
+[7] (count, score=0.563) n_cells OPC_GABA_like_tumor / Ephys_2
+CellChat group OPC_GABA_like_tumor / Ephys_2 has n_cells=14114 (compartment tumor). Groups with n_cells < 50 should not drive a biological story.
+
+[8] (count, score=0.561) n_cells OPC_GABA_like_tumor / Ephys_1
+CellChat group OPC_GABA_like_tumor / Ephys_1 has n_cells=6741 (compartment tumor). Groups with n_cells < 50 should not drive a biological story.
+
+[9] (count, score=0.560) n_cells AC_like_tumor / Ephys_2
+CellChat group AC_like_tumor / Ephys_2 has n_cells=446 (compartment tumor). Groups with n_cells < 50 should not drive a biological story.
+
+[10] (count, score=0.560) n_cells cycling_tumor / Ephys_1
+CellChat group cycling_tumor / Ephys_1 has n_cells=6410 (compartment tumor). Groups with n_cells < 50 should not drive a biological story.

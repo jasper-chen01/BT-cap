@@ -1,0 +1,38 @@
+QUESTION: Which receptor does MHC-II use here?
+
+=== MedGemma ===
+<unused94>thought
+The user wants to identify the receptor used by MHC-II based on the provided tool traces.
+
+1.  **Identify the core question:** Which receptor does MHC-II use here?
+2.  **Scan tool traces for MHC-II:**
+    *   Tool [1] looks for interactions involving MHC-II. It finds pairs like HLA-DRA_CD4, HLA-DRB1_CD4, HLA-DPA1_CD4, HLA-DPB1_CD4.
+    *   Tool [2] filters for interactions specifically within the MHC-II pathway. It confirms the same pairs.
+    *   Tool [3] looks for MHC-II contrasts in tcell senders.
+    *   Tool [4] looks for MHC-II contrasts in tumor senders.
+    *   Tool [5] looks for HLA-DRA_CD4 interactions involving OPC_GABA_like_tumor and TAM1/TAM2/microglia.
+    *   Tool [6] looks for HLA-DRA_CD4 interactions involving AC_like_tumor and TAM1/TAM2/microglia.
+    *   Tool [7] looks for HLA-DRA_CD4 interactions involving T cell and TAM1/TAM2/microglia.
+    *   Tool [8] looks for HLA-DRA_CD4 interactions involving cycling_tumor and TAM1/TAM2/microglia.
+    *   Tool [9] looks for HLA-DRA_CD4 interactions involving AC_like_tumor and TAM1/TAM2/microglia.
+    *   Tool [10] looks for HLA-DRA_CD4 interactions involving T cell and TAM1/TAM2/microglia.
+3.  **Analyze the findings:** The traces consistently show interactions between MHC-II related molecules (HLA-DRA, HLA-DRB1, HLA-DPA1, HLA-DPB1) and CD4. The pathway information (tool [1] and [2]) explicitly states MHC-II involves HLA-DR/DP/DQ/DM and CD4. The interactions (tools [5] through [10]) confirm HLA-DRA_CD4 interactions.
+4.  **Synthesize the answer:** The traces show interactions involving HLA-DRA, HLA-DRB1, HLA-DPA1, and HLA-DPB1, which are all components of the MHC-II complex. The pathway information and specific interactions confirm that CD4 is the receptor for these MHC-II molecules.
+5.  **Format the answer:** Cite the tool name + file + pair/gene + n_cells. Separate observation from interpretation. State if neurons are not labeled (not applicable here). Never invent a ligand-receptor pair or a DEG. Empty tool results are allowed. Keep it concise.
+
+*   Observation: The traces show interactions involving HLA-DRA_CD4, HLA-DRB1_CD4, HLA-DPA1_CD4, and HLA-DPB1_CD4.
+*   Interpretation: The pathway information and specific interactions indicate that CD4 is the receptor for MHC-II molecules (HLA-DRA, HLA-DRB1, HLA-DPA1, HLA-DPB1).
+*   Final Answer Construction:
+    *   Tool: cellchat_lookup
+    *   File: all_significant_interactions.csv
+    *   Pair/Gene: HLA-DRA_CD4
+    *   n_cells: 25922 (from multiple pairs)
+    *   Tool: pathway_filter
+    *   File: all_significant_
+
+=== Gemini ===
+Observation:
+The tool `cellchat_lookup` (file=all_significant_interactions.csv, pathway=MHC-II, role=either) shows that the receptor is CD4 for all listed interactions, such as `HLA-DRA_CD4` (ligand=HLA-DRA), `HLA-DRB1_CD4` (ligand=HLA-DRB1), `HLA-DPA1_CD4` (ligand=HLA-DPA1), and `HLA-DPB1_CD4` (ligand=HLA-DPB1). This is observed across various source cells including TAM1/TAM2/microglia (n_cells=12086, 25922), MES_like_tumor/TAM1/microglia (n_cells=85627), and cycling_tumor (n_cells=6410), all targeting TAM1/TAM2/microglia (n_cells=25922).
+
+Interpretation:
+MHC-II uses CD4 as its receptor in this context. Neurons are not a labeled identity in the provided traces.

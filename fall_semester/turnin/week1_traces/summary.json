@@ -1,0 +1,167 @@
+[
+  {
+    "Q": 1,
+    "status": "OK",
+    "tools": [
+      "exclusive_pathway_lookup"
+    ],
+    "terms": {
+      "Glutamate": true,
+      "MK": true,
+      "CNTN": true,
+      "NOTCH": true
+    },
+    "titles": [
+      "1.324 [contrast] Pathways exclusive to Ephys_2 tumor senders",
+      "1.252 [contrast] Pathways exclusive to Ephys_2 tcell senders",
+      "1.130 [contrast] Pathways exclusive to Ephys_2 myeloid senders",
+      "0.876 [contrast] Pathways exclusive to Ephys_1 tumor senders",
+      "0.861 [contrast] PDGF contrast in tumor senders",
+      "0.858 [contrast] JAM contrast in tumor senders"
+    ]
+  },
+  {
+    "Q": 2,
+    "status": "OK",
+    "tools": [
+      "pathway_contrast_lookup",
+      "pathway_filter",
+      "cellchat_lookup"
+    ],
+    "terms": {
+      "MHC-II": true,
+      "MIF": true,
+      "CD99": true,
+      "EGF": true
+    },
+    "titles": [
+      "1.049 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1",
+      "1.048 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2",
+      "1.047 [interaction] MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1",
+      "1.044 [interaction] MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2",
+      "1.042 [interaction] CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1",
+      "1.042 [interaction] CD99_CD99 | T cell / Ephys_1 -> T cell / Ephys_2"
+    ]
+  },
+  {
+    "Q": 3,
+    "status": "OK",
+    "tools": [
+      "annotation_lookup"
+    ],
+    "terms": {
+      "neuron": true,
+      "identity": true
+    },
+    "titles": [
+      "0.432 [hypothesis] Hypothesis: Tumor Ephys states index neuron-tumor synaptic-like communication",
+      "0.395 [annotation] Annotation identities outside tumor / T cell / TAM",
+      "0.394 [overview] Dataset overview: significant interactions and compartment flows",
+      "0.269 [hypothesis] Hypothesis: Ephys states index immune-synapse activity",
+      "0.250 [overview] Highest-probability tumor-tumor pair: PTN_PTPRZ1",
+      "0.033 [pathway_knowledge] Pathway biology: EGF"
+    ]
+  },
+  {
+    "Q": 4,
+    "status": "OK",
+    "tools": [
+      "exclusive_pathway_lookup",
+      "pathway_contrast_lookup",
+      "exclusive_pathway_lookup"
+    ],
+    "terms": {
+      "GALECTIN": true,
+      "Glutamate": true
+    },
+    "titles": [
+      "0.985 [contrast] Pathways exclusive to Ephys_2 myeloid senders",
+      "0.862 [contrast] Pathways exclusive to Ephys_2 tcell senders",
+      "0.843 [contrast] Pathways exclusive to Ephys_2 tumor senders",
+      "0.799 [contrast] PDGF contrast in myeloid senders",
+      "0.799 [contrast] MPZ contrast in myeloid senders",
+      "0.795 [contrast] CD39 contrast in myeloid senders"
+    ]
+  },
+  {
+    "Q": 5,
+    "status": "OK",
+    "tools": [
+      "cellchat_lookup"
+    ],
+    "terms": {
+      "PTN_PTPRZ1": true
+    },
+    "titles": [
+      "1.761 [overview] Highest-probability tumor-tumor pair: PTN_PTPRZ1",
+      "0.644 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+      "0.644 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+      "0.644 [interaction] PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+      "0.644 [interaction] PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2",
+      "0.643 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2"
+    ]
+  },
+  {
+    "Q": 6,
+    "status": "OK",
+    "tools": [
+      "dataset_stats_lookup",
+      "count_lookup"
+    ],
+    "terms": {
+      "922": true,
+      "tumor->tumor": true
+    },
+    "titles": [
+      "0.653 [overview] Dataset overview: significant interactions and compartment flows",
+      "0.350 [overview] Highest-probability tumor-tumor pair: PTN_PTPRZ1",
+      "0.051 [annotation] Annotation identities outside tumor / T cell / TAM",
+      "0.046 [count] n_cells cycling_tumor / Ephys_2",
+      "0.045 [count] n_cells OPC_GABA_like_tumor / Ephys_2",
+      "0.045 [count] n_cells OPC_GABA_like_tumor / Ephys_1"
+    ]
+  },
+  {
+    "Q": 7,
+    "status": "OK",
+    "tools": [
+      "cellchat_lookup",
+      "pathway_filter"
+    ],
+    "terms": {
+      "GRIA2": true,
+      "GRIA3": true,
+      "GRIA4": true,
+      "GRIK2": true
+    },
+    "titles": [
+      "0.676 [pathway_knowledge] Pathway biology: Glutamate",
+      "0.645 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2",
+      "0.645 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+      "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2",
+      "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_2",
+      "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2"
+    ]
+  },
+  {
+    "Q": 8,
+    "status": "OK",
+    "tools": [
+      "cellchat_lookup",
+      "pathway_filter"
+    ],
+    "terms": {
+      "NLGN1": true,
+      "NLGN3": true,
+      "LRRTM": true
+    },
+    "titles": [
+      "0.590 [pathway_knowledge] Pathway biology: NRXN",
+      "0.476 [contrast] NRXN contrast in tumor senders",
+      "0.455 [interaction] NRXN1_NLGN1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+      "0.454 [interaction] NRXN1_NLGN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+      "0.454 [interaction] NRXN1_CLSTN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+      "0.453 [interaction] NRXN1_NLGN1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2"
+    ]
+  }
+]

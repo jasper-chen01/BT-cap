@@ -1,0 +1,21 @@
+QUESTION: What is the highest-probability myeloid self-loop?
+
+=== MedGemma ===
+The highest-probability myeloid self-loop is PTN_PTPRZ1.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to cycling_tumor / Ephys_2 with probability 0.0573.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to OPC_GABA_like_tumor / Ephys_2 with probability 0.0635.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to AC_like_tumor / Ephys_2 with probability 0.0443.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to OPC_GABA_like_tumor / Ephys_1 with probability 0.0515.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to OPC_GABA_AC_like_tumor / Ephys_2 with probability 0.0407.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from MES_like_tumor/TAM1/microglia / Ephys_1 to OPC_GABA_AC_like_tumor / Ephys_1 with probability 0.0368.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_1 with probability 0.2212.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from OPC_GABA_like_tumor / Ephys_1 to cycling_tumor / Ephys_2 with probability 0.2115.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from OPC_GABA_like_tumor / Ephys_1 to cycling_tumor / Ephys_1 with probability 0.1947.
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from OPC_GABA_like_tumor / Ephys_1 to OPC_GABA_AC_like_tumor / Ephys_1 with probability
+
+=== Gemini ===
+Observation: The highest-probability myeloid self-loop is the APOE_TREM2_TYROBP ligand-receptor pair with a probability of 0.2392 (cellchat_lookup + all_significant_interactions.csv + APOE_TREM2_TYROBP + 12086). This interaction occurs between TAM1/TAM2/microglia / Ephys_1 cells. The pathway involved is ApoE. Neurons are not a labeled identity in the traces.
+
+Interpretation: This suggests a prominent autocrine signaling mechanism within the TAM1/TAM2/microglia / Ephys_1 myeloid cell population through the ApoE pathway.

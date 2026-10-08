@@ -1,0 +1,129 @@
+{
+  "n_rows": 1368,
+  "n_positive_rows": 200,
+  "n_genes": 114,
+  "n_positive_genes": 33,
+  "prevalence_rows": 0.14619883040935672,
+  "row_level": {
+    "lightgbm_oof": {
+      "auroc": 0.6750856164383563,
+      "auprc": 0.38576712137587243,
+      "precision_at_10": 1.0,
+      "precision_at_25": 0.76,
+      "precision_at_50": 0.64
+    },
+    "rule_pass": {
+      "auroc": 0.6312671232876712,
+      "auprc": 0.22595938797846782,
+      "precision_at_10": 0.0,
+      "precision_at_25": 0.2,
+      "precision_at_50": 0.34
+    },
+    "deg_abs_log2fc": {
+      "auroc": 0.6118578767123287,
+      "auprc": 0.18840083106527206,
+      "precision_at_10": 0.2,
+      "precision_at_25": 0.12,
+      "precision_at_50": 0.1
+    },
+    "cc_edges": {
+      "auroc": 0.6561558219178082,
+      "auprc": 0.23770006889508388,
+      "precision_at_10": 0.4,
+      "precision_at_25": 0.24,
+      "precision_at_50": 0.32
+    },
+    "cc_max_prob": {
+      "auroc": 0.6492979452054795,
+      "auprc": 0.242785675697849,
+      "precision_at_10": 0.4,
+      "precision_at_25": 0.56,
+      "precision_at_50": 0.32
+    }
+  },
+  "gene_level": {
+    "lightgbm_oof": {
+      "auroc": 0.6801346801346801,
+      "auprc": 0.5701638571157145,
+      "precision_at_10": 0.7,
+      "precision_at_25": 0.64,
+      "precision_at_50": 0.44
+    },
+    "deg_abs_log2fc": {
+      "auroc": 0.690796857463524,
+      "auprc": 0.4567486401312816,
+      "precision_at_10": 0.5,
+      "precision_at_25": 0.44,
+      "precision_at_50": 0.46
+    },
+    "cc_edges": {
+      "auroc": 0.690048634493079,
+      "auprc": 0.5623094627525684,
+      "precision_at_10": 0.7,
+      "precision_at_25": 0.52,
+      "precision_at_50": 0.44
+    }
+  },
+  "universe": "cellchat",
+  "label_tiers": [
+    1,
+    2
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv": "StratifiedGroupKFold(n_splits=5) grouped by gene",
+  "n_features": 43,
+  "features": [
+    "deg_is_sig",
+    "deg_log2fc",
+    "deg_abs_log2fc",
+    "deg_neglog10_padj",
+    "deg_pct_e2",
+    "deg_pct_e1",
+    "deg_pct_diff",
+    "deg_dir",
+    "deg_other_idh_sig",
+    "deg_other_idh_same_dir",
+    "deg_pooled_log2fc",
+    "deg_pooled_sig",
+    "deg_n_celltypes_sig",
+    "cc_lig_edges",
+    "cc_rec_edges",
+    "cc_edges_e2",
+    "cc_edges_e1",
+    "cc_max_prob",
+    "cc_mean_prob",
+    "cc_max_pval",
+    "cc_n_pathways",
+    "cc_n_partners",
+    "cc_cross_compartment_edges",
+    "cc_edges",
+    "cc_ephys_bias",
+    "cc_edges_total",
+    "cc_is_ligand",
+    "cc_is_receptor",
+    "cc_n_pathways_total",
+    "cc_n_celltypes_total",
+    "cc_n_cells_e1",
+    "cc_n_cells_e2",
+    "ctx_n_e1",
+    "ctx_n_e2",
+    "ctx_min_n",
+    "ctx_low_n",
+    "deg_cc_concordance",
+    "idh_mutant",
+    "rule_pass",
+    "llm_mention_rate",
+    "llm_unprompted_mention_rate",
+    "llm_mentions_per_run",
+    "llm_ctx_mention_rate"
+  ],
+  "llm_runs_dir": "..\\turnin\\week2_traces",
+  "n_llm_runs": 2,
+  "notes": []
+}

@@ -1,0 +1,22 @@
+# Thin priors only. Compute counts yourself; do not treat this as an answer key.
+
+hypotheses:
+  - id: immune_synapse
+    title: Ephys states index immune-synapse activity
+    compartments: [tcell, myeloid]
+    summary: >
+      In T cells and myeloid cells, Ephys_1 versus Ephys_2 may mark activity
+      during an immunological synapse (MHC-II→CD4, MIF→CD74, SPP1→CD44,
+      CD99, CLEC→KLRB1). Test this against the table.
+    caution: >
+      Ephys is a cluster label, not a measured synapse current.
+
+  - id: neuron_tumor
+    title: Tumor Ephys states index neuron-tumor synaptic-like communication
+    compartments: [tumor]
+    summary: >
+      In glioma-like tumor states, one Ephys class may carry synaptic adhesion
+      and glutamatergic pairs (NRXN-NLGN, glutamate-AMPA, NCAM, CNTN).
+      Test this against the table.
+    caution: >
+      No neuron identity is labeled in the CellChat source/target columns.

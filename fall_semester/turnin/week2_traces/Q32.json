@@ -1,0 +1,126 @@
+{
+  "question_id": 32,
+  "question": "Does HLA-DRA appear as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG?",
+  "required_terms": [
+    "HLA-DRA",
+    "MHC-II"
+  ],
+  "term_found": {
+    "HLA-DRA": true,
+    "MHC-II": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 23,
+      "filters": {
+        "gene": null,
+        "pathway": "MHC-II",
+        "celltype": null,
+        "ephys": "Ephys_1",
+        "compartment": "tumor",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "HLA-DRA_CD4",
+        "HLA-DPA1_CD4",
+        "HLA-DPB1_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRB1_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DPB1_CD4",
+        "HLA-DPA1_CD4"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 23,
+      "filters": {
+        "theme": null,
+        "pathway": "MHC-II",
+        "compartment": "tumor",
+        "ephys": "Ephys_1"
+      },
+      "preview": [
+        "HLA-DRA_CD4",
+        "HLA-DPA1_CD4",
+        "HLA-DPB1_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRB1_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DPB1_CD4",
+        "HLA-DPA1_CD4"
+      ]
+    },
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 9,
+      "filters": {
+        "gene": "HLA-DRA",
+        "pathway": null,
+        "celltype": null,
+        "ephys": "Ephys_1",
+        "compartment": "tumor",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4",
+        "HLA-DRA_CD4"
+      ]
+    },
+    {
+      "tool": "deg_lookup",
+      "file": "combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv",
+      "n_hits": 10,
+      "filters": {
+        "gene": "HLA-DRA",
+        "celltype": null,
+        "idh": null,
+        "pooled": false
+      },
+      "preview": [
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA",
+        "HLA-DRA"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.414 [interaction] HLA-DRA_CD4 | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.411 [interaction] HLA-DRA_CD4 | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.408 [interaction] HLA-DRA_CD4 | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.407 [interaction] HLA-DRA_CD4 | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.406 [interaction] HLA-DRA_CD4 | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.404 [interaction] HLA-DRA_CD4 | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.401 [interaction] HLA-DRA_CD4 | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.401 [interaction] HLA-DRA_CD4 | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.400 [interaction] HLA-DRA_CD4 | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.397 [interaction] HLA-DRA_CD4 | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_2"
+  ],
+  "medgemma": "The user wants to know if HLA-DRA appears as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG.\n\n1.  **Check for MHC-II ligands:** Look for pairs involving HLA-DRA and the pathway MHC-II.\n    *   Tool trace [1] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [2] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [3] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [4] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [5] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [6] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [7] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [8] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [9] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [10] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [11] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [12] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [13] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [14] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [15] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [16] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [17] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [18] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [19] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [20] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [21] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [22] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Tool trace [23] shows HLA-DRA_CD4 as a MHC-II ligand.\n    *   Yes, HLA-DRA appears as an MHC-II CellChat ligand.\n\n2.  **Check for Ephys_1-high DEGs:** Look for genes with direction Ephys_1_high.\n    *   Tool trace [4] shows HLA-DRA with direction Ephys_1_high.\n    *   Yes, HLA-DRA appears as an Ephys_1-high tumor DEG.\n\n3.  **Combine findings:** HLA-DRA is found in both lists.\n\n4.  **Format the answer:** Cite tool name + file + pair/gene + n_cells. Separate observation from interpretation.\n\n    *   Observation: HLA-DRA_CD4 is a MHC-II CellChat ligand.\n    *   Observation: HLA-DRA is",
+  "medgemma_error": null,
+  "gemini": "Observation:\nHLA-DRA appears as a ligand in the MHC-II pathway originating from several tumor cell types with an Ephys_1 phenotype (e.g., cycling_tumor, AC_like_tumor, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor) in communication with TAM1/TAM2/microglia (tool=cellchat_lookup, file=all_significant_interactions.csv, gene=HLA-DRA, ephys=Ephys_1, compartment=tumor, role=either, n_hits=9).\n\nHLA-DRA also appears as an Ephys_1-high differentially expressed gene (DEG) in several tumor cell types (e.g., cycling_tumor, OPC_GABA_AC_like_tumor, AC_like_tumor, OPC_GABA_like_tumor) (tool=deg_lookup, file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv, gene=HLA-DRA, pooled=False, n_hits=10).\n\nInterpretation:\nYes, HLA-DRA appears as both an MHC-II CellChat ligand originating from Ephys_1 tumor cells and an Ephys_1-high tumor DEG. Neurons are not a labeled identity in the provided traces.",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=MHC-II, ephys=Ephys_1, compartment=tumor, role=either] n_hits=23\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0226; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DPA1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPA1; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0128; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DPB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPB1; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0103; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0077; pval=0.0; source_n=72549; target_n=25922\n  pair=HLA-DRB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRB1; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0072; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0062; pval=0.0; source_n=6202; target_n=25922\n  pair=HLA-DPB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPB1; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0057; pval=0.0; source_n=72549; target_n=25922\n  pair=HLA-DPA1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPA1; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0056; pval=0.0; source_n=72549; target_n=25922\n  pair=HLA-DRB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRB1; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0042; pval=0.0; source_n=72549; target_n=25922\n  pair=HLA-DMA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DMA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0032; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0029; pval=0.0; source_n=6741; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0019; pval=0.0; source_n=6410; target_n=12086\n  ... 11 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=MHC-II, compartment=tumor, ephys=Ephys_1] n_hits=23\n  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0226\n  pair=HLA-DPA1_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0128\n  pair=HLA-DPB1_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0103\n  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0077\n  pair=HLA-DRB1_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0072\n  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=OPC_GABA_AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0062\n  pair=HLA-DPB1_CD4; pathway=MHC-II; themes=immune_synapse; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0057\n  pair=HLA-DPA1_CD4; pathway=MHC-II; themes=immune_synapse; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0056\n  pair=HLA-DRB1_CD4; pathway=MHC-II; themes=immune_synapse; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0042\n  pair=HLA-DMA_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0032\n  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=OPC_GABA_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0029\n  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0019\n  ... 11 more rows omitted\n\n[3] tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=HLA-DRA, ephys=Ephys_1, compartment=tumor, role=either] n_hits=9\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0226; pval=0.0; source_n=6410; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0077; pval=0.0; source_n=72549; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0062; pval=0.0; source_n=6202; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0029; pval=0.0; source_n=6741; target_n=25922\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0019; pval=0.0; source_n=6410; target_n=12086\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0006; pval=0.0; source_n=72549; target_n=12086\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0005; pval=0.0; source_n=6202; target_n=12086\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=OPC_GABA_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0002; pval=0.0; source_n=6741; target_n=12086\n  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=AC_like_tumor / Ephys_2; target=TAM1/TAM2/microglia / Ephys_1; prob=0.0002; pval=0.0; source_n=446; target_n=12086\n\n[4] tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=HLA-DRA, pooled=False] n_hits=10\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-6.3319; p_val_adj=1.3299357567577213e-155; celltype_id=cycling_tumor; IDH_status=IDH_WT; n_Ephys_1=5847; n_Ephys_2=663\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-5.3521; p_val_adj=2.4716471914281724e-30; celltype_id=cycling_tumor; IDH_status=IDH_Mutant; n_Ephys_1=270; n_Ephys_2=136\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-4.563; p_val_adj=5.459308947957953e-13; celltype_id=OPC_GABA_AC_like_tumor; IDH_status=IDH_WT; n_Ephys_1=5384; n_Ephys_2=171\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-3.1068; p_val_adj=7.697972679291498e-19; celltype_id=OPC_GABA_AC_like_tumor; IDH_status=IDH_Mutant; n_Ephys_1=352; n_Ephys_2=742\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-2.9186; p_val_adj=3.523393459228557e-09; celltype_id=AC_like_tumor; IDH_status=IDH_WT; n_Ephys_1=64812; n_Ephys_2=108\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-2.6403; p_val_adj=5.81451628101932e-48; celltype_id=OPC_GABA_like_tumor; IDH_status=IDH_WT; n_Ephys_1=5040; n_Ephys_2=1935\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-2.2542; p_val_adj=3.114767602191172e-95; celltype_id=OPC_GABA_like_tumor; IDH_status=IDH_Mutant; n_Ephys_1=1658; n_Ephys_2=11741\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-1.6811; p_val_adj=0.0214173624840432; celltype_id=AC_like_tumor; IDH_status=IDH_Mutant; n_Ephys_1=4249; n_Ephys_2=283\n  gene=HLA-DRA; direction=Ephys_1_high; avg_log2FC=-1.304; p_val_adj=0.0; celltype_id=TAM1/TAM2/microglia; IDH_status=IDH_Mutant; n_Ephys_1=2106; n_Ephys_2=21701\n  gene=HLA-DRA; direction=Ephys_2_high; avg_log2FC=1.2014; p_val_adj=2.6387276140710907e-25; celltype_id=T cell; IDH_status=IDH_WT; n_Ephys_1=1681; n_Ephys_2=1118\n\n[1] (interaction, score=0.414) HLA-DRA_CD4 | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0019 (p=0.0). Biological themes: immune_synapse.\n\n[2] (interaction, score=0.411) HLA-DRA_CD4 | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0029 (p=0.0). Biological themes: immune_synapse.\n\n[3] (interaction, score=0.408) HLA-DRA_CD4 | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\nAC_like_tumor (tumor, Ephys_1, n_cells=72549) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0006 (p=0.0). Biological themes: immune_synapse.\n\n[4] (interaction, score=0.407) HLA-DRA_CD4 | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\nOPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0005 (p=0.0). Biological themes: immune_synapse.\n\n[5] (interaction, score=0.406) HLA-DRA_CD4 | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0002 (p=0.0). Biological themes: immune_synapse.\n\n[6] (interaction, score=0.404) HLA-DRA_CD4 | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nAC_like_tumor (tumor, Ephys_1, n_cells=72549) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0077 (p=0.0). Biological themes: immune_synapse.\n\n[7] (interaction, score=0.401) HLA-DRA_CD4 | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nOPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0062 (p=0.0). Biological themes: immune_synapse.\n\n[8] (interaction, score=0.401) HLA-DRA_CD4 | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0226 (p=0.0). Biological themes: immune_synapse.\n\n[9] (interaction, score=0.400) HLA-DRA_CD4 | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_1\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0002 (p=0.0). Biological themes: immune_synapse.\n\n[10] (interaction, score=0.397) HLA-DRA_CD4 | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0020 (p=0.0). Biological themes: immune_synapse."
+}

@@ -1,0 +1,46 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=GRIA2, celltype=OPC_GABA, compartment=tumor, role=either] n_hits=6
+  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.058; pval=0.0; source_n=25922; target_n=14114
+  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0181; pval=0.0; source_n=814; target_n=14114
+  pair=Glutamate-Glu-SLC1A1_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A1_GLS; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0085; pval=0.0; source_n=814; target_n=14114
+  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0074; pval=0.0; source_n=25922; target_n=6741
+  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0022; pval=0.0; source_n=814; target_n=6741
+  pair=Glutamate-Glu-SLC1A1_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A1_GLS; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.001; pval=0.0; source_n=814; target_n=6741
+
+[2] tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=GRIA2, celltype=OPC_GABA, idh=IDH_Mutant, pooled=False] n_hits=2
+  gene=GRIA2; direction=Ephys_2_high; avg_log2FC=1.228; p_val_adj=3.076738495671539e-224; celltype_id=OPC_GABA_like_tumor; IDH_status=IDH_Mutant; n_Ephys_1=1658; n_Ephys_2=11741
+  gene=GRIA2; direction=Ephys_2_high; avg_log2FC=1.0039; p_val_adj=0.0008185830418992916; celltype_id=OPC_GABA_AC_like_tumor; IDH_status=IDH_Mutant; n_Ephys_1=352; n_Ephys_2=742
+
+[3] tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=GRIA2, celltype=OPC_GABA, idh=IDH_WT, pooled=False] n_hits=1
+  gene=GRIA2; direction=Ephys_2_high; avg_log2FC=0.9728; p_val_adj=6.854264872960188e-192; celltype_id=OPC_GABA_like_tumor; IDH_status=IDH_WT; n_Ephys_1=5040; n_Ephys_2=1935
+
+[1] (pathway_knowledge, score=0.228) Pathway biology: PTN
+Pathway PTN. Themes: neuron_tumor, growth. Pleiotrophin (PTN) binds PTPRZ1, nucleolin (NCL), and syndecan-3 (SDC3). PTN-PTPRZ1 is a core OPC/glioma growth axis and is also used in neural development. High probability here among OPC-like, AC-like, and cycling tumor cells.
+
+[2] (hypothesis, score=0.223) Hypothesis: Tumor Ephys states index neuron-tumor synaptic-like communication
+Working hypothesis neuron_tumor: Tumor Ephys states index neuron-tumor synaptic-like communication. Applies to compartments tumor. In glioma-like tumor states, one Ephys class may carry synaptic adhesion and glutamatergic pairs (NRXN-NLGN, glutamate-AMPA, NCAM, CNTN). Test this against the table. Caution: No neuron identity is labeled in the CellChat source/target columns.
+
+[3] (interaction, score=0.168) Glutamate-Glu-SLC1A3_GLS_GRIA2 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A3_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0022 (p=0.0). Biological themes: neuron_tumor.
+
+[4] (interaction, score=0.168) Glutamate-Glu-SLC1A3_GLS_GRIA2 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A3_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0181 (p=0.0). Biological themes: neuron_tumor.
+
+[5] (interaction, score=0.168) Glutamate-Glu-SLC1A3_GLS_GRIA2 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A3_GLS to GRIA2 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0040 (p=0.0). Biological themes: neuron_tumor.
+
+[6] (interaction, score=0.167) Glutamate-Glu-SLC1A1_GLS_GRIA2 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A1_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair Glutamate-Glu-SLC1A1_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0010 (p=0.0). Biological themes: neuron_tumor.
+
+[7] (interaction, score=0.167) Glutamate-Glu-SLC1A3_GLS_GRIA2 | cycling_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A3_GLS to GRIA2 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0025 (p=0.0). Biological themes: neuron_tumor.
+
+[8] (interaction, score=0.166) Glutamate-Glu-SLC1A1_GLS_GRIA2 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A1_GLS to GRIA2 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair Glutamate-Glu-SLC1A1_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0019 (p=0.0). Biological themes: neuron_tumor.
+
+[9] (interaction, score=0.166) Glutamate-Glu-SLC1A1_GLS_GRIA2 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A1_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair Glutamate-Glu-SLC1A1_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0085 (p=0.0). Biological themes: neuron_tumor.
+
+[10] (interaction, score=0.165) Glutamate-Glu-SLC1A1_GLS_GRIA2 | cycling_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends Glu-SLC1A1_GLS to GRIA2 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair Glutamate-Glu-SLC1A1_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0011 (p=0.0). Biological themes: neuron_tumor.

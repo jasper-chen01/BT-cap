@@ -1,0 +1,11 @@
+QUESTION: Which receptors does SPP1 use here?
+
+=== MedGemma ===
+CD44, ITGAV_ITGB1
+
+=== Gemini ===
+Observation:
+SPP1 interacts with the receptors CD44 and ITGAV_ITGB1.
+
+Interpretation:
+The tool `cellchat_lookup` [1] and `pathway_filter` [2] from `all_significant_interactions.csv` show SPP1 as a ligand for CD44 and ITGAV_ITGB1. These interactions are observed across various cell types including T cells, TAM1/TAM2/microglia, MES_like_tumor, cycling_tumor, and AC_like_tumor. The `pathway_knowledge` tool [1] also states that SPP1 binds to CD44 or αvβ1 integrin (ITGAV_ITGB1). Neurons are not a labeled identity in the provided data.

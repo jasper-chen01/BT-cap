@@ -1,0 +1,115 @@
+{
+  "question_id": 31,
+  "question": "Is AREG both the T-cell EGF ligand in CellChat and a T-cell DEG?",
+  "required_terms": [
+    "AREG"
+  ],
+  "term_found": {
+    "AREG": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "gene": null,
+        "pathway": "EGF",
+        "celltype": "T cell",
+        "ephys": null,
+        "compartment": "tcell",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "theme": null,
+        "pathway": "EGF",
+        "compartment": "tcell",
+        "ephys": null
+      },
+      "preview": [
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR"
+      ]
+    },
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "gene": "AREG",
+        "pathway": null,
+        "celltype": "T cell",
+        "ephys": null,
+        "compartment": "tcell",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR"
+      ]
+    },
+    {
+      "tool": "deg_lookup",
+      "file": "combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv",
+      "n_hits": 2,
+      "filters": {
+        "gene": "AREG",
+        "celltype": "T cell",
+        "idh": null,
+        "pooled": false
+      },
+      "preview": [
+        "AREG",
+        "AREG"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.351 [interaction] AREG_EGFR | T cell / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.345 [interaction] AREG_EGFR | T cell / Ephys_2 -> cycling_tumor / Ephys_1",
+    "0.345 [interaction] AREG_EGFR | T cell / Ephys_2 -> AC_like_tumor / Ephys_2",
+    "0.343 [interaction] AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.343 [interaction] AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+    "0.340 [interaction] AREG_EGFR | T cell / Ephys_2 -> AC_like_tumor / Ephys_1",
+    "0.339 [interaction] AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_1",
+    "0.286 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "0.285 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "0.283 [interaction] MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1"
+  ],
+  "medgemma": "Observation: ARE",
+  "medgemma_error": null,
+  "gemini": "Observation:\nAREG is identified as a ligand from T cells in the EGF pathway, forming the AREG_EGFR pair (cellchat_lookup + all_significant_interactions.csv + AREG_EGFR + T cell / Ephys_2, n_cells=1463).\nAREG is also identified as a differentially expressed gene (DEG) in T cells (deg_lookup + combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv + AREG + T cell, n_Ephys_1=941, n_Ephys_2=334 for IDH_Mutant; n_Ephys_1=1681, n_Ephys_2=1118 for IDH_WT). It is significantly upregulated in Ephys_2 compared to Ephys_1 T cells in both IDH_Mutant and IDH_WT contexts.\n\nInterpretation:\nYes, AREG is both a T-cell EGF ligand in CellChat and a T-cell DEG.",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=EGF, celltype=T cell, compartment=tcell, role=either] n_hits=7\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0325; pval=0.0; source_n=1463; target_n=6741\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0161; pval=0.0; source_n=1463; target_n=14114\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0139; pval=0.0; source_n=1463; target_n=72549\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_1; prob=0.0131; pval=0.0; source_n=1463; target_n=6202\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_1; prob=0.0064; pval=0.0; source_n=1463; target_n=6410\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0057; pval=0.0; source_n=1463; target_n=446\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0026; pval=0.0; source_n=1463; target_n=814\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=EGF, compartment=tcell] n_hits=7\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0325\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0161\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0139\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_1; prob=0.0131\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=cycling_tumor / Ephys_1; prob=0.0064\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0057\n  pair=AREG_EGFR; pathway=EGF; themes=growth,immune_synapse; source=T cell / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0026\n\n[3] tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=AREG, celltype=T cell, compartment=tcell, role=either] n_hits=7\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0325; pval=0.0; source_n=1463; target_n=6741\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0161; pval=0.0; source_n=1463; target_n=14114\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0139; pval=0.0; source_n=1463; target_n=72549\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_1; prob=0.0131; pval=0.0; source_n=1463; target_n=6202\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_1; prob=0.0064; pval=0.0; source_n=1463; target_n=6410\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0057; pval=0.0; source_n=1463; target_n=446\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0026; pval=0.0; source_n=1463; target_n=814\n\n[4] tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=AREG, celltype=T cell, pooled=False] n_hits=2\n  gene=AREG; direction=Ephys_2_high; avg_log2FC=2.622; p_val_adj=5.888038415538558e-46; celltype_id=T cell; IDH_status=IDH_Mutant; n_Ephys_1=941; n_Ephys_2=334\n  gene=AREG; direction=Ephys_2_high; avg_log2FC=0.9672; p_val_adj=3.664276664164506e-05; celltype_id=T cell; IDH_status=IDH_WT; n_Ephys_1=1681; n_Ephys_2=1118\n\n[1] (interaction, score=0.351) AREG_EGFR | T cell / Ephys_2 -> cycling_tumor / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0026 (p=0.0). Biological themes: growth, immune_synapse.\n\n[2] (interaction, score=0.345) AREG_EGFR | T cell / Ephys_2 -> cycling_tumor / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on cycling_tumor (tumor, Ephys_1, n_cells=6410). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0064 (p=0.0). Biological themes: growth, immune_synapse.\n\n[3] (interaction, score=0.345) AREG_EGFR | T cell / Ephys_2 -> AC_like_tumor / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0057 (p=0.0). Biological themes: growth, immune_synapse.\n\n[4] (interaction, score=0.343) AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0161 (p=0.0). Biological themes: growth, immune_synapse.\n\n[5] (interaction, score=0.343) AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0325 (p=0.0). Biological themes: growth, immune_synapse.\n\n[6] (interaction, score=0.340) AREG_EGFR | T cell / Ephys_2 -> AC_like_tumor / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on AC_like_tumor (tumor, Ephys_1, n_cells=72549). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0139 (p=0.0). Biological themes: growth, immune_synapse.\n\n[7] (interaction, score=0.339) AREG_EGFR | T cell / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends AREG to EGFR on OPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202). Pair AREG_EGFR in pathway EGF with CellChat probability 0.0131 (p=0.0). Biological themes: growth, immune_synapse.\n\n[8] (interaction, score=0.286) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0175 (p=0.0). Biological themes: immune_synapse.\n\n[9] (interaction, score=0.285) MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0150 (p=0.0). Biological themes: immune_synapse.\n\n[10] (interaction, score=0.283) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0082 (p=0.0). Biological themes: immune_synapse."
+}

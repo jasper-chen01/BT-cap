@@ -1,0 +1,12 @@
+QUESTION: Is AREG both the T-cell EGF ligand in CellChat and a T-cell DEG?
+
+=== MedGemma ===
+Observation: ARE
+
+=== Gemini ===
+Observation:
+AREG is identified as a ligand from T cells in the EGF pathway, forming the AREG_EGFR pair (cellchat_lookup + all_significant_interactions.csv + AREG_EGFR + T cell / Ephys_2, n_cells=1463).
+AREG is also identified as a differentially expressed gene (DEG) in T cells (deg_lookup + combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv + AREG + T cell, n_Ephys_1=941, n_Ephys_2=334 for IDH_Mutant; n_Ephys_1=1681, n_Ephys_2=1118 for IDH_WT). It is significantly upregulated in Ephys_2 compared to Ephys_1 T cells in both IDH_Mutant and IDH_WT contexts.
+
+Interpretation:
+Yes, AREG is both a T-cell EGF ligand in CellChat and a T-cell DEG.

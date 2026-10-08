@@ -1,0 +1,51 @@
+{
+  "question_id": 1,
+  "question": "Which pathways are exclusive to Ephys_2 tumor senders?",
+  "required_terms": [
+    "Glutamate",
+    "MK",
+    "CNTN",
+    "NOTCH"
+  ],
+  "term_found": {
+    "Glutamate": true,
+    "MK": true,
+    "CNTN": true,
+    "NOTCH": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "exclusive_pathway_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 14,
+      "filters": {
+        "compartment": "tumor",
+        "ephys": "Ephys_2"
+      },
+      "preview": [
+        "MK",
+        "Glutamate",
+        "CNTN",
+        "NOTCH",
+        "JAM",
+        "COLLAGEN",
+        "PDGF",
+        "MPZ"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "1.324 [contrast] Pathways exclusive to Ephys_2 tumor senders",
+    "1.252 [contrast] Pathways exclusive to Ephys_2 tcell senders",
+    "1.130 [contrast] Pathways exclusive to Ephys_2 myeloid senders",
+    "0.876 [contrast] Pathways exclusive to Ephys_1 tumor senders",
+    "0.861 [contrast] PDGF contrast in tumor senders",
+    "0.858 [contrast] JAM contrast in tumor senders",
+    "0.857 [contrast] MPZ contrast in tumor senders",
+    "0.856 [contrast] COLLAGEN contrast in tumor senders",
+    "0.856 [contrast] GRN contrast in tumor senders",
+    "0.852 [contrast] PCDH contrast in tumor senders"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: Which pathways are exclusive to Ephys_2 tumor senders?\n\n=== tool traces ===\n\n[1] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=tumor, ephys=Ephys_2] n_hits=14\nPathways with sender events only in Ephys_2 for tumor (0 on the other side).\n  pathway=MK; compartment=tumor; Ephys_1=0; Ephys_2=28; delta=28; exclusive_to=Ephys_2\n  pathway=Glutamate; compartment=tumor; Ephys_1=0; Ephys_2=26; delta=26; exclusive_to=Ephys_2\n  pathway=CNTN; compartment=tumor; Ephys_1=0; Ephys_2=16; delta=16; exclusive_to=Ephys_2\n  pathway=NOTCH; compartment=tumor; Ephys_1=0; Ephys_2=12; delta=12; exclusive_to=Ephys_2\n  pathway=JAM; compartment=tumor; Ephys_1=0; Ephys_2=6; delta=6; exclusive_to=Ephys_2\n  pathway=COLLAGEN; compartment=tumor; Ephys_1=0; Ephys_2=5; delta=5; exclusive_to=Ephys_2\n  pathway=PDGF; compartment=tumor; Ephys_1=0; Ephys_2=3; delta=3; exclusive_to=Ephys_2\n  pathway=MPZ; compartment=tumor; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=PCDH; compartment=tumor; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=SLIT; compartment=tumor; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=THY1; compartment=tumor; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2\n  pathway=CLDN; compartment=tumor; Ephys_1=0; Ephys_2=1; delta=1; exclusive_to=Ephys_2\n  ... 2 more rows omitted\n\n[1] (contrast, score=1.324) Pathways exclusive to Ephys_2 tumor senders\nSender pathways exclusive to Ephys_2 in the tumor compartment (count > 0 on that side, 0 on the other): MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN, PDGF, MPZ, PCDH, SLIT, THY1, CLDN, GRN, SLITRK. Top by event count: MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN.\n\n[2] (contrast, score=1.252) Pathways exclusive to Ephys_2 tcell senders\nSender pathways exclusive to Ephys_2 in the tcell compartment (count > 0 on that side, 0 on the other): EGF, PTN. Top by event count: EGF, PTN.\n\n[3] (contrast, score=1.130) Pathways exclusive to Ephys_2 myeloid senders\nSender pathways exclusive to Ephys_2 in the myeloid compartment (count > 0 on that side, 0 on the other): GALECTIN, Glutamate, CD39, PDGF, TNF, GAS, MPZ. Top by event count: GALECTIN, Glutamate, CD39, PDGF, TNF, GAS.\n\n[4] (contrast, score=0.876) Pathways exclusive to Ephys_1 tumor senders\nSender pathways exclusive to Ephys_1 in the tumor compartment (count > 0 on that side, 0 on the other): ANNEXIN, MHC-I. Top by event count: ANNEXIN, MHC-I.\n\n[5] (contrast, score=0.861) PDGF contrast in tumor senders\nEphys contrast for pathway PDGF with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 3 (mean probability 0.0029). Delta Ephys_2 minus Ephys_1 = 3. Pathway PDGF is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[6] (contrast, score=0.858) JAM contrast in tumor senders\nEphys contrast for pathway JAM with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 6 (mean probability 0.0015). Delta Ephys_2 minus Ephys_1 = 6. Pathway JAM is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[7] (contrast, score=0.857) MPZ contrast in tumor senders\nEphys contrast for pathway MPZ with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0022). Delta Ephys_2 minus Ephys_1 = 2. Pathway MPZ is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[8] (contrast, score=0.856) COLLAGEN contrast in tumor senders\nEphys contrast for pathway COLLAGEN with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 5 (mean probability 0.0018). Delta Ephys_2 minus Ephys_1 = 5. Pathway COLLAGEN is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[9] (contrast, score=0.856) GRN contrast in tumor senders\nEphys contrast for pathway GRN with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 1 (mean probability 0.0010). Delta Ephys_2 minus Ephys_1 = 1. Pathway GRN is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[10] (contrast, score=0.852) PCDH contrast in tumor senders\nEphys contrast for pathway PCDH with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0015). Delta Ephys_2 minus Ephys_1 = 2. Pathway PCDH is exclusive to Ephys_2 tumor senders (absent from Ephys_1)."
+}

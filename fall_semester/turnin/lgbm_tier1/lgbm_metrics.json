@@ -1,0 +1,124 @@
+{
+  "n_rows": 1368,
+  "n_positive_rows": 94,
+  "n_genes": 114,
+  "n_positive_genes": 16,
+  "prevalence_rows": 0.06871345029239766,
+  "row_level": {
+    "lightgbm_oof": {
+      "auroc": 0.5837953839473596,
+      "auprc": 0.1375124172261615,
+      "precision_at_10": 0.4,
+      "precision_at_25": 0.36,
+      "precision_at_50": 0.22
+    },
+    "rule_pass": {
+      "auroc": 0.6710310965630114,
+      "auprc": 0.13610391036724528,
+      "precision_at_10": 0.0,
+      "precision_at_25": 0.08,
+      "precision_at_50": 0.24
+    },
+    "deg_abs_log2fc": {
+      "auroc": 0.6584388256120779,
+      "auprc": 0.1117357851182721,
+      "precision_at_10": 0.1,
+      "precision_at_25": 0.04,
+      "precision_at_50": 0.04
+    },
+    "cc_edges": {
+      "auroc": 0.6335715955776746,
+      "auprc": 0.10839402076900334,
+      "precision_at_10": 0.0,
+      "precision_at_25": 0.08,
+      "precision_at_50": 0.16
+    },
+    "cc_max_prob": {
+      "auroc": 0.6512909582818397,
+      "auprc": 0.142678085693626,
+      "precision_at_10": 0.4,
+      "precision_at_25": 0.32,
+      "precision_at_50": 0.2
+    }
+  },
+  "gene_level": {
+    "lightgbm_oof": {
+      "auroc": 0.5357142857142857,
+      "auprc": 0.19898774127466906,
+      "precision_at_10": 0.2,
+      "precision_at_25": 0.12,
+      "precision_at_50": 0.16
+    },
+    "deg_abs_log2fc": {
+      "auroc": 0.6052295918367347,
+      "auprc": 0.2551499884091739,
+      "precision_at_10": 0.2,
+      "precision_at_25": 0.16,
+      "precision_at_50": 0.2
+    },
+    "cc_edges": {
+      "auroc": 0.6256377551020408,
+      "auprc": 0.2761854065069813,
+      "precision_at_10": 0.3,
+      "precision_at_25": 0.24,
+      "precision_at_50": 0.2
+    }
+  },
+  "universe": "cellchat",
+  "label_tiers": [
+    1
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv": "StratifiedGroupKFold(n_splits=5) grouped by gene",
+  "n_features": 39,
+  "features": [
+    "deg_is_sig",
+    "deg_log2fc",
+    "deg_abs_log2fc",
+    "deg_neglog10_padj",
+    "deg_pct_e2",
+    "deg_pct_e1",
+    "deg_pct_diff",
+    "deg_dir",
+    "deg_other_idh_sig",
+    "deg_other_idh_same_dir",
+    "deg_pooled_log2fc",
+    "deg_pooled_sig",
+    "deg_n_celltypes_sig",
+    "cc_lig_edges",
+    "cc_rec_edges",
+    "cc_edges_e2",
+    "cc_edges_e1",
+    "cc_max_prob",
+    "cc_mean_prob",
+    "cc_max_pval",
+    "cc_n_pathways",
+    "cc_n_partners",
+    "cc_cross_compartment_edges",
+    "cc_edges",
+    "cc_ephys_bias",
+    "cc_edges_total",
+    "cc_is_ligand",
+    "cc_is_receptor",
+    "cc_n_pathways_total",
+    "cc_n_celltypes_total",
+    "cc_n_cells_e1",
+    "cc_n_cells_e2",
+    "ctx_n_e1",
+    "ctx_n_e2",
+    "ctx_min_n",
+    "ctx_low_n",
+    "deg_cc_concordance",
+    "idh_mutant",
+    "rule_pass"
+  ],
+  "llm_runs_dir": null,
+  "n_llm_runs": 0,
+  "notes": []
+}

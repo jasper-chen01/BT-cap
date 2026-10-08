@@ -1,0 +1,61 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=MHC-II, role=either] n_hits=88
+  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0432; pval=0.0; source_n=12086; target_n=25922
+  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.038; pval=0.0; source_n=85627; target_n=25922
+  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0362; pval=0.0; source_n=25922; target_n=25922
+  pair=HLA-DRB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRB1; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0334; pval=0.0; source_n=12086; target_n=25922
+  pair=HLA-DPA1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPA1; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0334; pval=0.0; source_n=12086; target_n=25922
+  pair=HLA-DPA1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPA1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0316; pval=0.0; source_n=85627; target_n=25922
+  pair=HLA-DPB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPB1; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0314; pval=0.0; source_n=12086; target_n=25922
+  pair=HLA-DRB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRB1; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0301; pval=0.0; source_n=25922; target_n=25922
+  pair=HLA-DPA1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPA1; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0275; pval=0.0; source_n=25922; target_n=25922
+  pair=HLA-DPB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DPB1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0241; pval=0.0; source_n=85627; target_n=25922
+  pair=HLA-DRB1_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRB1; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.024; pval=0.0; source_n=85627; target_n=25922
+  pair=HLA-DRA_CD4; pathway=MHC-II; receptor=CD4; ligand=HLA-DRA; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0226; pval=0.0; source_n=6410; target_n=25922
+  ... 76 more rows omitted
+
+[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=MHC-II] n_hits=88
+  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0432
+  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.038
+  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0362
+  pair=HLA-DRB1_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0334
+  pair=HLA-DPA1_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0334
+  pair=HLA-DPA1_CD4; pathway=MHC-II; themes=immune_synapse; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0316
+  pair=HLA-DPB1_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0314
+  pair=HLA-DRB1_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0301
+  pair=HLA-DPA1_CD4; pathway=MHC-II; themes=immune_synapse; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0275
+  pair=HLA-DPB1_CD4; pathway=MHC-II; themes=immune_synapse; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0241
+  pair=HLA-DRB1_CD4; pathway=MHC-II; themes=immune_synapse; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.024
+  pair=HLA-DRA_CD4; pathway=MHC-II; themes=immune_synapse; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0226
+  ... 76 more rows omitted
+
+[1] (pathway_knowledge, score=0.235) Pathway biology: MHC-II
+Pathway MHC-II. Themes: immune_synapse. HLA-DR/DP/DQ/DM â†’ CD4 is the core MHC class II immunological synapse between antigen-presenting cells and CD4 T cells.
+
+[2] (contrast, score=0.230) MHC-II contrast in tcell senders
+Ephys contrast for pathway MHC-II with tcell cells as senders. Ephys_1 count 8 (mean probability 0.0029). Ephys_2 count 8 (mean probability 0.0046). Delta Ephys_2 minus Ephys_1 = 0.
+
+[3] (contrast, score=0.217) MHC-II contrast in tumor senders
+Ephys contrast for pathway MHC-II with tumor cells as senders. Ephys_1 count 22 (mean probability 0.0044). Ephys_2 count 2 (mean probability 0.0011). Delta Ephys_2 minus Ephys_1 = -20.
+
+[4] (contrast, score=0.207) MHC-II contrast in myeloid senders
+Ephys contrast for pathway MHC-II with myeloid cells as senders. Ephys_1 count 30 (mean probability 0.0123). Ephys_2 count 18 (mean probability 0.0091). Delta Ephys_2 minus Ephys_1 = -12.
+
+[5] (interaction, score=0.132) HLA-DRA_CD4 | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0029 (p=0.0). Biological themes: immune_synapse.
+
+[6] (interaction, score=0.130) HLA-DRA_CD4 | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_2
+AC_like_tumor (tumor, Ephys_2, n_cells=446) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0020 (p=0.0). Biological themes: immune_synapse.
+
+[7] (interaction, score=0.129) HLA-DRA_CD4 | T cell / Ephys_2 -> TAM1/TAM2/microglia / Ephys_1
+T cell (tcell, Ephys_2, n_cells=1463) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0013 (p=0.0). Biological themes: immune_synapse.
+
+[8] (interaction, score=0.129) HLA-DRA_CD4 | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1
+cycling_tumor (tumor, Ephys_1, n_cells=6410) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0019 (p=0.0). Biological themes: immune_synapse.
+
+[9] (interaction, score=0.129) HLA-DRA_CD4 | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2
+AC_like_tumor (tumor, Ephys_1, n_cells=72549) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0077 (p=0.0). Biological themes: immune_synapse.
+
+[10] (interaction, score=0.128) HLA-DRA_CD4 | T cell / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2
+T cell (tcell, Ephys_1, n_cells=2662) sends HLA-DRA to CD4 on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair HLA-DRA_CD4 in pathway MHC-II with CellChat probability 0.0058 (p=0.0). Biological themes: immune_synapse.

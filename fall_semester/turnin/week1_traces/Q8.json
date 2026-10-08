@@ -1,0 +1,76 @@
+{
+  "question_id": 8,
+  "question": "What does NRXN bind in this table?",
+  "required_terms": [
+    "NLGN1",
+    "NLGN3",
+    "LRRTM"
+  ],
+  "term_found": {
+    "NLGN1": true,
+    "NLGN3": true,
+    "LRRTM": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 60,
+      "filters": {
+        "gene": null,
+        "pathway": "NRXN",
+        "celltype": null,
+        "ephys": null,
+        "compartment": null,
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "NRXN1_NLGN1",
+        "NRXN1_LRRTM2",
+        "NRXN1_NLGN1",
+        "NRXN1_DAG1",
+        "NRXN1_LRRTM3",
+        "NRXN1_CLSTN1",
+        "NRXN1_LRRTM2",
+        "NRXN1_CLSTN1"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 60,
+      "filters": {
+        "theme": null,
+        "pathway": "NRXN",
+        "compartment": null,
+        "ephys": null
+      },
+      "preview": [
+        "NRXN1_NLGN1",
+        "NRXN1_LRRTM2",
+        "NRXN1_NLGN1",
+        "NRXN1_DAG1",
+        "NRXN1_LRRTM3",
+        "NRXN1_CLSTN1",
+        "NRXN1_LRRTM2",
+        "NRXN1_CLSTN1"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.590 [pathway_knowledge] Pathway biology: NRXN",
+    "0.476 [contrast] NRXN contrast in tumor senders",
+    "0.455 [interaction] NRXN1_NLGN1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.454 [interaction] NRXN1_NLGN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.454 [interaction] NRXN1_CLSTN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.453 [interaction] NRXN1_NLGN1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.453 [interaction] NRXN1_NLGN1 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2",
+    "0.453 [interaction] NRXN1_NLGN1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.453 [interaction] NRXN1_CLSTN1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.452 [interaction] NRXN1_LRRTM2 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: What does NRXN bind in this table?\n\n=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=NRXN, role=either] n_hits=60\n  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0202; source_n=14114; target_n=14114\n  pair=NRXN1_LRRTM2; pathway=NRXN; receptor=LRRTM2; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0156; source_n=14114; target_n=14114\n  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.015; source_n=14114; target_n=814\n  pair=NRXN1_DAG1; pathway=NRXN; receptor=DAG1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0134; source_n=14114; target_n=814\n  pair=NRXN1_LRRTM3; pathway=NRXN; receptor=LRRTM3; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0131; source_n=14114; target_n=14114\n  pair=NRXN1_CLSTN1; pathway=NRXN; receptor=CLSTN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0127; source_n=14114; target_n=14114\n  pair=NRXN1_LRRTM2; pathway=NRXN; receptor=LRRTM2; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0104; source_n=14114; target_n=814\n  pair=NRXN1_CLSTN1; pathway=NRXN; receptor=CLSTN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0084; source_n=14114; target_n=814\n  pair=NRXN1_NLGN3; pathway=NRXN; receptor=NLGN3; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082; source_n=14114; target_n=814\n  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0073; source_n=14114; target_n=446\n  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=AC_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.005; source_n=446; target_n=14114\n  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0047; source_n=6741; target_n=14114\n  ... 48 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=NRXN] n_hits=60\n  pair=NRXN1_NLGN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0202\n  pair=NRXN1_LRRTM2; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0156\n  pair=NRXN1_NLGN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.015\n  pair=NRXN1_DAG1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0134\n  pair=NRXN1_LRRTM3; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0131\n  pair=NRXN1_CLSTN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0127\n  pair=NRXN1_LRRTM2; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0104\n  pair=NRXN1_CLSTN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0084\n  pair=NRXN1_NLGN3; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082\n  pair=NRXN1_NLGN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0073\n  pair=NRXN1_NLGN1; pathway=NRXN; themes=neuron_tumor; source=AC_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.005\n  pair=NRXN1_NLGN1; pathway=NRXN; themes=neuron_tumor; source=OPC_GABA_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0047\n  ... 48 more rows omitted\n\n[1] (pathway_knowledge, score=0.590) Pathway biology: NRXN\nPathway NRXN. Themes: neuron_tumor. Neurexins (NRXN1/2) bind neuroligins (NLGN1/3), LRRTMs, calsyntenin-1, and dystroglycan (DAG1). These are canonical trans-synaptic adhesion complexes that specify excitatory synapses.\n\n[2] (contrast, score=0.476) NRXN contrast in tumor senders\nEphys contrast for pathway NRXN with tumor cells as senders. Ephys_1 count 10 (mean probability 0.0029). Ephys_2 count 50 (mean probability 0.0043). Delta Ephys_2 minus Ephys_1 = 40.\n\n[3] (interaction, score=0.455) NRXN1_NLGN1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends NRXN1 to NLGN1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair NRXN1_NLGN1 in pathway NRXN with CellChat probability 0.0029 (p=0.0). Biological themes: neuron_tumor.\n\n[4] (interaction, score=0.454) NRXN1_NLGN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends NRXN1 to NLGN1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair NRXN1_NLGN1 in pathway NRXN with CellChat probability 0.0035 (p=0.0). Biological themes: neuron_tumor.\n\n[5] (interaction, score=0.454) NRXN1_CLSTN1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends NRXN1 to CLSTN1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair NRXN1_CLSTN1 in pathway NRXN with CellChat probability 0.0019 (p=0.0). Biological themes: neuron_tumor.\n\n[6] (interaction, score=0.453) NRXN1_NLGN1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends NRXN1 to NLGN1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair NRXN1_NLGN1 in pathway NRXN with CellChat probability 0.0037 (p=0.0). Biological themes: neuron_tumor.\n\n[7] (interaction, score=0.453) NRXN1_NLGN1 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends NRXN1 to NLGN1 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair NRXN1_NLGN1 in pathway NRXN with CellChat probability 0.0010 (p=0.0). Biological themes: neuron_tumor.\n\n[8] (interaction, score=0.453) NRXN1_NLGN1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends NRXN1 to NLGN1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair NRXN1_NLGN1 in pathway NRXN with CellChat probability 0.0150 (p=0.0). Biological themes: neuron_tumor.\n\n[9] (interaction, score=0.453) NRXN1_CLSTN1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends NRXN1 to CLSTN1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair NRXN1_CLSTN1 in pathway NRXN with CellChat probability 0.0018 (p=0.0). Biological themes: neuron_tumor.\n\n[10] (interaction, score=0.452) NRXN1_LRRTM2 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends NRXN1 to LRRTM2 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair NRXN1_LRRTM2 in pathway NRXN with CellChat probability 0.0024 (p=0.0). Biological themes: neuron_tumor."
+}

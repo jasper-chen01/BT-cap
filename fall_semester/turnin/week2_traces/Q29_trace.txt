@@ -1,0 +1,36 @@
+=== tool traces ===
+
+[1] tool=count_lookup file=cellchat_group_counts.csv filters=[celltype=AC_like, ephys=Ephys_2] n_hits=2
+Flag any CellChat pair whose sender or receiver has n_cells < 50.
+  group=OPC_GABA_AC_like_tumor / Ephys_2; n_cells=1012; compartment=tumor
+  group=AC_like_tumor / Ephys_2; n_cells=446; compartment=tumor
+
+[1] (hypothesis, score=0.208) Hypothesis: Tumor Ephys states index neuron-tumor synaptic-like communication
+Working hypothesis neuron_tumor: Tumor Ephys states index neuron-tumor synaptic-like communication. Applies to compartments tumor. In glioma-like tumor states, one Ephys class may carry synaptic adhesion and glutamatergic pairs (NRXN-NLGN, glutamate-AMPA, NCAM, CNTN). Test this against the table. Caution: No neuron identity is labeled in the CellChat source/target columns.
+
+[2] (pathway_knowledge, score=0.204) Pathway biology: PTN
+Pathway PTN. Themes: neuron_tumor, growth. Pleiotrophin (PTN) binds PTPRZ1, nucleolin (NCL), and syndecan-3 (SDC3). PTN-PTPRZ1 is a core OPC/glioma growth axis and is also used in neural development. High probability here among OPC-like, AC-like, and cycling tumor cells.
+
+[3] (contrast, score=0.176) Pathways exclusive to Ephys_1 tumor senders
+Sender pathways exclusive to Ephys_1 in the tumor compartment (count > 0 on that side, 0 on the other): ANNEXIN, MHC-I. Top by event count: ANNEXIN, MHC-I.
+
+[4] (contrast, score=0.161) Pathways exclusive to Ephys_2 tumor senders
+Sender pathways exclusive to Ephys_2 in the tumor compartment (count > 0 on that side, 0 on the other): MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN, PDGF, MPZ, PCDH, SLIT, THY1, CLDN, GRN, SLITRK. Top by event count: MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN.
+
+[5] (interaction, score=0.157) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2620 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[6] (interaction, score=0.156) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1787 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[7] (interaction, score=0.156) PTN_NCL | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to NCL on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_NCL in pathway PTN with CellChat probability 0.1743 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[8] (interaction, score=0.156) PTN_NCL | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to NCL on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_NCL in pathway PTN with CellChat probability 0.1418 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[9] (interaction, score=0.155) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1953 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[10] (interaction, score=0.155) PTN_PTPRZ1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+AC_like_tumor (tumor, Ephys_2, n_cells=446) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1448 (p=0.0). Biological themes: neuron_tumor, growth.

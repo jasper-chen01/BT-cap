@@ -1,0 +1,186 @@
+# External positives for the LightGBM ranker (PU learning).
+#
+# A row (gene x cell type x IDH) is labeled positive when its gene is listed here
+# AND its DEG compartment is in `compartments`. Everything else is unlabeled, not negative.
+# Compartment codes match the DEG table `compartment` column: tumor, T_cell, TAM_microglia.
+#
+# tier 1: direct functional evidence for this gene in glioma in this compartment.
+# tier 2: pathway-level / family-level support only. Labeled by default;
+#         `ephys-rag rank --tiers 1` is the strict literature-only run.
+#
+# Draft list. The team should review it before the ranking is reported.
+# Do not add genes because they score well in our own tables; that makes the labels circular.
+
+positives:
+  # --- neuron-tumor synaptic-like (H2) ---
+  - gene: NLGN3
+    compartments: [tumor]
+    tier: 1
+    hypothesis: neuron_tumor
+    reference: "Venkatesh et al., Cell 2015; Venkatesh et al., Nature 2017"
+  - gene: GRIA2
+    compartments: [tumor]
+    tier: 1
+    hypothesis: neuron_tumor
+    reference: "Venkatesh et al., Nature 2019; Venkataramani et al., Nature 2019"
+  - gene: GRIA3
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "AMPAR subunit family; Venkatesh et al., Nature 2019"
+  - gene: GRIA4
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "AMPAR subunit family; Venkatesh et al., Nature 2019"
+  - gene: NRXN1
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "Presynaptic partner of NLGN3 (pathway-level)"
+  - gene: NLGN1
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "Neuroligin family (pathway-level)"
+  - gene: NCAM1
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "Synaptic adhesion (pathway-level)"
+  - gene: CNTN1
+    compartments: [tumor]
+    tier: 2
+    hypothesis: neuron_tumor
+    reference: "Synaptic adhesion (pathway-level)"
+
+  # --- tumor growth / stemness receptors ---
+  - gene: PTPRZ1
+    compartments: [tumor]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Shi et al., Cell Stem Cell 2017"
+  - gene: CD44
+    compartments: [tumor]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Pietras et al., Cell Stem Cell 2014"
+  - gene: EGFR
+    compartments: [tumor]
+    tier: 1
+    hypothesis: growth
+    reference: "Brennan et al., Cell 2013 (TCGA GBM)"
+  - gene: PDGFRA
+    compartments: [tumor]
+    tier: 1
+    hypothesis: growth
+    reference: "Brennan et al., Cell 2013; Verhaak et al., Cancer Cell 2010"
+  - gene: DLL3
+    compartments: [tumor]
+    tier: 1
+    hypothesis: growth
+    reference: "Spino et al., Clin Cancer Res 2019 (IDH-mutant glioma)"
+  - gene: NOTCH1
+    compartments: [tumor]
+    tier: 2
+    hypothesis: growth
+    reference: "Notch pathway (pathway-level)"
+  - gene: CXCR4
+    compartments: [tumor]
+    tier: 1
+    hypothesis: growth
+    reference: "Rubin et al., PNAS 2003"
+  - gene: CD99
+    compartments: [tumor]
+    tier: 2
+    hypothesis: immune_synapse
+    reference: "Glioma invasion marker (limited functional data)"
+  - gene: TGFB1
+    compartments: [tumor, TAM_microglia]
+    tier: 2
+    hypothesis: immune_synapse
+    reference: "Immunosuppressive cytokine (pathway-level)"
+
+  # --- myeloid bridge (H3) ---
+  - gene: MIF
+    compartments: [tumor]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Ghoochani et al., Oncotarget 2016"
+  - gene: CD74
+    compartments: [TAM_microglia]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Ghoochani et al., Oncotarget 2016"
+  - gene: SPP1
+    compartments: [TAM_microglia]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Wei et al., J Clin Invest 2019"
+  - gene: PTN
+    compartments: [TAM_microglia]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Shi et al., Cell Stem Cell 2017"
+  - gene: ENTPD1
+    compartments: [TAM_microglia]
+    tier: 1
+    hypothesis: myeloid_bridge
+    reference: "Takenaka et al., Nat Neurosci 2019"
+  - gene: TREM2
+    compartments: [TAM_microglia]
+    tier: 2
+    hypothesis: myeloid_bridge
+    reference: "TAM marker (pathway-level)"
+  - gene: TYROBP
+    compartments: [TAM_microglia]
+    tier: 2
+    hypothesis: myeloid_bridge
+    reference: "TREM2 adaptor (pathway-level)"
+  - gene: APOE
+    compartments: [TAM_microglia]
+    tier: 2
+    hypothesis: myeloid_bridge
+    reference: "TAM lipid program (pathway-level)"
+  - gene: LILRB4
+    compartments: [TAM_microglia]
+    tier: 2
+    hypothesis: myeloid_bridge
+    reference: "Myeloid checkpoint (pathway-level)"
+  - gene: AXL
+    compartments: [TAM_microglia, tumor]
+    tier: 2
+    hypothesis: myeloid_bridge
+    reference: "TAM receptor family (pathway-level)"
+  - gene: HLA-DRA
+    compartments: [TAM_microglia]
+    tier: 2
+    hypothesis: immune_synapse
+    reference: "MHC-II antigen presentation (pathway-level)"
+
+  # --- immune synapse (H1) ---
+  - gene: KLRB1
+    compartments: [T_cell]
+    tier: 1
+    hypothesis: immune_synapse
+    reference: "Mathewson et al., Cell 2021"
+  - gene: CLEC2D
+    compartments: [tumor, TAM_microglia]
+    tier: 1
+    hypothesis: immune_synapse
+    reference: "Mathewson et al., Cell 2021"
+  - gene: HAVCR2
+    compartments: [T_cell]
+    tier: 1
+    hypothesis: immune_synapse
+    reference: "Kim et al., Clin Cancer Res 2017"
+  - gene: LGALS9
+    compartments: [tumor, TAM_microglia]
+    tier: 2
+    hypothesis: immune_synapse
+    reference: "HAVCR2 ligand (pathway-level)"
+  - gene: CD4
+    compartments: [T_cell]
+    tier: 2
+    hypothesis: immune_synapse
+    reference: "MHC-II co-receptor (pathway-level)"

@@ -1,0 +1,78 @@
+{
+  "question_id": 7,
+  "question": "Which receptors does the Glutamate pathway hit in this table?",
+  "required_terms": [
+    "GRIA2",
+    "GRIA3",
+    "GRIA4",
+    "GRIK2"
+  ],
+  "term_found": {
+    "GRIA2": true,
+    "GRIA3": true,
+    "GRIA4": true,
+    "GRIK2": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 13,
+      "filters": {
+        "gene": null,
+        "pathway": "Glutamate",
+        "celltype": "TAM",
+        "ephys": null,
+        "compartment": "myeloid",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIK2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA3",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 13,
+      "filters": {
+        "theme": null,
+        "pathway": "Glutamate",
+        "compartment": "myeloid",
+        "ephys": null
+      },
+      "preview": [
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIK2",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA3",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA4",
+        "Glutamate-Glu-SLC1A3_GLS_GRIA2"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.676 [pathway_knowledge] Pathway biology: Glutamate",
+    "0.645 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.645 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+    "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_2",
+    "0.644 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.642 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+    "0.642 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.641 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> AC_like_tumor / Ephys_2",
+    "0.641 [interaction] Glutamate-Glu-SLC1A3_GLS_GRIA3 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: Which receptors does the Glutamate pathway hit in this table?\n\n=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=Glutamate, celltype=TAM, compartment=myeloid, role=either] n_hits=13\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.058; source_n=25922; target_n=14114\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; receptor=GRIA4; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0397; source_n=25922; target_n=14114\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0133; source_n=25922; target_n=446\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; receptor=GRIA4; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0115; source_n=25922; target_n=446\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIK2; pathway=Glutamate; receptor=GRIK2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0104; source_n=25922; target_n=14114\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA3; pathway=Glutamate; receptor=GRIA3; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0083; source_n=25922; target_n=14114\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; receptor=GRIA4; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082; source_n=25922; target_n=814\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082; source_n=25922; target_n=814\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; receptor=GRIA4; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0076; source_n=25922; target_n=6741\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; receptor=GRIA2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0074; source_n=25922; target_n=6741\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIK2; pathway=Glutamate; receptor=GRIK2; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0066; source_n=25922; target_n=814\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA3; pathway=Glutamate; receptor=GRIA3; ligand=Glu-SLC1A3_GLS; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.004; source_n=25922; target_n=814\n  ... 1 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=Glutamate, compartment=myeloid] n_hits=13\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.058\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0397\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0133\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0115\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIK2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0104\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA3; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0083\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA4; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0076\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0074\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIK2; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0066\n  pair=Glutamate-Glu-SLC1A3_GLS_GRIA3; pathway=Glutamate; themes=neuron_tumor; source=TAM1/TAM2/microglia / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.004\n  ... 1 more rows omitted\n\n[1] (pathway_knowledge, score=0.676) Pathway biology: Glutamate\nPathway Glutamate. Themes: neuron_tumor. Glutamate released via SLC1A1/SLC1A3 + glutaminase (GLS) onto AMPA (GRIA2/3/4) and kainate (GRIK2) receptors. Glioma\u00e2\u20ac\u201cneuron synapses are AMPA-receptor dependent; neuronal glutamate can drive tumor growth.\n\n[2] (interaction, score=0.645) Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA4 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair Glutamate-Glu-SLC1A3_GLS_GRIA4 in pathway Glutamate with CellChat probability 0.0082 (p=0.0). Biological themes: neuron_tumor.\n\n[3] (interaction, score=0.645) Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA4 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair Glutamate-Glu-SLC1A3_GLS_GRIA4 in pathway Glutamate with CellChat probability 0.0076 (p=0.0). Biological themes: neuron_tumor.\n\n[4] (interaction, score=0.644) Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA2 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0082 (p=0.0). Biological themes: neuron_tumor.\n\n[5] (interaction, score=0.644) Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA4 on OPC_GABA_AC_like_tumor (tumor, Ephys_2, n_cells=1012). Pair Glutamate-Glu-SLC1A3_GLS_GRIA4 in pathway Glutamate with CellChat probability 0.0019 (p=0.0). Biological themes: neuron_tumor.\n\n[6] (interaction, score=0.644) Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA4 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair Glutamate-Glu-SLC1A3_GLS_GRIA4 in pathway Glutamate with CellChat probability 0.0397 (p=0.0). Biological themes: neuron_tumor.\n\n[7] (interaction, score=0.642) Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0074 (p=0.0). Biological themes: neuron_tumor.\n\n[8] (interaction, score=0.642) Glutamate-Glu-SLC1A3_GLS_GRIA2 | TAM1/TAM2/microglia / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA2 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair Glutamate-Glu-SLC1A3_GLS_GRIA2 in pathway Glutamate with CellChat probability 0.0580 (p=0.0). Biological themes: neuron_tumor.\n\n[9] (interaction, score=0.641) Glutamate-Glu-SLC1A3_GLS_GRIA4 | TAM1/TAM2/microglia / Ephys_2 -> AC_like_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA4 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair Glutamate-Glu-SLC1A3_GLS_GRIA4 in pathway Glutamate with CellChat probability 0.0115 (p=0.0). Biological themes: neuron_tumor.\n\n[10] (interaction, score=0.641) Glutamate-Glu-SLC1A3_GLS_GRIA3 | TAM1/TAM2/microglia / Ephys_2 -> cycling_tumor / Ephys_2\nTAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922) sends Glu-SLC1A3_GLS to GRIA3 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair Glutamate-Glu-SLC1A3_GLS_GRIA3 in pathway Glutamate with CellChat probability 0.0040 (p=0.0). Biological themes: neuron_tumor."
+}

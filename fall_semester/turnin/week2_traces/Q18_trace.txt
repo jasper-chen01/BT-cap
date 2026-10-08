@@ -1,0 +1,44 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[source_compartment=myeloid, target_compartment=myeloid, role=either] n_hits=104
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2392; pval=0.0; source_n=12086; target_n=12086
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2257; pval=0.0; source_n=12086; target_n=25922
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2236; pval=0.0; source_n=85627; target_n=12086
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2108; pval=0.0; source_n=85627; target_n=25922
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2107; pval=0.0; source_n=25922; target_n=12086
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.1984; pval=0.0; source_n=25922; target_n=25922
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.176; pval=0.0; source_n=12086; target_n=85627
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1637; pval=0.0; source_n=85627; target_n=85627
+  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1535; pval=0.0; source_n=25922; target_n=85627
+  pair=C3_C3AR1; pathway=COMPLEMENT; receptor=C3AR1; ligand=C3; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.0977; pval=0.0; source_n=25922; target_n=25922
+  ... 92 more rows omitted
+
+[1] (overview, score=1.322) Highest-probability tumor-tumor pair: PTN_PTPRZ1
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+
+[2] (interaction, score=0.632) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> cycling_tumor / Ephys_2
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0573 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[3] (interaction, score=0.632) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0635 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[4] (interaction, score=0.631) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> AC_like_tumor / Ephys_2
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0443 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[5] (interaction, score=0.631) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> OPC_GABA_like_tumor / Ephys_1
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0515 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[6] (interaction, score=0.631) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> OPC_GABA_AC_like_tumor / Ephys_2
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on OPC_GABA_AC_like_tumor (tumor, Ephys_2, n_cells=1012). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0407 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[7] (interaction, score=0.631) PTN_PTPRZ1 | MES_like_tumor/TAM1/microglia / Ephys_1 -> OPC_GABA_AC_like_tumor / Ephys_1
+MES_like_tumor/TAM1/microglia (myeloid, Ephys_1, n_cells=85627) sends PTN to PTPRZ1 on OPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0368 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[8] (interaction, score=0.504) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2620 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[9] (interaction, score=0.504) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2212 (p=0.0). Biological themes: neuron_tumor, growth.
+
+[10] (interaction, score=0.504) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2115 (p=0.0). Biological themes: neuron_tumor, growth.

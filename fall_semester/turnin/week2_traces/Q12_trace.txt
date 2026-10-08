@@ -1,0 +1,36 @@
+=== tool traces ===
+
+[1] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=tcell, ephys=Ephys_2] n_hits=2
+Pathways with sender events only in Ephys_2 for tcell (0 on the other side).
+  pathway=EGF; compartment=tcell; Ephys_1=0; Ephys_2=7; delta=7; exclusive_to=Ephys_2
+  pathway=PTN; compartment=tcell; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2
+
+[1] (interaction, score=0.497) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1
+T cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0175 (p=0.0). Biological themes: immune_synapse.
+
+[2] (interaction, score=0.497) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_2
+T cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0158 (p=0.0). Biological themes: immune_synapse.
+
+[3] (interaction, score=0.494) MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2
+T cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0150 (p=0.0). Biological themes: immune_synapse.
+
+[4] (interaction, score=0.491) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1
+T cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0082 (p=0.0). Biological themes: immune_synapse.
+
+[5] (interaction, score=0.491) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_2
+T cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0080 (p=0.0). Biological themes: immune_synapse.
+
+[6] (interaction, score=0.483) SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_2
+T cell (tcell, Ephys_2, n_cells=1463) sends SPP1 to CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair SPP1_CD44 in pathway SPP1 with CellChat probability 0.0268 (p=0.0). Biological themes: immune_synapse, myeloid.
+
+[7] (interaction, score=0.482) MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2
+T cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0075 (p=0.0). Biological themes: immune_synapse.
+
+[8] (interaction, score=0.478) SPP1_CD44 | T cell / Ephys_2 -> T cell / Ephys_1
+T cell (tcell, Ephys_2, n_cells=1463) sends SPP1 to CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair SPP1_CD44 in pathway SPP1 with CellChat probability 0.0327 (p=0.0). Biological themes: immune_synapse, myeloid.
+
+[9] (interaction, score=0.477) CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1
+T cell (tcell, Ephys_2, n_cells=1463) sends CD99 to CD99 on T cell (tcell, Ephys_1, n_cells=2662). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0083 (p=0.0). Biological themes: immune_synapse, adhesion.
+
+[10] (interaction, score=0.477) CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_2
+T cell (tcell, Ephys_2, n_cells=1463) sends CD99 to CD99 on T cell (tcell, Ephys_2, n_cells=1463). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0078 (p=0.0). Biological themes: immune_synapse, adhesion.

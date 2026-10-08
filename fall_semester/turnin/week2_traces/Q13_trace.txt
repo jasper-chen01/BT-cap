@@ -1,0 +1,36 @@
+=== tool traces ===
+
+[1] tool=exclusive_pathway_lookup file=all_significant_interactions.csv filters=[compartment=tumor, ephys=Ephys_1] n_hits=2
+Pathways with sender events only in Ephys_1 for tumor (0 on the other side).
+  pathway=ANNEXIN; compartment=tumor; Ephys_1=4; Ephys_2=0; delta=-4; exclusive_to=Ephys_1
+  pathway=MHC-I; compartment=tumor; Ephys_1=1; Ephys_2=0; delta=-1; exclusive_to=Ephys_1
+
+[1] (contrast, score=1.290) Pathways exclusive to Ephys_1 tumor senders
+Sender pathways exclusive to Ephys_1 in the tumor compartment (count > 0 on that side, 0 on the other): ANNEXIN, MHC-I. Top by event count: ANNEXIN, MHC-I.
+
+[2] (contrast, score=1.115) Pathways exclusive to Ephys_1 myeloid senders
+Sender pathways exclusive to Ephys_1 in the myeloid compartment (count > 0 on that side, 0 on the other): PTN, EGF, MIF, ANNEXIN. Top by event count: PTN, EGF, MIF, ANNEXIN.
+
+[3] (contrast, score=0.753) MHC-I contrast in tumor senders
+Ephys contrast for pathway MHC-I with tumor cells as senders. Ephys_1 count 1 (mean probability 0.0040). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -1. Pathway MHC-I is exclusive to Ephys_1 tumor senders (absent from Ephys_2).
+
+[4] (contrast, score=0.741) ANNEXIN contrast in tumor senders
+Ephys contrast for pathway ANNEXIN with tumor cells as senders. Ephys_1 count 4 (mean probability 0.0052). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -4. Pathway ANNEXIN is exclusive to Ephys_1 tumor senders (absent from Ephys_2).
+
+[5] (contrast, score=0.628) Pathways exclusive to Ephys_2 tumor senders
+Sender pathways exclusive to Ephys_2 in the tumor compartment (count > 0 on that side, 0 on the other): MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN, PDGF, MPZ, PCDH, SLIT, THY1, CLDN, GRN, SLITRK. Top by event count: MK, Glutamate, CNTN, NOTCH, JAM, COLLAGEN.
+
+[6] (contrast, score=0.621) PTN contrast in myeloid senders
+Ephys contrast for pathway PTN with myeloid cells as senders. Ephys_1 count 8 (mean probability 0.0372). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -8. Pathway PTN is exclusive to Ephys_1 myeloid senders (absent from Ephys_2).
+
+[7] (contrast, score=0.617) MIF contrast in myeloid senders
+Ephys contrast for pathway MIF with myeloid cells as senders. Ephys_1 count 6 (mean probability 0.0168). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -6. Pathway MIF is exclusive to Ephys_1 myeloid senders (absent from Ephys_2).
+
+[8] (contrast, score=0.611) EGF contrast in myeloid senders
+Ephys contrast for pathway EGF with myeloid cells as senders. Ephys_1 count 7 (mean probability 0.0076). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -7. Pathway EGF is exclusive to Ephys_1 myeloid senders (absent from Ephys_2).
+
+[9] (contrast, score=0.610) ANNEXIN contrast in myeloid senders
+Ephys contrast for pathway ANNEXIN with myeloid cells as senders. Ephys_1 count 2 (mean probability 0.0055). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -2. Pathway ANNEXIN is exclusive to Ephys_1 myeloid senders (absent from Ephys_2).
+
+[10] (contrast, score=0.576) Pathways exclusive to Ephys_2 tcell senders
+Sender pathways exclusive to Ephys_2 in the tcell compartment (count > 0 on that side, 0 on the other): EGF, PTN. Top by event count: EGF, PTN.

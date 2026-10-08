@@ -1,0 +1,22 @@
+{
+  "fetched": "2026-10-08",
+  "tumor_synaptic": {
+    "source": "SynGO",
+    "url": "https://www.syngoportal.org/data/SynGO_bulk_20250218.json",
+    "release": "20250226",
+    "n_annotations": 5076,
+    "n_genes": 1789,
+    "file": "tumor_synaptic_syngo.tsv"
+  },
+  "immune_synapse": {
+    "source": "QuickGO",
+    "go_id": "GO:0001772",
+    "url": "https://www.ebi.ac.uk/QuickGO/services/annotation/downloadSearch?goId=GO:0001772&goUsage=descendants&goUsageRelationships=is_a,part_of,occurs_in&downloadLimit=50000",
+    "n_annotations": 5614,
+    "n_annotations_skipped_no_symbol": 1680,
+    "n_genes": 244,
+    "n_genes_human_annotated": 54,
+    "n_genes_experimental": 53,
+    "file": "immune_synapse_go0001772.tsv"
+  }
+}

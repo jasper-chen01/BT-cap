@@ -1,0 +1,41 @@
+LLM generation is off. Tool traces and retrieved rows for the question: Are neurons present as a CellChat source or target identity in this table?
+
+=== tool traces ===
+
+[1] tool=annotation_lookup file=glioma_tumor_tcell_tam_ephys_counts.csv filters=[ask_neurons=True] n_hits=5
+Identities present: AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, T cell, TAM1/TAM2/microglia, astrocyte, cycling_tumor, endothelial, fibroblast, oligodendrocytes, vascular. Neuron labels: none. Do not scan glioma_final_cell_id_celltype_ephys_annotation.csv (~255k rows); use this count table.
+  compartment=other; celltype_id=astrocyte; ephys=nan; n_cells=1543
+  compartment=other; celltype_id=endothelial; ephys=nan; n_cells=2661
+  compartment=other; celltype_id=fibroblast; ephys=nan; n_cells=2987
+  compartment=other; celltype_id=oligodendrocytes; ephys=nan; n_cells=10694
+  compartment=other; celltype_id=vascular; ephys=nan; n_cells=838
+
+[1] (hypothesis, score=0.432) Hypothesis: Tumor Ephys states index neuron-tumor synaptic-like communication
+Working hypothesis neuron_tumor: Tumor Ephys states index neuron-tumor synaptic-like communication. Applies to compartments tumor. In glioma-like tumor states, one Ephys class may carry synaptic adhesion and glutamatergic pairs (NRXN-NLGN, glutamate-AMPA, NCAM, CNTN). Test this against the table. Caution: No neuron identity is labeled in the CellChat source/target columns.
+
+[2] (annotation, score=0.395) Annotation identities outside tumor / T cell / TAM
+The annotation count table labels compartment 'other' as: astrocyte, endothelial, fibroblast, oligodendrocytes, vascular. There is no neuron identity. Do not treat oligodendrocytes or astrocytes as neurons.
+
+[3] (overview, score=0.394) Dataset overview: significant interactions and compartment flows
+DATA_DIR=C:\Users\ericy\OneDrive\Desktop\BT-Cap\BT-CAP-Capstone\fall_semester\data. The CellChat table has 922 significant ligand-receptor interactions across 40 pathways and 96 unique pairs. Labeled identities: AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, T cell, TAM1/TAM2/microglia, cycling_tumor. Source Ephys counts: {'Ephys_2': 530, 'Ephys_1': 392}. Compartment flows: {'tumor->tumor': 407, 'myeloid->myeloid': 104, 'tumor->myeloid': 164, 'tcell->myeloid': 42, 'tcell->tumor': 30, 'myeloid->tumor': 67, 'myeloid->tcell': 22, 'tumor->tcell': 60, 'tcell->tcell': 26}. Dominant compartment flow: tumor->tumor with 407 interactions. 0 unique pairs touch a group with n_cells < 50. There is no neuron identity in the source or target labels.
+
+[4] (hypothesis, score=0.269) Hypothesis: Ephys states index immune-synapse activity
+Working hypothesis immune_synapse: Ephys states index immune-synapse activity. Applies to compartments tcell, myeloid. In T cells and myeloid cells, Ephys_1 versus Ephys_2 may mark activity during an immunological synapse (MHC-IIâ†’CD4, MIFâ†’CD74, SPP1â†’CD44, CD99, CLECâ†’KLRB1). Test this against the table. Caution: Ephys is a cluster label, not a measured synapse current.
+
+[5] (overview, score=0.250) Highest-probability tumor-tumor pair: PTN_PTPRZ1
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+
+[6] (pathway_knowledge, score=0.033) Pathway biology: EGF
+Pathway EGF. Themes: growth, immune_synapse. AREG or HBEGF -> EGFR. Wound-repair and glioma growth factor. In this table, EGF also marks a T-cell sender program that appears on Ephys_2 but not Ephys_1.
+
+[7] (deg_summary, score=0.020) DEG summary IDH_Mutant OPC_GABA_AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_AC_like_tumor (IDH_Mutant): n_Ephys_1=352, n_Ephys_2=742, n_sig_total=194, n_sig_Ephys2_high=134, n_sig_Ephys1_high=60. Top Ephys_2_high genes: DLL3; OLIG2; H3F3B; HES6; TERF2IP; PTPRZ1; SHD; SOX4; NRXN1; MARCKSL1; RPL3; CD24; ZBTB20; TUBB2B; SPCS2. Top Ephys_1_high genes: APOE; FTL; C1QB; TMSB4X; SPP1; TYROBP; C1QC; FTH1; B2M; CYBA; CD74; C1QA; AIF1; HLA-DRA; ISG15. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[8] (deg_summary, score=0.020) DEG summary IDH_Mutant cycling_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for cycling_tumor (IDH_Mutant): n_Ephys_1=270, n_Ephys_2=136, n_sig_total=3373, n_sig_Ephys2_high=3157, n_sig_Ephys1_high=216. Top Ephys_2_high genes: PTPRZ1; PTN; GPM6A; NCAM1; NOVA1; BEX1; SOX2; TUBB2B; VCAN; NRXN1; MARCKSL1; ZBTB20; SOX11; NFIB; SOX4. Top Ephys_1_high genes: FTL; TMSB4X; B2M; APOE; C1QB; C1QA; FTH1; AIF1; C1QC; S100A11; TYROBP; HLA-DRA; CD74; CYBA; TPT1. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[9] (deg_summary, score=0.020) DEG summary IDH_WT OPC_GABA_AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_AC_like_tumor (IDH_WT): n_Ephys_1=5384, n_Ephys_2=171, n_sig_total=1093, n_sig_Ephys2_high=970, n_sig_Ephys1_high=123. Top Ephys_2_high genes: C1QL1; SOX10; AC104051.2; LHFPL3; PLPPR1; GPR17; DLL3; SHD; NEU4; ATCAY; HRASLS; MDFI; LINC02283; RAB33A; PDGFRA. Top Ephys_1_high genes: CST3; MT3; TMSB4X; RPLP1; VIM; TPT1; RPL13A; RPS3A; HOPX; RPL9; RPL34; RPS14; MT2A; RPL13; RPL23A. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[10] (deg_summary, score=0.020) DEG summary IDH_WT cycling_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for cycling_tumor (IDH_WT): n_Ephys_1=5847, n_Ephys_2=663, n_sig_total=6618, n_sig_Ephys2_high=5740, n_sig_Ephys1_high=878. Top Ephys_2_high genes: GPR17; COL20A1; SOX10; DLL1; ERBB3; ATCAY; EPHB1; DLL3; TMEFF2; VSTM2B; CA10; NKX2-2; UGT8; TFAP2A; FERMT1. Top Ephys_1_high genes: TMSB4X; RPLP1; TPT1; CST3; RPL13A; RPL34; RPS3A; VIM; RPL9; MT3; MT2A; FTH1; RPS2; RPS14; FTL. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.

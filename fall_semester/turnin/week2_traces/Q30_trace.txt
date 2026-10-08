@@ -1,0 +1,49 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=NRXN1, celltype=cycling_tumor, ephys=Ephys_2, compartment=tumor, role=either] n_hits=30
+  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.015; pval=0.0; source_n=14114; target_n=814
+  pair=NRXN1_DAG1; pathway=NRXN; receptor=DAG1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0134; pval=0.0; source_n=14114; target_n=814
+  pair=NRXN1_LRRTM2; pathway=NRXN; receptor=LRRTM2; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0104; pval=0.0; source_n=14114; target_n=814
+  pair=NRXN1_CLSTN1; pathway=NRXN; receptor=CLSTN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0084; pval=0.0; source_n=14114; target_n=814
+  pair=NRXN1_NLGN3; pathway=NRXN; receptor=NLGN3; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0082; pval=0.0; source_n=14114; target_n=814
+  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=AC_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0037; pval=0.0; source_n=446; target_n=814
+  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.0035; pval=0.0; source_n=6741; target_n=814
+  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=OPC_GABA_AC_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0034; pval=0.0; source_n=1012; target_n=814
+  pair=NRXN1_DAG1; pathway=NRXN; receptor=DAG1; ligand=NRXN1; source=AC_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0033; pval=0.0; source_n=446; target_n=814
+  pair=NRXN1_DAG1; pathway=NRXN; receptor=DAG1; ligand=NRXN1; source=OPC_GABA_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.0031; pval=0.0; source_n=6741; target_n=814
+  pair=NRXN1_DAG1; pathway=NRXN; receptor=DAG1; ligand=NRXN1; source=OPC_GABA_AC_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0031; pval=0.0; source_n=1012; target_n=814
+  pair=NRXN1_NLGN1; pathway=NRXN; receptor=NLGN1; ligand=NRXN1; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0029; pval=0.0; source_n=814; target_n=14114
+  ... 18 more rows omitted
+
+[2] tool=deg_lookup file=combined_Ephys2_vs_Ephys1_significant_DEGs_by_IDH_and_cluster.csv filters=[gene=NRXN1, celltype=cycling_tumor, idh=IDH_Mutant, pooled=False] n_hits=1
+  gene=NRXN1; direction=Ephys_2_high; avg_log2FC=3.7084; p_val_adj=6.977933787055895e-45; celltype_id=cycling_tumor; IDH_status=IDH_Mutant; n_Ephys_1=270; n_Ephys_2=136
+
+[1] (deg_summary, score=0.107) DEG summary IDH_Mutant OPC_GABA_AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_AC_like_tumor (IDH_Mutant): n_Ephys_1=352, n_Ephys_2=742, n_sig_total=194, n_sig_Ephys2_high=134, n_sig_Ephys1_high=60. Top Ephys_2_high genes: DLL3; OLIG2; H3F3B; HES6; TERF2IP; PTPRZ1; SHD; SOX4; NRXN1; MARCKSL1; RPL3; CD24; ZBTB20; TUBB2B; SPCS2. Top Ephys_1_high genes: APOE; FTL; C1QB; TMSB4X; SPP1; TYROBP; C1QC; FTH1; B2M; CYBA; CD74; C1QA; AIF1; HLA-DRA; ISG15. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[2] (deg_summary, score=0.107) DEG summary IDH_Mutant cycling_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for cycling_tumor (IDH_Mutant): n_Ephys_1=270, n_Ephys_2=136, n_sig_total=3373, n_sig_Ephys2_high=3157, n_sig_Ephys1_high=216. Top Ephys_2_high genes: PTPRZ1; PTN; GPM6A; NCAM1; NOVA1; BEX1; SOX2; TUBB2B; VCAN; NRXN1; MARCKSL1; ZBTB20; SOX11; NFIB; SOX4. Top Ephys_1_high genes: FTL; TMSB4X; B2M; APOE; C1QB; C1QA; FTH1; AIF1; C1QC; S100A11; TYROBP; HLA-DRA; CD74; CYBA; TPT1. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[3] (overview, score=0.094) Highest-probability tumor-tumor pair: PTN_PTPRZ1
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+
+[4] (deg_summary, score=0.091) DEG summary IDH_WT OPC_GABA_AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_AC_like_tumor (IDH_WT): n_Ephys_1=5384, n_Ephys_2=171, n_sig_total=1093, n_sig_Ephys2_high=970, n_sig_Ephys1_high=123. Top Ephys_2_high genes: C1QL1; SOX10; AC104051.2; LHFPL3; PLPPR1; GPR17; DLL3; SHD; NEU4; ATCAY; HRASLS; MDFI; LINC02283; RAB33A; PDGFRA. Top Ephys_1_high genes: CST3; MT3; TMSB4X; RPLP1; VIM; TPT1; RPL13A; RPS3A; HOPX; RPL9; RPL34; RPS14; MT2A; RPL13; RPL23A. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[5] (deg_summary, score=0.090) DEG summary IDH_WT cycling_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for cycling_tumor (IDH_WT): n_Ephys_1=5847, n_Ephys_2=663, n_sig_total=6618, n_sig_Ephys2_high=5740, n_sig_Ephys1_high=878. Top Ephys_2_high genes: GPR17; COL20A1; SOX10; DLL1; ERBB3; ATCAY; EPHB1; DLL3; TMEFF2; VSTM2B; CA10; NKX2-2; UGT8; TFAP2A; FERMT1. Top Ephys_1_high genes: TMSB4X; RPLP1; TPT1; CST3; RPL13A; RPL34; RPS3A; VIM; RPL9; MT3; MT2A; FTH1; RPS2; RPS14; FTL. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[6] (deg_summary, score=0.090) DEG summary IDH_WT OPC_GABA_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_like_tumor (IDH_WT): n_Ephys_1=5040, n_Ephys_2=1935, n_sig_total=5835, n_sig_Ephys2_high=5032, n_sig_Ephys1_high=803. Top Ephys_2_high genes: GPR17; AC104051.2; DLL3; PLPPR1; COL20A1; SHD; ATCAY; NEU4; PDGFRA; HRASLS; EPHB1; TMEFF2; CA10; SOX10; VSTM2B. Top Ephys_1_high genes: EGFR; CST3; MT3; VIM; TMSB4X; RPS14; RPL13A; RPL23A; TPT1; RPL9; RPL34; RPS3A; RPLP1; RPS23; MT-CO2. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[7] (deg_summary, score=0.090) DEG summary IDH_WT AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for AC_like_tumor (IDH_WT): n_Ephys_1=64812, n_Ephys_2=108, n_sig_total=332, n_sig_Ephys2_high=253, n_sig_Ephys1_high=79. Top Ephys_2_high genes: GPR17; LINC02283; NXPH1; AC104051.2; SOX10; PIMREG; DLL3; PLPPR1; OLIG2; PDGFRA; C1QL1; TMSB15A; RAB33A; HRASLS; PLLP. Top Ephys_1_high genes: TPT1; RPLP1; MT3; CST3; RPL34; TMSB4X; RPS3A; RPL9; RPL13A; RPL13; RPS14; MT2A; RPS13; RPS23; RPL27A. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[8] (deg_summary, score=0.090) DEG summary IDH_Mutant AC_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for AC_like_tumor (IDH_Mutant): n_Ephys_1=4249, n_Ephys_2=283, n_sig_total=1161, n_sig_Ephys2_high=1041, n_sig_Ephys1_high=120. Top Ephys_2_high genes: OLIG1; OLIG2; DLL3; NEU4; SOX4; SOX8; AC131097.3; SHD; CCND1; RPL3; DCX; FERMT1; HES6; ETV1; STMN2. Top Ephys_1_high genes: APOE; FTH1; CST3; MT2A; B2M; CRYAB; SPARCL1; ID4; GLUL; CLU; MT3; MT1X; FTL; VIM; TMSB4X. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[9] (deg_summary, score=0.089) DEG summary IDH_WT T cell
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for T cell (IDH_WT): n_Ephys_1=1681, n_Ephys_2=1118, n_sig_total=287, n_sig_Ephys2_high=129, n_sig_Ephys1_high=158. Top Ephys_2_high genes: CST3; MT3; CDK4; SEC61G; TYROBP; IGFBP2; DBI; VPS29; GNLY; HOPX; HLA-DRA; FABP5; FCER1G; GAPDH; GSTP1. Top Ephys_1_high genes: CD3D; IL7R; MALAT1; DNAJB1; BTG1; RPS15A; CD2; CD3G; PTPRC; IL32; B2M; RPS12; TNFAIP3; RPS27; HSP90AA1. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.
+
+[10] (deg_summary, score=0.089) DEG summary IDH_Mutant OPC_GABA_like_tumor
+IDH-stratified Ephys_2 vs Ephys_1 DEG summary for OPC_GABA_like_tumor (IDH_Mutant): n_Ephys_1=1658, n_Ephys_2=11741, n_sig_total=3237, n_sig_Ephys2_high=1659, n_sig_Ephys1_high=1578. Top Ephys_2_high genes: DLL3; SHD; OLIG2; AC009041.2; FERMT1; SOX8; OLIG1; SOX4; PTPRZ1; HES6; MARCKSL1; SRI; PTMA; RPL10; MT-CO2. Top Ephys_1_high genes: SFRP2; CD38; GJA1; EMP1; CD44; SLCO1C1; TMEM47; LINC01088; GPX3; KCNN3; IGFBP7; AQP4; NMB; PRSS35; VIM. Pooled DEGs are a different table; always show both when claiming NRXN/GRIA.

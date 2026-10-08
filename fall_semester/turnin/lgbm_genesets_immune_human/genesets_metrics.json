@@ -1,0 +1,216 @@
+{
+  "universe": "deg",
+  "n_rows": 27346,
+  "n_genes": 9580,
+  "n_features": 42,
+  "features": [
+    "deg_is_sig",
+    "deg_log2fc",
+    "deg_abs_log2fc",
+    "deg_neglog10_padj",
+    "deg_pct_e2",
+    "deg_pct_e1",
+    "deg_pct_diff",
+    "deg_dir",
+    "deg_other_idh_sig",
+    "deg_other_idh_same_dir",
+    "deg_pooled_log2fc",
+    "deg_pooled_sig",
+    "deg_n_celltypes_sig",
+    "cc_lig_edges",
+    "cc_rec_edges",
+    "cc_edges_e2",
+    "cc_edges_e1",
+    "cc_max_prob",
+    "cc_mean_prob",
+    "cc_max_pval",
+    "cc_n_pathways",
+    "cc_n_partners",
+    "cc_cross_compartment_edges",
+    "cc_edges",
+    "cc_ephys_bias",
+    "cc_edges_total",
+    "cc_is_ligand",
+    "cc_is_receptor",
+    "cc_n_pathways_total",
+    "cc_n_celltypes_total",
+    "cc_n_cells_e1",
+    "cc_n_cells_e2",
+    "ctx_n_e1",
+    "ctx_n_e2",
+    "ctx_min_n",
+    "ctx_low_n",
+    "deg_cc_concordance",
+    "idh_mutant",
+    "comp_tumor",
+    "comp_T_cell",
+    "comp_TAM_microglia",
+    "rule_pass"
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv": "StratifiedGroupKFold(n_splits=5) grouped by gene",
+  "immune_human_only": true,
+  "n_llm_runs": 0,
+  "sources": {
+    "fetched": "2026-10-08",
+    "tumor_synaptic": {
+      "source": "SynGO",
+      "url": "https://www.syngoportal.org/data/SynGO_bulk_20250218.json",
+      "release": "20250226",
+      "n_annotations": 5076,
+      "n_genes": 1789,
+      "file": "tumor_synaptic_syngo.tsv"
+    },
+    "immune_synapse": {
+      "source": "QuickGO",
+      "go_id": "GO:0001772",
+      "url": "https://www.ebi.ac.uk/QuickGO/services/annotation/downloadSearch?goId=GO:0001772&goUsage=descendants&goUsageRelationships=is_a,part_of,occurs_in&downloadLimit=50000",
+      "n_annotations": 5614,
+      "n_annotations_skipped_no_symbol": 1680,
+      "n_genes": 244,
+      "n_genes_human_annotated": 54,
+      "n_genes_experimental": 53,
+      "file": "immune_synapse_go0001772.tsv"
+    }
+  },
+  "sets": {
+    "immune_synapse": {
+      "n_rows": 27346,
+      "n_positive_rows": 122,
+      "n_genes": 9580,
+      "n_positive_genes": 40,
+      "prevalence_rows": 0.0044613471805748555,
+      "row_level": {
+        "lightgbm_oof": {
+          "auroc": 0.70030572108506,
+          "auprc": 0.013750563529980806,
+          "precision_at_10": 0.0,
+          "precision_at_25": 0.04,
+          "precision_at_50": 0.04
+        },
+        "rule_pass": {
+          "auroc": 0.5804925017944629,
+          "auprc": 0.03209883420041533,
+          "precision_at_10": 0.2,
+          "precision_at_25": 0.16,
+          "precision_at_50": 0.1
+        },
+        "deg_abs_log2fc": {
+          "auroc": 0.564400143557035,
+          "auprc": 0.009959223488392123,
+          "precision_at_10": 0.1,
+          "precision_at_25": 0.04,
+          "precision_at_50": 0.02
+        },
+        "cc_edges": {
+          "auroc": 0.5556370825163911,
+          "auprc": 0.009170846062044704,
+          "precision_at_10": 0.0,
+          "precision_at_25": 0.0,
+          "precision_at_50": 0.0
+        },
+        "cc_max_prob": {
+          "auroc": 0.5558436264048598,
+          "auprc": 0.009138095400773871,
+          "precision_at_10": 0.0,
+          "precision_at_25": 0.0,
+          "precision_at_50": 0.0
+        }
+      },
+      "gene_level": {
+        "lightgbm_oof": {
+          "auroc": 0.7197982180293501,
+          "auprc": 0.01750647740635094,
+          "precision_at_10": 0.1,
+          "precision_at_25": 0.04,
+          "precision_at_50": 0.02
+        },
+        "deg_abs_log2fc": {
+          "auroc": 0.568687106918239,
+          "auprc": 0.011072678590940313,
+          "precision_at_10": 0.1,
+          "precision_at_25": 0.04,
+          "precision_at_50": 0.02
+        },
+        "cc_edges": {
+          "auroc": 0.5316941823899372,
+          "auprc": 0.005906157757122603,
+          "precision_at_10": 0.0,
+          "precision_at_25": 0.0,
+          "precision_at_50": 0.0
+        }
+      },
+      "description": "GO:0001772 immunological synapse genes, scored on both sides of the synapse",
+      "label_compartments": [
+        "T_cell",
+        "TAM_microglia",
+        "tumor"
+      ],
+      "set_size": 54,
+      "set_genes_in_universe": 40,
+      "published_in_set": [
+        "HAVCR2",
+        "HLA-DRA"
+      ],
+      "published_check": {
+        "n_genes_scored": 9580,
+        "n_published_scored": 32,
+        "published_missing_from_universe": [
+          "AXL"
+        ],
+        "all_genes": {
+          "auroc": 0.8220177000418936,
+          "auprc": 0.11502792061865608,
+          "precision_at_10": 0.4,
+          "precision_at_25": 0.32,
+          "precision_at_50": 0.18
+        },
+        "median_percentile_published": 0.9407098121085595,
+        "baselines_all_genes": {
+          "deg_abs_log2fc": {
+            "auroc": 0.9007776497695852,
+            "auprc": 0.03966577401974386,
+            "precision_at_10": 0.1,
+            "precision_at_25": 0.04,
+            "precision_at_50": 0.02
+          },
+          "deg_pct_e2": {
+            "auroc": 0.8076740547758693,
+            "auprc": 0.018009256044021208,
+            "precision_at_10": 0.0,
+            "precision_at_25": 0.0,
+            "precision_at_50": 0.02
+          },
+          "cc_edges": {
+            "auroc": 0.9819661185588604,
+            "auprc": 0.5498859728119697,
+            "precision_at_10": 0.6,
+            "precision_at_25": 0.52,
+            "precision_at_50": 0.42
+          },
+          "deg_n_celltypes_sig": {
+            "auroc": 0.7372600937369083,
+            "auprc": 0.019026443755864018,
+            "precision_at_10": 0.1,
+            "precision_at_25": 0.08,
+            "precision_at_50": 0.04
+          }
+        },
+        "genes_outside_label_set": {
+          "auroc": 0.8229793200140203,
+          "auprc": 0.1272239418169027,
+          "precision_at_10": 0.4,
+          "precision_at_25": 0.32,
+          "precision_at_50": 0.18
+        },
+        "n_published_outside_label_set": 30
+      }
+    }
+  }
+}

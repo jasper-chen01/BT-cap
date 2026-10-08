@@ -1,0 +1,18 @@
+QUESTION: How many T cells are labeled Ephys_1 vs Ephys_2?
+
+=== MedGemma ===
+Ephys_1 has 392 T cells.
+Ephys_2 has 530 T cells.
+
+Tool: dataset_stats_lookup
+File: all_significant_interactions.csv
+Pair/Gene: T cell
+n_cells: 392 (Ephys_1)
+n_cells: 530 (Ephys_2)
+
+=== Gemini ===
+**Observation:**
+From tool[2] `count_lookup` + `cellchat_group_counts.csv`:
+*   There are 1463 T cells labeled Ephys_2.
+The number of T cells labeled Ephys_1 is not available in the provided traces.
+Neurons are not a labeled identity.

@@ -1,0 +1,80 @@
+{
+  "question_id": 11,
+  "question": "What is the APOE receptor complex in this table?",
+  "required_terms": [
+    "TREM2",
+    "TYROBP"
+  ],
+  "term_found": {
+    "TREM2": true,
+    "TYROBP": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 36,
+      "filters": {
+        "gene": null,
+        "pathway": "ApoE",
+        "celltype": null,
+        "ephys": null,
+        "compartment": null,
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 36,
+      "filters": {
+        "theme": null,
+        "pathway": "ApoE",
+        "compartment": null,
+        "ephys": null
+      },
+      "preview": [
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP",
+        "APOE_TREM2_TYROBP"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.154 [pathway_knowledge] Pathway biology: ApoE",
+    "0.138 [interaction] APOE_TREM2_TYROBP | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.137 [interaction] APOE_TREM2_TYROBP | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.135 [interaction] APOE_TREM2_TYROBP | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.135 [interaction] APOE_TREM2_TYROBP | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.135 [interaction] APOE_TREM2_TYROBP | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.135 [interaction] APOE_TREM2_TYROBP | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.135 [interaction] APOE_TREM2_TYROBP | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2",
+    "0.134 [interaction] APOE_TREM2_TYROBP | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1",
+    "0.134 [interaction] APOE_TREM2_TYROBP | T cell / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2"
+  ],
+  "medgemma": "[MedGemma returned chain-of-thought only / truncated. Re-run with higher MEDGEMMA_MAX_TOKENS or use Gemini for this item.]\n mentions `APOE_TREM2_TYROBP` is a \"core microglial lipid-sensing and disease-associated microglia pair\".\n    *   Trace [10] mentions `APOE_TREM2_TYROBP` is a \"core microglial lipid-sensing and disease-associated microglia pair\".\n4.  **Synthesize the findings.** The traces consistently describe the APOE receptor complex as `APOE_TREM2_TYROBP`. This pair is involved in lipid sensing and is associated with disease-associated microglia.\n5.  **Format the answer according to the instructions.**\n    *",
+  "medgemma_error": null,
+  "gemini": "**Observation:**\nThe tool traces consistently identify `APOE_TREM2_TYROBP` as a ligand-receptor pair in the ApoE pathway. Specifically, the `receptor` column in the `cellchat_lookup` tool trace [1] and the 'interaction' knowledge snippets [2-10] show `TREM2_TYROBP` as the receptor for `APOE`.\n\n**Interpretation:**\nThe APOE receptor complex in this table is TREM2_TYROBP (cellchat_lookup + all_significant_interactions.csv + APOE_TREM2_TYROBP + n_cells varied).",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=ApoE, role=either] n_hits=36\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2392; pval=0.0; source_n=12086; target_n=12086\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2257; pval=0.0; source_n=12086; target_n=25922\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2236; pval=0.0; source_n=85627; target_n=12086\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2108; pval=0.0; source_n=85627; target_n=25922\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2107; pval=0.0; source_n=25922; target_n=12086\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.1984; pval=0.0; source_n=25922; target_n=25922\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.176; pval=0.0; source_n=12086; target_n=85627\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1637; pval=0.0; source_n=85627; target_n=85627\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=TAM1/TAM2/microglia / Ephys_2; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1535; pval=0.0; source_n=25922; target_n=85627\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.1535; pval=0.0; source_n=6410; target_n=12086\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.1531; pval=0.0; source_n=72549; target_n=12086\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; receptor=TREM2_TYROBP; ligand=APOE; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.1439; pval=0.0; source_n=6410; target_n=25922\n  ... 24 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=ApoE] n_hits=36\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2392\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2257\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2236\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.2108\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_1; prob=0.2107\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=TAM1/TAM2/microglia / Ephys_2; prob=0.1984\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.176\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1637\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=MES_like_tumor/TAM1/microglia / Ephys_1; prob=0.1535\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.1535\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=AC_like_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_1; prob=0.1531\n  pair=APOE_TREM2_TYROBP; pathway=ApoE; themes=myeloid; source=cycling_tumor / Ephys_1; target=TAM1/TAM2/microglia / Ephys_2; prob=0.1439\n  ... 24 more rows omitted\n\n[1] (pathway_knowledge, score=0.154) Pathway biology: ApoE\nPathway ApoE. Themes: myeloid. APOE \u00e2\u2020\u2019 TREM2/TYROBP is a core microglial lipid-sensing and disease-associated microglia pair.\n\n[2] (interaction, score=0.138) APOE_TREM2_TYROBP | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.0940 (p=0.0). Biological themes: myeloid.\n\n[3] (interaction, score=0.137) APOE_TREM2_TYROBP | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.1439 (p=0.0). Biological themes: myeloid.\n\n[4] (interaction, score=0.135) APOE_TREM2_TYROBP | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_1\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.0438 (p=0.0). Biological themes: myeloid.\n\n[5] (interaction, score=0.135) APOE_TREM2_TYROBP | AC_like_tumor / Ephys_2 -> TAM1/TAM2/microglia / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.0408 (p=0.0). Biological themes: myeloid.\n\n[6] (interaction, score=0.135) APOE_TREM2_TYROBP | AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nAC_like_tumor (tumor, Ephys_1, n_cells=72549) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.1436 (p=0.0). Biological themes: myeloid.\n\n[7] (interaction, score=0.135) APOE_TREM2_TYROBP | cycling_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.1535 (p=0.0). Biological themes: myeloid.\n\n[8] (interaction, score=0.135) APOE_TREM2_TYROBP | OPC_GABA_AC_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nOPC_GABA_AC_like_tumor (tumor, Ephys_1, n_cells=6202) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.1145 (p=0.0). Biological themes: myeloid.\n\n[9] (interaction, score=0.134) APOE_TREM2_TYROBP | OPC_GABA_like_tumor / Ephys_1 -> TAM1/TAM2/microglia / Ephys_1\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_1, n_cells=12086). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.1006 (p=0.0). Biological themes: myeloid.\n\n[10] (interaction, score=0.134) APOE_TREM2_TYROBP | T cell / Ephys_1 -> TAM1/TAM2/microglia / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends APOE to TREM2_TYROBP on TAM1/TAM2/microglia (myeloid, Ephys_2, n_cells=25922). Pair APOE_TREM2_TYROBP in pathway ApoE with CellChat probability 0.0391 (p=0.0). Biological themes: myeloid."
+}

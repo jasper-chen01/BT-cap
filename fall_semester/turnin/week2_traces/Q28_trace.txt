@@ -1,0 +1,39 @@
+=== tool traces ===
+
+[1] tool=dataset_stats_lookup file=all_significant_interactions.csv filters=[none] n_hits=1
+Raw CellChat interaction stats. Dominant flow is the most common source->target compartment.
+  n_interactions=922; n_pathways=40; n_pairs=96; flows={'tumor->tumor': 407, 'myeloid->myeloid': 104, 'tumor->myeloid': 164, 'tcell->myeloid': 42, 'tcell->tumor': 30, 'myeloid->tumor': 67, 'myeloid->tcell': 22, 'tumor->tcell': 60, 'tcell->tcell': 26}; dominant_flow=tumor->tumor; dominant_flow_n=407; labeled_identities=['AC_like_tumor', 'MES_like_tumor/TAM1/microglia', 'OPC_GABA_AC_like_tumor', 'OPC_GABA_like_tumor', 'T cell', 'TAM1/TAM2/microglia', 'cycling_tumor']
+
+[2] tool=count_lookup file=cellchat_group_counts.csv filters=[celltype=T cell, ephys=Ephys_2] n_hits=1
+Flag any CellChat pair whose sender or receiver has n_cells < 50.
+  group=T cell / Ephys_2; n_cells=1463; compartment=tcell
+
+[1] (overview, score=0.402) Dataset overview: significant interactions and compartment flows
+DATA_DIR=C:\Users\ericy\OneDrive\Desktop\BT-Cap\BT-CAP-Capstone\fall_semester\data. The CellChat table has 922 significant ligand-receptor interactions across 40 pathways and 96 unique pairs. Labeled identities: AC_like_tumor, MES_like_tumor/TAM1/microglia, OPC_GABA_AC_like_tumor, OPC_GABA_like_tumor, T cell, TAM1/TAM2/microglia, cycling_tumor. Source Ephys counts: {'Ephys_2': 530, 'Ephys_1': 392}. Compartment flows: {'tumor->tumor': 407, 'myeloid->myeloid': 104, 'tumor->myeloid': 164, 'tcell->myeloid': 42, 'tcell->tumor': 30, 'myeloid->tumor': 67, 'myeloid->tcell': 22, 'tumor->tcell': 60, 'tcell->tcell': 26}. Dominant compartment flow: tumor->tumor with 407 interactions. 0 unique pairs touch a group with n_cells < 50. There is no neuron identity in the source or target labels.
+
+[2] (overview, score=0.358) Highest-probability tumor-tumor pair: PTN_PTPRZ1
+The highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.
+
+[3] (contrast, score=0.185) PTN contrast in tcell senders
+Ephys contrast for pathway PTN with tcell cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0214). Delta Ephys_2 minus Ephys_1 = 2. Pathway PTN is exclusive to Ephys_2 tcell senders (absent from Ephys_1).
+
+[4] (contrast, score=0.184) MHC-I contrast in tcell senders
+Ephys contrast for pathway MHC-I with tcell cells as senders. Ephys_1 count 1 (mean probability 0.0243). Ephys_2 count 1 (mean probability 0.0218). Delta Ephys_2 minus Ephys_1 = 0.
+
+[5] (contrast, score=0.184) Prostaglandin contrast in tcell senders
+Ephys contrast for pathway Prostaglandin with tcell cells as senders. Ephys_1 count 1 (mean probability 0.0037). Ephys_2 count 1 (mean probability 0.0036). Delta Ephys_2 minus Ephys_1 = 0.
+
+[6] (contrast, score=0.184) MIF contrast in tcell senders
+Ephys contrast for pathway MIF with tcell cells as senders. Ephys_1 count 6 (mean probability 0.0178). Ephys_2 count 6 (mean probability 0.0189). Delta Ephys_2 minus Ephys_1 = 0.
+
+[7] (contrast, score=0.184) ANNEXIN contrast in tcell senders
+Ephys contrast for pathway ANNEXIN with tcell cells as senders. Ephys_1 count 2 (mean probability 0.0076). Ephys_2 count 2 (mean probability 0.0066). Delta Ephys_2 minus Ephys_1 = 0.
+
+[8] (contrast, score=0.184) CD99 contrast in tcell senders
+Ephys contrast for pathway CD99 with tcell cells as senders. Ephys_1 count 9 (mean probability 0.0067). Ephys_2 count 9 (mean probability 0.0063). Delta Ephys_2 minus Ephys_1 = 0.
+
+[9] (contrast, score=0.184) SPP1 contrast in tcell senders
+Ephys contrast for pathway SPP1 with tcell cells as senders. Ephys_1 count 5 (mean probability 0.0087). Ephys_2 count 5 (mean probability 0.0209). Delta Ephys_2 minus Ephys_1 = 0.
+
+[10] (contrast, score=0.183) CypA contrast in tcell senders
+Ephys contrast for pathway CypA with tcell cells as senders. Ephys_1 count 3 (mean probability 0.0400). Ephys_2 count 4 (mean probability 0.0473). Delta Ephys_2 minus Ephys_1 = 1.

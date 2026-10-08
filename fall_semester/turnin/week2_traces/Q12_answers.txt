@@ -1,0 +1,13 @@
+QUESTION: Which T-cell-sent pathway is private to Ephys_2?
+
+=== MedGemma ===
+Tool: exclusive_pathway_lookup
+File: all_significant_interactions.csv
+Pathways private to Ephys_2:
+  pathway=EGF; compartment=tcell; Ephys_1=0; Ephys_2=7; delta=7; exclusive_to=Ephys_2
+  pathway=PTN; compartment=tcell; Ephys_1=0; Ephys_2=2; delta=2; exclusive_to=Ephys_2
+
+=== Gemini ===
+Observation: The `exclusive_pathway_lookup` tool [1] identified two T-cell-sent pathways that are exclusive to Ephys_2. These pathways are EGF (with 7 events in Ephys_2 and 0 in Ephys_1) and PTN (with 2 events in Ephys_2 and 0 in Ephys_1).
+
+Interpretation: EGF and PTN pathways are uniquely initiated by T-cells in the Ephys_2 condition for cell communication.

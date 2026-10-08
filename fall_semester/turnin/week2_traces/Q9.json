@@ -1,0 +1,98 @@
+{
+  "question_id": 9,
+  "question": "Is PTN an Ephys discriminator among tumor senders, or a shared scaffold?",
+  "required_terms": [
+    "PTN",
+    "PTPRZ1"
+  ],
+  "term_found": {
+    "PTN": true,
+    "PTPRZ1": true
+  },
+  "required_ok": true,
+  "tools": [
+    {
+      "tool": "pathway_contrast_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 30,
+      "filters": {
+        "compartment": "tumor"
+      },
+      "preview": [
+        "NRXN",
+        "MK",
+        "Glutamate",
+        "MHC-II",
+        "NCAM",
+        "CNTN",
+        "APP",
+        "NOTCH"
+      ]
+    },
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 127,
+      "filters": {
+        "gene": null,
+        "pathway": "PTN",
+        "celltype": null,
+        "ephys": null,
+        "compartment": "tumor",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "source"
+      },
+      "preview": [
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 137,
+      "filters": {
+        "theme": null,
+        "pathway": "PTN",
+        "compartment": "tumor",
+        "ephys": null
+      },
+      "preview": [
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "0.463 [contrast] MHC-I contrast in tumor senders",
+    "0.441 [contrast] PDGF contrast in tumor senders",
+    "0.439 [contrast] ANNEXIN contrast in tumor senders",
+    "0.439 [contrast] JAM contrast in tumor senders",
+    "0.437 [contrast] MPZ contrast in tumor senders",
+    "0.436 [contrast] COLLAGEN contrast in tumor senders",
+    "0.436 [contrast] GRN contrast in tumor senders",
+    "0.431 [contrast] PCDH contrast in tumor senders",
+    "0.431 [contrast] SLIT contrast in tumor senders",
+    "0.428 [contrast] CLDN contrast in tumor senders"
+  ],
+  "medgemma": "[MedGemma returned chain-of-thought only / truncated. Re-run with higher MEDGEMMA_MAX_TOKENS or use Gemini for this item.]\n described as `cycling_tumor / Ephys_2` and `OPC_GABA_like_tumor / Ephys_1`. The interaction is described as `source=PTN_PTPRZ1`.\n    *   Interpretation: Similar to Trace [2], this trace shows a specific interaction but doesn't provide a general overview of PTN's presence across *all* tumor senders.\n\n6.  **Analyze the contrast traces ([4] to [10]):**\n    *   These traces analyze the *difference* in Ephys_1 vs. Ephys_2 counts for specific pathways (MHC-I, PDGF, etc.) when tumor cells are the send",
+  "medgemma_error": null,
+  "gemini": "**Observation:**\nThe PTN pathway in tumor senders shows 68 interactions in Ephys_1 and 59 interactions in Ephys_2, with a delta of -9. The mean probabilities are 0.1261 for Ephys_1 and 0.1171 for Ephys_2 [pathway_contrast_lookup all_significant_interactions.csv PTN 68/59]. Interactions for PTN_PTPRZ1 originate from and target various tumor cell types across both Ephys_1 and Ephys_2 groups [cellchat_lookup all_significant_interactions.csv PTN_PTPRZ1 N/A; pathway_filter all_significant_interactions.csv PTN_PTPRZ1 N/A]. Neurons are not a labeled identity.\n\n**Interpretation:**\nGiven the high number of interactions in both Ephys groups and the small delta, PTN is not an Ephys discriminator among tumor senders. Instead, it appears to function as a shared scaffold, facilitating communication within and between different tumor cell types in both Ephys classes.",
+  "gemini_error": null,
+  "invented_medgemma": [],
+  "invented_gemini": [],
+  "context": "=== tool traces ===\n\n[1] tool=pathway_contrast_lookup file=all_significant_interactions.csv filters=[compartment=tumor] n_hits=30\nSender-side pathway counts by Ephys class. Use to see ligand-program flips.\n  pathway=NRXN; compartment=tumor; Ephys_1=10; Ephys_2=50; delta=40; mean_prob_e1=0.0029; mean_prob_e2=0.0043\n  pathway=MK; compartment=tumor; Ephys_1=0; Ephys_2=28; delta=28; mean_prob_e1=0.0; mean_prob_e2=0.0066\n  pathway=Glutamate; compartment=tumor; Ephys_1=0; Ephys_2=26; delta=26; mean_prob_e1=0.0; mean_prob_e2=0.0032\n  pathway=MHC-II; compartment=tumor; Ephys_1=22; Ephys_2=2; delta=-20; mean_prob_e1=0.0044; mean_prob_e2=0.0011\n  pathway=NCAM; compartment=tumor; Ephys_1=6; Ephys_2=24; delta=18; mean_prob_e1=0.0062; mean_prob_e2=0.0187\n  pathway=CNTN; compartment=tumor; Ephys_1=0; Ephys_2=16; delta=16; mean_prob_e1=0.0; mean_prob_e2=0.004\n  pathway=APP; compartment=tumor; Ephys_1=33; Ephys_2=45; delta=12; mean_prob_e1=0.0344; mean_prob_e2=0.0388\n  pathway=NOTCH; compartment=tumor; Ephys_1=0; Ephys_2=12; delta=12; mean_prob_e1=0.0; mean_prob_e2=0.0045\n  pathway=SPP1; compartment=tumor; Ephys_1=20; Ephys_2=10; delta=-10; mean_prob_e1=0.0138; mean_prob_e2=0.0025\n  pathway=PTN; compartment=tumor; Ephys_1=68; Ephys_2=59; delta=-9; mean_prob_e1=0.1261; mean_prob_e2=0.1171\n  pathway=CADM; compartment=tumor; Ephys_1=4; Ephys_2=12; delta=8; mean_prob_e1=0.0043; mean_prob_e2=0.0061\n  pathway=CDH; compartment=tumor; Ephys_1=4; Ephys_2=12; delta=8; mean_prob_e1=0.0021; mean_prob_e2=0.0032\n  ... 18 more rows omitted\n\n[2] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=PTN, compartment=tumor, role=source] n_hits=127\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.262; pval=0.0; source_n=814; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2436; pval=0.0; source_n=6202; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.2412; pval=0.0; source_n=814; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2397; pval=0.0; source_n=72549; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2305; pval=0.0; source_n=6741; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2238; pval=0.0; source_n=6202; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2212; pval=0.0; source_n=814; target_n=6741\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2201; pval=0.0; source_n=72549; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2115; pval=0.0; source_n=6741; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2048; pval=0.0; source_n=6202; target_n=6741\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2014; pval=0.0; source_n=72549; target_n=6741\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.1955; pval=0.0; source_n=14114; target_n=14114\n  ... 115 more rows omitted\n\n[3] tool=pathway_filter file=all_significant_interactions.csv filters=[pathway=PTN, compartment=tumor] n_hits=137\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.262\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2436\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=cycling_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.2412\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2397\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2305\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2238\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2212\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2201\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2115\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2048\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2014\n  pair=PTN_PTPRZ1; pathway=PTN; themes=neuron_tumor,growth; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.1955\n  ... 125 more rows omitted\n\n[1] (contrast, score=0.463) MHC-I contrast in tumor senders\nEphys contrast for pathway MHC-I with tumor cells as senders. Ephys_1 count 1 (mean probability 0.0040). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -1. Pathway MHC-I is exclusive to Ephys_1 tumor senders (absent from Ephys_2).\n\n[2] (contrast, score=0.441) PDGF contrast in tumor senders\nEphys contrast for pathway PDGF with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 3 (mean probability 0.0029). Delta Ephys_2 minus Ephys_1 = 3. Pathway PDGF is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[3] (contrast, score=0.439) ANNEXIN contrast in tumor senders\nEphys contrast for pathway ANNEXIN with tumor cells as senders. Ephys_1 count 4 (mean probability 0.0052). Ephys_2 count 0 (mean probability 0.0000). Delta Ephys_2 minus Ephys_1 = -4. Pathway ANNEXIN is exclusive to Ephys_1 tumor senders (absent from Ephys_2).\n\n[4] (contrast, score=0.439) JAM contrast in tumor senders\nEphys contrast for pathway JAM with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 6 (mean probability 0.0015). Delta Ephys_2 minus Ephys_1 = 6. Pathway JAM is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[5] (contrast, score=0.437) MPZ contrast in tumor senders\nEphys contrast for pathway MPZ with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0022). Delta Ephys_2 minus Ephys_1 = 2. Pathway MPZ is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[6] (contrast, score=0.436) COLLAGEN contrast in tumor senders\nEphys contrast for pathway COLLAGEN with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 5 (mean probability 0.0018). Delta Ephys_2 minus Ephys_1 = 5. Pathway COLLAGEN is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[7] (contrast, score=0.436) GRN contrast in tumor senders\nEphys contrast for pathway GRN with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 1 (mean probability 0.0010). Delta Ephys_2 minus Ephys_1 = 1. Pathway GRN is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[8] (contrast, score=0.431) PCDH contrast in tumor senders\nEphys contrast for pathway PCDH with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0015). Delta Ephys_2 minus Ephys_1 = 2. Pathway PCDH is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[9] (contrast, score=0.431) SLIT contrast in tumor senders\nEphys contrast for pathway SLIT with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 2 (mean probability 0.0019). Delta Ephys_2 minus Ephys_1 = 2. Pathway SLIT is exclusive to Ephys_2 tumor senders (absent from Ephys_1).\n\n[10] (contrast, score=0.428) CLDN contrast in tumor senders\nEphys contrast for pathway CLDN with tumor cells as senders. Ephys_1 count 0 (mean probability 0.0000). Ephys_2 count 1 (mean probability 0.0010). Delta Ephys_2 minus Ephys_1 = 1. Pathway CLDN is exclusive to Ephys_2 tumor senders (absent from Ephys_1)."
+}

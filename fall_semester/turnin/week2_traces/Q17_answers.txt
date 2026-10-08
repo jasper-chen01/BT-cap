@@ -1,0 +1,18 @@
+QUESTION: CNTN1 binds which partners here?
+
+=== MedGemma ===
+Observation:
+The tool traces identify the partner NRCAM for the gene CNTN1.
+
+Interpretation:
+The gene CNTN1 binds to the partner NRCAM.
+
+=== Gemini ===
+Observation:
+CNTN1 is identified as a ligand in the CNTN pathway.
+From tool [1] cellchat_lookup, CNTN1 forms the pair CNTN1_NRCAM, where CNTN1 is the ligand and NRCAM is the receptor. This interaction is seen across various tumor cell types (OPC_GABA_like_tumor, cycling_tumor, AC_like_tumor, OPC_GABA_AC_like_tumor) with n_cells ranging from 446 to 72549.
+From tool [3] pathway_knowledge, Contactin-1 (CNTN1) binds NRCAM and NOTCH1.
+
+Interpretation:
+Based on the tool traces, CNTN1 binds to NRCAM and NOTCH1.
+Neurons are not a labeled identity.

@@ -1,0 +1,51 @@
+{
+  "question_id": 5,
+  "question": "What is the highest-probability tumor-tumor pair?",
+  "required_terms": [
+    "PTN_PTPRZ1"
+  ],
+  "term_found": {
+    "PTN_PTPRZ1": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 407,
+      "filters": {
+        "gene": null,
+        "pathway": null,
+        "celltype": null,
+        "ephys": null,
+        "compartment": null,
+        "source_compartment": "tumor",
+        "target_compartment": "tumor",
+        "role": "either"
+      },
+      "preview": [
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1",
+        "PTN_PTPRZ1"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "1.761 [overview] Highest-probability tumor-tumor pair: PTN_PTPRZ1",
+    "0.644 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.644 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1",
+    "0.644 [interaction] PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.644 [interaction] PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2",
+    "0.643 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2",
+    "0.643 [interaction] PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_1",
+    "0.643 [interaction] PTN_PTPRZ1 | AC_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2",
+    "0.643 [interaction] PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2",
+    "0.643 [interaction] PTN_PTPRZ1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: What is the highest-probability tumor-tumor pair?\n\n=== tool traces ===\n\n[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[source_compartment=tumor, target_compartment=tumor, role=either] n_hits=407\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.262; source_n=814; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2436; source_n=6202; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.2412; source_n=814; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2397; source_n=72549; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_2; prob=0.2305; source_n=6741; target_n=14114\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2238; source_n=6202; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2212; source_n=814; target_n=6741\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=AC_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2201; source_n=72549; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_like_tumor / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.2115; source_n=6741; target_n=814\n  pair=PTN_PTPRZ1; pathway=PTN; receptor=PTPRZ1; ligand=PTN; source=OPC_GABA_AC_like_tumor / Ephys_1; target=OPC_GABA_like_tumor / Ephys_1; prob=0.2048; source_n=6202; target_n=6741\n  ... 395 more rows omitted\n\n[1] (overview, score=1.761) Highest-probability tumor-tumor pair: PTN_PTPRZ1\nThe highest-probability tumor-tumor ligand-receptor pair is PTN_PTPRZ1 (pathway PTN) from cycling_tumor / Ephys_2 to OPC_GABA_like_tumor / Ephys_2 with probability 0.2620.\n\n[2] (interaction, score=0.644) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2620 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[3] (interaction, score=0.644) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2212 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[4] (interaction, score=0.644) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2115 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[5] (interaction, score=0.644) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2\nOPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1787 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[6] (interaction, score=0.643) PTN_PTPRZ1 | cycling_tumor / Ephys_1 -> OPC_GABA_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_1, n_cells=6410) sends PTN to PTPRZ1 on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1852 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[7] (interaction, score=0.643) PTN_PTPRZ1 | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_1\nOPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_1, n_cells=6410). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.0414 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[8] (interaction, score=0.643) PTN_PTPRZ1 | AC_like_tumor / Ephys_1 -> cycling_tumor / Ephys_2\nAC_like_tumor (tumor, Ephys_1, n_cells=72549) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.2201 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[9] (interaction, score=0.643) PTN_PTPRZ1 | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2\ncycling_tumor (tumor, Ephys_2, n_cells=814) sends PTN to PTPRZ1 on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1953 (p=0.0). Biological themes: neuron_tumor, growth.\n\n[10] (interaction, score=0.643) PTN_PTPRZ1 | AC_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2\nAC_like_tumor (tumor, Ephys_2, n_cells=446) sends PTN to PTPRZ1 on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair PTN_PTPRZ1 in pathway PTN with CellChat probability 0.1448 (p=0.0). Biological themes: neuron_tumor, growth."
+}

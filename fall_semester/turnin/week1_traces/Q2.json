@@ -1,0 +1,95 @@
+{
+  "question_id": 2,
+  "question": "Does T-cell ligand identity flip between Ephys_1 and Ephys_2?",
+  "required_terms": [
+    "MHC-II",
+    "MIF",
+    "CD99",
+    "EGF"
+  ],
+  "term_found": {
+    "MHC-II": true,
+    "MIF": true,
+    "CD99": true,
+    "EGF": true
+  },
+  "all_required_ok": true,
+  "tools": [
+    {
+      "tool": "pathway_contrast_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 13,
+      "filters": {
+        "compartment": "tcell"
+      },
+      "preview": [
+        "EGF",
+        "CLEC",
+        "PTN",
+        "CypA",
+        "CD99",
+        "MHC-II",
+        "MIF",
+        "SPP1"
+      ]
+    },
+    {
+      "tool": "pathway_filter",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 162,
+      "filters": {
+        "theme": "immune_synapse",
+        "pathway": null,
+        "compartment": "tcell",
+        "ephys": null
+      },
+      "preview": [
+        "PPIA_BSG",
+        "PPIA_BSG",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "SPP1_CD44",
+        "MIF_CD74_CXCR4"
+      ]
+    },
+    {
+      "tool": "cellchat_lookup",
+      "file": "all_significant_interactions.csv",
+      "n_hits": 7,
+      "filters": {
+        "gene": null,
+        "pathway": "EGF",
+        "celltype": null,
+        "ephys": null,
+        "compartment": "tcell",
+        "source_compartment": null,
+        "target_compartment": null,
+        "role": "either"
+      },
+      "preview": [
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR",
+        "AREG_EGFR"
+      ]
+    }
+  ],
+  "retrieved_titles": [
+    "1.049 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "1.048 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "1.047 [interaction] MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "1.044 [interaction] MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "1.042 [interaction] CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1",
+    "1.042 [interaction] CD99_CD99 | T cell / Ephys_1 -> T cell / Ephys_2",
+    "1.042 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_1",
+    "1.041 [interaction] MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_1",
+    "1.037 [interaction] CD99_CD99 | T cell / Ephys_1 -> T cell / Ephys_1",
+    "1.034 [interaction] MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_2"
+  ],
+  "answer": "LLM generation is off. Tool traces and retrieved rows for the question: Does T-cell ligand identity flip between Ephys_1 and Ephys_2?\n\n=== tool traces ===\n\n[1] tool=pathway_contrast_lookup file=all_significant_interactions.csv filters=[compartment=tcell] n_hits=13\nSender-side pathway counts by Ephys class. Use to see ligand-program flips.\n  pathway=EGF; compartment=tcell; Ephys_1=0; Ephys_2=7; delta=7; mean_prob_e1=0.0; mean_prob_e2=0.0129\n  pathway=CLEC; compartment=tcell; Ephys_1=6; Ephys_2=4; delta=-2; mean_prob_e1=0.0144; mean_prob_e2=0.0087\n  pathway=PTN; compartment=tcell; Ephys_1=0; Ephys_2=2; delta=2; mean_prob_e1=0.0; mean_prob_e2=0.0214\n  pathway=CypA; compartment=tcell; Ephys_1=3; Ephys_2=4; delta=1; mean_prob_e1=0.04; mean_prob_e2=0.0473\n  pathway=CD99; compartment=tcell; Ephys_1=9; Ephys_2=9; delta=0; mean_prob_e1=0.0067; mean_prob_e2=0.0063\n  pathway=MHC-II; compartment=tcell; Ephys_1=8; Ephys_2=8; delta=0; mean_prob_e1=0.0029; mean_prob_e2=0.0046\n  pathway=MIF; compartment=tcell; Ephys_1=6; Ephys_2=6; delta=0; mean_prob_e1=0.0178; mean_prob_e2=0.0189\n  pathway=SPP1; compartment=tcell; Ephys_1=5; Ephys_2=5; delta=0; mean_prob_e1=0.0087; mean_prob_e2=0.0209\n  pathway=ApoE; compartment=tcell; Ephys_1=3; Ephys_2=3; delta=0; mean_prob_e1=0.0367; mean_prob_e2=0.099\n  pathway=ANNEXIN; compartment=tcell; Ephys_1=2; Ephys_2=2; delta=0; mean_prob_e1=0.0076; mean_prob_e2=0.0066\n  pathway=CD45; compartment=tcell; Ephys_1=1; Ephys_2=1; delta=0; mean_prob_e1=0.019; mean_prob_e2=0.0148\n  pathway=MHC-I; compartment=tcell; Ephys_1=1; Ephys_2=1; delta=0; mean_prob_e1=0.0243; mean_prob_e2=0.0218\n  ... 1 more rows omitted\n\n[2] tool=pathway_filter file=all_significant_interactions.csv filters=[theme=immune_synapse, compartment=tcell] n_hits=162\n  pair=PPIA_BSG; pathway=CypA; themes=adhesion,immune_synapse; source=T cell / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.1059\n  pair=PPIA_BSG; pathway=CypA; themes=adhesion,immune_synapse; source=T cell / Ephys_1; target=cycling_tumor / Ephys_2; prob=0.0793\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0602\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_1; prob=0.0601\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_1; prob=0.0571\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=MES_like_tumor/TAM1/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0495\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_2; target=T cell / Ephys_2; prob=0.0494\n  pair=MIF_CD74_CXCR4; pathway=MIF; themes=immune_synapse; source=cycling_tumor / Ephys_2; target=T cell / Ephys_1; prob=0.0486\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=TAM1/TAM2/microglia / Ephys_1; target=T cell / Ephys_2; prob=0.0469\n  pair=MIF_CD74_CXCR4; pathway=MIF; themes=immune_synapse; source=cycling_tumor / Ephys_2; target=T cell / Ephys_2; prob=0.0442\n  pair=MIF_CD74_CXCR4; pathway=MIF; themes=immune_synapse; source=OPC_GABA_like_tumor / Ephys_2; target=T cell / Ephys_1; prob=0.0371\n  pair=SPP1_CD44; pathway=SPP1; themes=immune_synapse,myeloid; source=cycling_tumor / Ephys_1; target=T cell / Ephys_1; prob=0.0364\n  ... 150 more rows omitted\n\n[3] tool=cellchat_lookup file=all_significant_interactions.csv filters=[pathway=EGF, compartment=tcell, role=either] n_hits=7\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0325; source_n=1463; target_n=6741\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0161; source_n=1463; target_n=14114\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0139; source_n=1463; target_n=72549\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_1; prob=0.0131; source_n=1463; target_n=6202\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_1; prob=0.0064; source_n=1463; target_n=6410\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0057; source_n=1463; target_n=446\n  pair=AREG_EGFR; pathway=EGF; receptor=EGFR; ligand=AREG; source=T cell / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0026; source_n=1463; target_n=814\n\n[1] (interaction, score=1.049) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0175 (p=0.0). Biological themes: immune_synapse.\n\n[2] (interaction, score=1.048) MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0150 (p=0.0). Biological themes: immune_synapse.\n\n[3] (interaction, score=1.047) MIF_CD74_CD44 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0082 (p=0.0). Biological themes: immune_synapse.\n\n[4] (interaction, score=1.044) MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CD44 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0075 (p=0.0). Biological themes: immune_synapse.\n\n[5] (interaction, score=1.042) CD99_CD99 | T cell / Ephys_2 -> T cell / Ephys_1\nT cell (tcell, Ephys_2, n_cells=1463) sends CD99 to CD99 on T cell (tcell, Ephys_1, n_cells=2662). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0083 (p=0.0). Biological themes: immune_synapse, adhesion.\n\n[6] (interaction, score=1.042) CD99_CD99 | T cell / Ephys_1 -> T cell / Ephys_2\nT cell (tcell, Ephys_1, n_cells=2662) sends CD99 to CD99 on T cell (tcell, Ephys_2, n_cells=1463). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0083 (p=0.0). Biological themes: immune_synapse, adhesion.\n\n[7] (interaction, score=1.042) MIF_CD74_CXCR4 | T cell / Ephys_1 -> T cell / Ephys_1\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0165 (p=0.0). Biological themes: immune_synapse.\n\n[8] (interaction, score=1.041) MIF_CD74_CD44 | T cell / Ephys_1 -> T cell / Ephys_1\nT cell (tcell, Ephys_1, n_cells=2662) sends MIF to CD74_CD44 on T cell (tcell, Ephys_1, n_cells=2662). Pair MIF_CD74_CD44 in pathway MIF with CellChat probability 0.0077 (p=0.0). Biological themes: immune_synapse.\n\n[9] (interaction, score=1.037) CD99_CD99 | T cell / Ephys_1 -> T cell / Ephys_1\nT cell (tcell, Ephys_1, n_cells=2662) sends CD99 to CD99 on T cell (tcell, Ephys_1, n_cells=2662). Pair CD99_CD99 in pathway CD99 with CellChat probability 0.0089 (p=0.0). Biological themes: immune_synapse, adhesion.\n\n[10] (interaction, score=1.034) MIF_CD74_CXCR4 | T cell / Ephys_2 -> T cell / Ephys_2\nT cell (tcell, Ephys_2, n_cells=1463) sends MIF to CD74_CXCR4 on T cell (tcell, Ephys_2, n_cells=1463). Pair MIF_CD74_CXCR4 in pathway MIF with CellChat probability 0.0158 (p=0.0). Biological themes: immune_synapse."
+}

@@ -1,0 +1,46 @@
+=== tool traces ===
+
+[1] tool=cellchat_lookup file=all_significant_interactions.csv filters=[gene=CNTN1, role=either] n_hits=16
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0123; pval=0.0; source_n=14114; target_n=14114
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_2; prob=0.0117; pval=0.0; source_n=814; target_n=14114
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0054; pval=0.0; source_n=14114; target_n=814
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=cycling_tumor / Ephys_2; prob=0.0051; pval=0.0; source_n=814; target_n=814
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0038; pval=0.0; source_n=14114; target_n=6741
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0037; pval=0.0; source_n=14114; target_n=446
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=OPC_GABA_like_tumor / Ephys_1; prob=0.0036; pval=0.0; source_n=814; target_n=6741
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=AC_like_tumor / Ephys_2; prob=0.0035; pval=0.0; source_n=814; target_n=446
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0028; pval=0.0; source_n=14114; target_n=72549
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=OPC_GABA_like_tumor / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_2; prob=0.0028; pval=0.0; source_n=14114; target_n=1012
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=AC_like_tumor / Ephys_1; prob=0.0027; pval=0.0; source_n=814; target_n=72549
+  pair=CNTN1_NRCAM; pathway=CNTN; receptor=NRCAM; ligand=CNTN1; source=cycling_tumor / Ephys_2; target=OPC_GABA_AC_like_tumor / Ephys_2; prob=0.0027; pval=0.0; source_n=814; target_n=1012
+  ... 4 more rows omitted
+
+[1] (pathway_knowledge, score=0.134) Pathway biology: CD39
+Pathway CD39. Themes: myeloid, immune_synapse. ENTPD1 (CD39) hydrolyzes ATP to adenosine; ADORA3 and TMIGD3 partners.
+
+[2] (interaction, score=0.091) CNTN1_NRCAM | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends CNTN1 to NRCAM on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0036 (p=0.0). Biological themes: neuron_tumor.
+
+[3] (pathway_knowledge, score=0.090) Pathway biology: CNTN
+Pathway CNTN. Themes: neuron_tumor. Contactin-1 binds NRCAM (axonâ€“glia) and NOTCH1. Classic node-of-Ranvier and oligodendroglial adhesion pathway.
+
+[4] (interaction, score=0.089) CNTN1_NRCAM | OPC_GABA_like_tumor / Ephys_2 -> AC_like_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends CNTN1 to NRCAM on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0037 (p=0.0). Biological themes: neuron_tumor.
+
+[5] (interaction, score=0.089) CNTN1_NRCAM | OPC_GABA_like_tumor / Ephys_2 -> cycling_tumor / Ephys_2
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends CNTN1 to NRCAM on cycling_tumor (tumor, Ephys_2, n_cells=814). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0054 (p=0.0). Biological themes: neuron_tumor.
+
+[6] (interaction, score=0.089) CNTN1_NRCAM | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends CNTN1 to NRCAM on AC_like_tumor (tumor, Ephys_2, n_cells=446). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0035 (p=0.0). Biological themes: neuron_tumor.
+
+[7] (interaction, score=0.089) CNTN1_NRCAM | cycling_tumor / Ephys_2 -> AC_like_tumor / Ephys_1
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends CNTN1 to NRCAM on AC_like_tumor (tumor, Ephys_1, n_cells=72549). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0027 (p=0.0). Biological themes: neuron_tumor.
+
+[8] (interaction, score=0.088) CNTN1_NRCAM | cycling_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends CNTN1 to NRCAM on OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0117 (p=0.0). Biological themes: neuron_tumor.
+
+[9] (interaction, score=0.087) CNTN1_NRCAM | OPC_GABA_like_tumor / Ephys_2 -> OPC_GABA_like_tumor / Ephys_1
+OPC_GABA_like_tumor (tumor, Ephys_2, n_cells=14114) sends CNTN1 to NRCAM on OPC_GABA_like_tumor (tumor, Ephys_1, n_cells=6741). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0038 (p=0.0). Biological themes: neuron_tumor.
+
+[10] (interaction, score=0.087) CNTN1_NRCAM | cycling_tumor / Ephys_2 -> OPC_GABA_AC_like_tumor / Ephys_2
+cycling_tumor (tumor, Ephys_2, n_cells=814) sends CNTN1 to NRCAM on OPC_GABA_AC_like_tumor (tumor, Ephys_2, n_cells=1012). Pair CNTN1_NRCAM in pathway CNTN with CellChat probability 0.0027 (p=0.0). Biological themes: neuron_tumor.
