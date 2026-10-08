@@ -30,6 +30,7 @@ from ephys_rag.lgbm_rank import (
     load_literature,
     oof_scores,
 )
+from ephys_rag.week4_analysis import write_week4_focus_outputs
 
 SET_NAMES = tuple(GENE_SETS)
 SUMMARY_FEATURES = ["rule_pass", "deg_log2fc", "deg_neglog10_padj", "cc_edges", "ctx_min_n"]
@@ -325,4 +326,5 @@ def write_gene_set_outputs(result: GeneSetResult, out_dir: Path, top: int = 25) 
     report = out_dir / "GENESETS_REPORT.md"
     report.write_text("\n".join(lines) + "\n", encoding="utf-8")
     paths.append(report)
+    paths.extend(write_week4_focus_outputs(result, out_dir, top_per_program=top).values())
     return paths

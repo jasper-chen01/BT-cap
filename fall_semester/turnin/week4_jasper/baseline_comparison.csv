@@ -1,0 +1,7 @@
+program,program_label,evaluation_level,metric,labeled_genes,positive_rows,prevalence,lightgbm,cellchat_probability,three_table_rule,best_method,best_baseline,delta_vs_best_baseline,lightgbm_beats_both
+tumor_synaptic,Tumor synaptic (SynGO),gene_context_row,auroc,1112,3249,0.14874330449114131,0.6753069254262563,0.5138468897174011,0.515772569731536,lightgbm,0.515772569731536,0.159534355695,True
+tumor_synaptic,Tumor synaptic (SynGO),gene_context_row,auprc,1112,3249,0.14874330449114131,0.3321568783171772,0.16541289973701848,0.1740126671189507,lightgbm,0.1740126671189507,0.158144211198,True
+tumor_synaptic,Tumor synaptic (SynGO),gene_context_row,precision_at_25,1112,3249,0.14874330449114131,0.56,0.76,0.2,cellchat_probability,0.76,-0.2,False
+immune_synapse,Immune synapse (GO:0001772),gene_context_row,auroc,45,135,0.004936736634242668,0.6660498137327361,0.5499310600152172,0.5546790037253453,lightgbm,0.5546790037253453,0.111370810007,True
+immune_synapse,Immune synapse (GO:0001772),gene_context_row,auprc,45,135,0.004936736634242668,0.015125546126123561,0.009110310271718687,0.02966205091137203,three_table_rule,0.02966205091137203,-0.014536504785,False
+immune_synapse,Immune synapse (GO:0001772),gene_context_row,precision_at_25,45,135,0.004936736634242668,0.04,0.0,0.16,three_table_rule,0.16,-0.12,False
