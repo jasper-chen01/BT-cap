@@ -30,8 +30,12 @@ from ephys_rag.lgbm_rank import (
     load_literature,
     oof_scores,
 )
+from ephys_rag.scetm_features import DEFAULT_EMBEDDINGS, KNN_FEATURE, NeighbourIndex, load_embeddings
 
 SET_NAMES = tuple(GENE_SETS)
+# tables: week-4 DEG / CellChat / n_cells features. tables_scetm: + Level 1 (rho) + Level 2 (knn
+# label fraction). scetm_only: Level 1 + Level 2 with no fold-change or table features at all.
+ARMS = ("tables", "tables_scetm", "scetm_only")
 SUMMARY_FEATURES = ["rule_pass", "deg_log2fc", "deg_neglog10_padj", "cc_edges", "ctx_min_n"]
 # Mitochondrial, ribosomal, histone and translation-machinery genes: broadly expressed, so they
 # score high on "looks like a synaptic gene" by expression alone. Flagged, kept in the CSV,
@@ -92,12 +96,33 @@ def rank_gene_sets(
     llm_keys: Sequence[str] = DEFAULT_LLM_KEYS,
     seeds: Sequence[int] = (0, 1, 2, 3, 4),
     n_splits: int = 5,
+    arm: str = "tables",
+    embeddings: Path | None = None,
+    knn_k: int = 20,
 ) -> GeneSetResult:
+    if arm not in ARMS:
+        raise ValueError(f"arm must be one of {ARMS}, got {arm!r}")
     table = build_feature_table(
         universe=universe, llm_runs=llm_runs, llm_keys=llm_keys, compartment_features=True
     )
     frame = table.frame.copy()
-    features = table.feature_columns
+    features = list(table.feature_columns)
+    emb = None
+    emb_info: dict = {}
+    if arm != "tables":
+        emb_path = Path(embeddings or DEFAULT_EMBEDDINGS)
+        emb = load_embeddings(emb_path)
+        frame = frame.merge(emb, left_on="gene", right_index=True, how="left")
+        universe_genes = frame["gene"].unique()
+        emb_info = {
+            "path": str(emb_path),
+            "dim": emb.shape[1],
+            "n_genes_embedded": int(emb.shape[0]),
+            "universe_genes_embedded": int(np.isin(universe_genes, emb.index).sum()),
+            "universe_genes": int(len(universe_genes)),
+            "knn_k": knn_k,
+        }
+        features = (features if arm == "tables_scetm" else []) + list(emb.columns)
 
     literature = load_literature()
     published = set(literature["gene"])
@@ -106,11 +131,13 @@ def rank_gene_sets(
     frame["published_tier"] = frame["gene"].map(tier)
 
     metrics: dict = {
+        "arm": arm,
         "universe": universe,
         "n_rows": int(len(frame)),
         "n_genes": int(frame["gene"].nunique()),
-        "n_features": len(features),
-        "features": features,
+        "n_features": len(features) + (1 if emb is not None else 0),
+        "features": features + (["knn_frac_<set> (per fold)"] if emb is not None else []),
+        "embeddings": emb_info,
         "seeds": list(seeds),
         "cv": f"StratifiedGroupKFold(n_splits={n_splits}) grouped by gene",
         "immune_human_only": immune_human_only,
@@ -134,9 +161,25 @@ def rank_gene_sets(
         if y.sum() < n_splits:
             raise ValueError(f"{name}: only {y.sum()} positive rows in {spec.label_compartments}.")
 
-        score, sd = oof_scores(X, y, sub["gene"].to_numpy(), seeds, n_splits)
+        row_genes = sub["gene"].to_numpy()
+        fold_features = None
+        if emb is not None:
+            knn_col = KNN_FEATURE.get(name, f"knn_frac_{name}")
+            neighbours = NeighbourIndex(emb, row_genes, k=knn_k)
+
+            def fold_features(train_idx, neighbours=neighbours, genes=genes, knn_col=knn_col, index=X.index):
+                values = neighbours.feature(row_genes, genes, set(row_genes[train_idx]))
+                return pd.DataFrame({knn_col: values}, index=index)
+
+        score, sd = oof_scores(X, y, row_genes, seeds, n_splits, fold_features=fold_features)
         frame.loc[mask, score_col] = score
         frame.loc[mask, f"{score_col}_sd"] = sd
+        if emb is not None:
+            # Explanations come from a model fit on every gene; its knn feature uses all labelled
+            # genes as neighbours (self still excluded). Scores above never see this column.
+            full_knn = neighbours.feature(row_genes, genes, set(row_genes))
+            X = X.assign(**{knn_col: full_knn})
+            frame.loc[mask, knn_col] = full_knn
         imp, contrib = fit_full(X, y, seeds)
         importance[name] = imp
         frame.loc[mask, f"why_{name}"] = _top_reasons(X, contrib)
@@ -202,7 +245,8 @@ def write_gene_set_outputs(result: GeneSetResult, out_dir: Path, top: int = 25) 
     keep = KEY + ["compartment", "in_published_33", "published_tier", "novel", "housekeeping"]
     for name in sets:
         keep += [f"in_{name}", f"p_{name}", f"p_{name}_sd"]
-    keep += SUMMARY_FEATURES + [f"why_{name}" for name in sets]
+    keep += SUMMARY_FEATURES + [c for c in KNN_FEATURE.values() if c in result.scores]
+    keep += [f"why_{name}" for name in sets]
     result.scores[keep].to_csv(paths[0], index=False)
     result.by_gene.to_csv(paths[1], index=False)
     result.published.to_csv(paths[2], index=False)
@@ -221,8 +265,16 @@ def write_gene_set_outputs(result: GeneSetResult, out_dir: Path, top: int = 25) 
         f"- Scores are out-of-fold ({m['cv']}, seeds {m['seeds']}): no gene is scored by a model that trained on it.",
         "- The 33 published glioma genes are **not** labels here. `in_published_33` flags them; the check below shows where each model ranks them.",
         f"- LLM run features: {m['n_llm_runs'] or 'none'}.",
-        "",
+        f"- Feature arm: `{m.get('arm', 'tables')}`.",
     ]
+    e = m.get("embeddings") or {}
+    if e:
+        lines.append(
+            f"- scETM embeddings: `{Path(e['path']).name}` ({e['dim']}-d, {e['n_genes_embedded']} genes); "
+            f"{e['universe_genes_embedded']} of {e['universe_genes']} universe genes embedded (others get NaN). "
+            f"Level 2 = fraction of {e['knn_k']} nearest neighbours in the label set, rebuilt per fold from training genes."
+        )
+    lines.append("")
     src = m.get("sources", {})
     if src:
         lines += ["## Label sources", ""]
@@ -323,6 +375,166 @@ def write_gene_set_outputs(result: GeneSetResult, out_dir: Path, top: int = 25) 
         "- High score = \"expression pattern resembles known synaptic / immune-synapse genes\", not validation.",
     ]
     report = out_dir / "GENESETS_REPORT.md"
+    report.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    paths.append(report)
+    return paths
+
+
+# --------------------------------------------------------------------------- arm comparison
+
+
+def arm_checks(result: GeneSetResult, top: int = 100) -> dict:
+    """Gene-level checks per model: best context per gene, out-of-fold scores."""
+    out: dict = {}
+    sets = list(result.metrics["sets"])
+    for name in sets:
+        col = f"p_{name}"
+        genes = result.by_gene.dropna(subset=[col]).sort_values(col, ascending=False).reset_index(drop=True)
+        genes["percentile"] = 1 - genes.index / len(genes)
+        head = genes.head(top)
+        housekeeping = head["gene"].str.match(HOUSEKEEPING)
+        s = result.metrics["sets"][name]
+        check = s["published_check"]
+        labelled = genes[f"in_{name}"] == 1
+        others = {o: int(head[f"in_{o}"].sum()) for o in sets if o != name}
+        clean = genes[~genes["gene"].str.match(HOUSEKEEPING)].head(top)
+        out[name] = {
+            "auroc_rows": s["row_level"]["lightgbm_oof"]["auroc"],
+            "auprc_rows": s["row_level"]["lightgbm_oof"]["auprc"],
+            "auroc_genes": s["gene_level"]["lightgbm_oof"]["auroc"],
+            "auprc_genes": s["gene_level"]["lightgbm_oof"]["auprc"],
+            "n_genes_scored": int(len(genes)),
+            f"housekeeping_top{top}": int(housekeeping.sum()),
+            f"housekeeping_in_label_set_top{top}": int(head.loc[housekeeping, f"in_{name}"].sum()),
+            f"housekeeping_genes_top{top}": head.loc[housekeeping, "gene"].tolist(),
+            f"label_set_top{top}": int(head[f"in_{name}"].sum()),
+            f"label_set_top{top}_excl_housekeeping": int(clean[f"in_{name}"].sum()),
+            "top_genes_excl_housekeeping": clean["gene"].head(25).tolist(),
+            "label_set_median_percentile": float(genes.loc[labelled, "percentile"].median()),
+            **{f"{o}_genes_top{top}": n for o, n in others.items()},
+            "published_median_percentile": check.get("median_percentile_published"),
+            "published_auroc": check.get("all_genes", {}).get("auroc"),
+            "top_genes": genes["gene"].head(25).tolist(),
+        }
+    return out
+
+
+def compare_arms(
+    arms: Sequence[str] = ARMS,
+    embeddings: Path | None = None,
+    knn_k: int = 20,
+    top: int = 100,
+    **kwargs,
+) -> tuple[dict[str, GeneSetResult], dict]:
+    results = {arm: rank_gene_sets(arm=arm, embeddings=embeddings, knn_k=knn_k, **kwargs) for arm in arms}
+    checks = {arm: arm_checks(res, top=top) for arm, res in results.items()}
+    return results, checks
+
+
+def _rank_table(results: dict[str, GeneSetResult]) -> pd.DataFrame:
+    """One row per gene: gene-level rank under each arm and model."""
+    parts = []
+    for arm, res in results.items():
+        cols = {c: f"{c}__{arm}" for c in res.by_gene.columns if c.startswith(("p_", "gene_rank_"))}
+        parts.append(res.by_gene.set_index("gene")[list(cols)].rename(columns=cols))
+    first = next(iter(results.values())).by_gene.set_index("gene")
+    flags = first[[c for c in first.columns if c.startswith("in_")] + ["published_tier"]]
+    table = pd.concat([flags] + parts, axis=1).reset_index()
+    table["housekeeping"] = table["gene"].str.match(HOUSEKEEPING).astype(int)
+    return table
+
+
+def write_arm_outputs(
+    results: dict[str, GeneSetResult], checks: dict, out_dir: Path, top: int = 100, top_novel: int = 25
+) -> list[Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    paths: list[Path] = []
+    for arm, res in results.items():
+        paths += write_gene_set_outputs(res, out_dir / arm, top=top_novel)
+    ranks = _rank_table(results)
+    paths.append(out_dir / "arms_gene_ranks.csv")
+    ranks.to_csv(paths[-1], index=False)
+    paths.append(out_dir / "arms_checks.json")
+    paths[-1].write_text(json.dumps(checks, indent=2, default=str), encoding="utf-8")
+
+    arms = list(results)
+    sets = list(next(iter(results.values())).metrics["sets"])
+    first = results[arms[0]].metrics
+    e = next((r.metrics["embeddings"] for r in results.values() if r.metrics.get("embeddings")), {})
+    lines = [
+        "# Week 5: do scETM gene embeddings help the gene-set rankers?",
+        "",
+        f"- Universe: `{first['universe']}`: {first['n_rows']} gene x cell type x IDH rows, {first['n_genes']} genes.",
+        f"- Scores are out-of-fold ({first['cv']}, seeds {first['seeds']}); checks use each gene's best context.",
+        "- Arms: `tables` = week-4 DEG / CellChat / n_cells features; `tables_scetm` = tables + Level 1 (`emb_00..`, "
+        "the gene's rho vector) + Level 2 (`knn_frac_*`); `scetm_only` = Level 1 + Level 2 with no fold-change or table features.",
+    ]
+    if e:
+        lines.append(
+            f"- Embeddings: `{Path(e['path']).name}` ({e['dim']}-d); {e['universe_genes_embedded']} of {e['universe_genes']} "
+            f"universe genes embedded. Level 2 uses k={e['knn_k']} cosine neighbours, rebuilt inside every CV fold from "
+            "training-fold genes only, and a gene is never its own neighbour."
+        )
+    lines.append("")
+
+    for name in sets:
+        rows = []
+        for arm in arms:
+            c = checks[arm][name]
+            other = {k: v for k, v in c.items() if k.endswith(f"_genes_top{top}") and not k.startswith("housekeeping")}
+            rows.append(
+                {
+                    "arm": arm,
+                    "AUROC rows": c["auroc_rows"],
+                    "AUPRC rows": c["auprc_rows"],
+                    "AUROC genes": c["auroc_genes"],
+                    "AUPRC genes": c["auprc_genes"],
+                    f"housekeeping in top {top}": c[f"housekeeping_top{top}"],
+                    "of which in label set": c[f"housekeeping_in_label_set_top{top}"],
+                    f"label-set genes in top {top}": c[f"label_set_top{top}"],
+                    f"label-set genes in top {top} (housekeeping removed)": c[f"label_set_top{top}_excl_housekeeping"],
+                    "label-set median pct": c["label_set_median_percentile"],
+                    **{f"{k.replace(f'_genes_top{top}', '')} genes in top {top}": v for k, v in other.items()},
+                    "published-33 median pct": c["published_median_percentile"],
+                    "published-33 AUROC": c["published_auroc"],
+                }
+            )
+        table = pd.DataFrame(rows)
+        lines += [f"## {name}", "", _md_table(table, list(table.columns)), ""]
+        for key, title in [("top_genes", "Top 15 genes per arm"), ("top_genes_excl_housekeeping", "Top 15 genes per arm, housekeeping removed")]:
+            top_table = pd.DataFrame({arm: checks[arm][name][key][:15] for arm in arms})
+            top_table.insert(0, "rank", range(1, len(top_table) + 1))
+            lines += [f"**{title}** (best context per gene)", "", _md_table(top_table, list(top_table.columns)), ""]
+        lines += [f"**Feature importance share (gain)**", ""]
+        for arm in arms:
+            imp = results[arm].importance[name]
+            share = imp.set_index("feature")["gain"] / max(imp["gain"].sum(), 1e-12)
+            emb_share = share[share.index.str.startswith("emb_")].sum()
+            knn_share = share[share.index.str.startswith("knn_")].sum()
+            top3 = ", ".join(f"{f} {v:.2f}" for f, v in share.head(3).items())
+            lines.append(
+                f"- `{arm}`: Level 1 (emb_*) {emb_share:.2f}, Level 2 (knn) {knn_share:.2f}, "
+                f"tables {max(1 - emb_share - knn_share, 0.0):.2f}. Top: {top3}."
+            )
+        lines.append("")
+        for arm in arms:
+            hk = checks[arm][name][f"housekeeping_genes_top{top}"]
+            if hk:
+                lines.append(f"- `{arm}` housekeeping genes in top {top}: {', '.join(hk)}")
+        lines.append("")
+
+    lines += [
+        "## Notes",
+        "",
+        "- Housekeeping = the week-4 regex (MT-, RPL/RPS, histones, NDUF, COX, ATP5, EEF/EIF, ...). SynGO itself annotates "
+        "many ribosomal / mitochondrial genes as synaptic, so housekeeping genes in the tumor-synaptic top 100 can be true label hits.",
+        "- Level 1 and Level 2 are gene-wide: in `scetm_only` every cell type x IDH row of a gene gets the same score.",
+        "- `knn_frac_*` in the per-arm `genesets_scores.csv` is the all-genes version used only for SHAP explanations; "
+        "the scores themselves use the per-fold version.",
+        "- Sanity check during development: with random 32-d vectors in place of rho, `scetm_only` scored AUROC 0.49 (tumor) "
+        "and 0.43 (immune), i.e. no label leakage through the kNN feature.",
+    ]
+    report = out_dir / "SCETM_ARMS_REPORT.md"
     report.write_text("\n".join(lines) + "\n", encoding="utf-8")
     paths.append(report)
     return paths

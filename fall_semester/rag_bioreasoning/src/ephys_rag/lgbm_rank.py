@@ -12,7 +12,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
+from typing import Callable, Iterable, Iterator, Sequence
 
 import numpy as np
 import pandas as pd
@@ -475,8 +475,18 @@ def _pos_weight(y: np.ndarray) -> float:
 
 
 def oof_scores(
-    X: pd.DataFrame, y: np.ndarray, groups: np.ndarray, seeds: Sequence[int], n_splits: int
+    X: pd.DataFrame,
+    y: np.ndarray,
+    groups: np.ndarray,
+    seeds: Sequence[int],
+    n_splits: int,
+    fold_features: Callable[[np.ndarray], pd.DataFrame] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Out-of-fold scores averaged over seeds.
+
+    fold_features(train_idx) returns extra label-derived columns for every row, built from the
+    training rows only; it is called once per fold so held-out labels never reach the features.
+    """
     import lightgbm as lgb
     from sklearn.model_selection import StratifiedGroupKFold
 
@@ -484,9 +494,10 @@ def oof_scores(
     for i, seed in enumerate(seeds):
         cv = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=seed)
         for train_idx, test_idx in cv.split(X, y, groups):
+            Xf = X if fold_features is None else pd.concat([X, fold_features(train_idx)], axis=1)
             model = lgb.LGBMClassifier(**_lgb_params(seed, _pos_weight(y[train_idx])))
-            model.fit(X.iloc[train_idx], y[train_idx])
-            scores[i, test_idx] = model.predict_proba(X.iloc[test_idx])[:, 1]
+            model.fit(Xf.iloc[train_idx], y[train_idx])
+            scores[i, test_idx] = model.predict_proba(Xf.iloc[test_idx])[:, 1]
     return scores.mean(axis=0), scores.std(axis=0)
 
 

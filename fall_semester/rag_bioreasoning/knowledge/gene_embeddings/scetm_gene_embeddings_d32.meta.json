@@ -1,0 +1,956 @@
+{
+  "created": "2026-10-14",
+  "input_h5ad": "C:\\Users\\ericy\\OneDrive\\Desktop\\BT-Cap\\pertubation_modelling\\inhouse_scell_glioma\\adata.h5ad",
+  "n_cells": 20381,
+  "n_genes": 20126,
+  "cells_per_type": {
+    "OPC_GABA_AC_like_tumor": 1800,
+    "OPC_GABA_like_tumor": 1800,
+    "TAM1/TAM2/microglia": 1800,
+    "cycling_tumor": 1800,
+    "oligodendrocytes": 1800,
+    "T cell": 1800,
+    "AC_like_tumor": 1800,
+    "MES_like_tumor/TAM1/microglia": 1800,
+    "endothelial": 1800,
+    "fibroblast": 1800,
+    "astrocyte": 1543,
+    "vascular": 838
+  },
+  "params": {
+    "h5ad": "C:\\Users\\ericy\\OneDrive\\Desktop\\BT-Cap\\pertubation_modelling\\inhouse_scell_glioma\\adata.h5ad",
+    "emb_dim": 32,
+    "n_topics": 50,
+    "n_epochs": 1000,
+    "batch_size": 2000,
+    "lr": 0.005,
+    "test_ratio": 0.05,
+    "min_cells": 10,
+    "stratify_col": "CellType",
+    "max_cells_per_group": 1800,
+    "max_cells": null,
+    "batch_col": "orig.ident",
+    "batch_suffix_sep": "",
+    "max_batches": 200,
+    "seed": 24,
+    "out_dir": "knowledge\\gene_embeddings_week5"
+  },
+  "n_batches": 25,
+  "batch_col": "orig.ident",
+  "train_seconds": 5593.9,
+  "test_nll": 7.363756593473994,
+  "checkpoint_dir": "C:\\Users\\ericy\\OneDrive\\Desktop\\BT-Cap\\BT-CAP-Capstone\\fall_semester\\rag_bioreasoning\\artifacts\\scetm\\scETM_10_14-20_53_53",
+  "coverage": {
+    "SynGO (tumor_synaptic)": {
+      "n": 1789,
+      "n_embedded": 1673,
+      "fraction": 0.935
+    },
+    "GO:0001772 (immune_synapse)": {
+      "n": 244,
+      "n_embedded": 58,
+      "fraction": 0.238
+    },
+    "published 33": {
+      "n": 33,
+      "n_embedded": 33,
+      "fraction": 1.0
+    },
+    "DEG universe": {
+      "n": 9580,
+      "n_embedded": 9578,
+      "fraction": 1.0
+    },
+    "CellChat L/R genes": {
+      "n": 114,
+      "n_embedded": 112,
+      "fraction": 0.982
+    }
+  },
+  "coherence": {
+    "SynGO (tumor_synaptic)": {
+      "n_found": 1673,
+      "mean_cosine": 0.019892435520887375,
+      "random_mean": 0.024495265567675232,
+      "random_sd": 0.0014444062630253089,
+      "z": -3.1866588816551027,
+      "empirical_p": 1.0
+    },
+    "GO:0001772 (immune_synapse)": {
+      "n_found": 58,
+      "mean_cosine": 0.0748278871178627,
+      "random_mean": 0.023872569553786888,
+      "random_sd": 0.009658273790251793,
+      "z": 5.275820366109895,
+      "empirical_p": 0.004975124378109453
+    },
+    "published 33": {
+      "n_found": 33,
+      "mean_cosine": 0.1052103340625763,
+      "random_mean": 0.02338243219091055,
+      "random_sd": 0.013677354645913246,
+      "z": 5.98272867744317,
+      "empirical_p": 0.004975124378109453
+    },
+    "CellChat L/R genes": {
+      "n_found": 112,
+      "mean_cosine": 0.07759048044681549,
+      "random_mean": 0.023919971180148422,
+      "random_sd": 0.0068647312210086435,
+      "z": 7.818297255749103,
+      "empirical_p": 0.004975124378109453
+    }
+  },
+  "topics": [
+    {
+      "topic": 0,
+      "top_genes": [
+        "CCL4L2",
+        "SH2D1B",
+        "AC025040.1",
+        "LEPR",
+        "AC007292.3",
+        "AL606534.1",
+        "AC136469.1",
+        "GNLY",
+        "AC215217.1",
+        "KLRF1"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.021057110279798508
+    },
+    {
+      "topic": 1,
+      "top_genes": [
+        "ACTA2",
+        "KRT17",
+        "CALB2",
+        "NEFL",
+        "ANXA2",
+        "NEXN",
+        "MMP7",
+        "USH1C",
+        "COL10A1",
+        "TAGLN"
+      ],
+      "most_active_in": "astrocyte",
+      "mean_theta": 0.02602219022810459
+    },
+    {
+      "topic": 2,
+      "top_genes": [
+        "F2RL3",
+        "ESM1",
+        "DUOXA1",
+        "MET",
+        "GDF15",
+        "BDKRB2",
+        "CXCL1",
+        "CXCL11",
+        "AL023284.4",
+        "NOX4"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.04789167642593384
+    },
+    {
+      "topic": 3,
+      "top_genes": [
+        "CHI3L2",
+        "RIT2",
+        "HBB",
+        "NMB",
+        "SLAMF1",
+        "MSMP",
+        "FAM19A1",
+        "HP",
+        "MT1X",
+        "SAA1"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.03394763544201851
+    },
+    {
+      "topic": 4,
+      "top_genes": [
+        "PI15",
+        "TAC1",
+        "AC100803.3",
+        "DDC",
+        "C11orf96",
+        "GALNT14",
+        "AC133555.3",
+        "MYOCD",
+        "AMIGO1",
+        "RAI2"
+      ],
+      "most_active_in": "OPC_GABA_like_tumor",
+      "mean_theta": 0.036205943673849106
+    },
+    {
+      "topic": 5,
+      "top_genes": [
+        "IGHM",
+        "IGLC3",
+        "CD79A",
+        "IGHA1",
+        "VPREB3",
+        "FCN1",
+        "MS4A1",
+        "FCRL1",
+        "FCER1A",
+        "AL356258.1"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.03201833739876747
+    },
+    {
+      "topic": 6,
+      "top_genes": [
+        "KLRF1",
+        "PTGDR",
+        "NKG7",
+        "FGFBP2",
+        "KIR2DL4",
+        "KLRB1",
+        "CCL4",
+        "KRT86",
+        "KRT81",
+        "GZMB"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.030486978590488434
+    },
+    {
+      "topic": 7,
+      "top_genes": [
+        "HIST1H3B",
+        "HIST1H1B",
+        "RRM2",
+        "HIST1H2BO",
+        "CCNA2",
+        "CENPU",
+        "AURKB",
+        "HIST1H3F",
+        "PCLAF",
+        "ESCO2"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.03523994982242584
+    },
+    {
+      "topic": 8,
+      "top_genes": [
+        "C2orf83",
+        "PKN3",
+        "NPY",
+        "HIST1H3B",
+        "FOXF1",
+        "AL356417.2",
+        "FIBCD1",
+        "HIST1H2AL",
+        "CALB2",
+        "CCSER1"
+      ],
+      "most_active_in": "endothelial",
+      "mean_theta": 0.03645993024110794
+    },
+    {
+      "topic": 9,
+      "top_genes": [
+        "MSMP",
+        "FCN1",
+        "IGHA1",
+        "CD79A",
+        "FOXP3",
+        "MS4A4E",
+        "AC007402.1",
+        "IGHM",
+        "PAX5",
+        "AC067969.1"
+      ],
+      "most_active_in": "vascular",
+      "mean_theta": 0.03003609925508499
+    },
+    {
+      "topic": 10,
+      "top_genes": [
+        "HMMR",
+        "PLK1",
+        "CCNB1",
+        "UBE2C",
+        "GTSE1",
+        "TTK",
+        "APOBEC3B",
+        "AL138828.1",
+        "CDC20",
+        "ASPM"
+      ],
+      "most_active_in": "TAM1/TAM2/microglia",
+      "mean_theta": 0.029664775356650352
+    },
+    {
+      "topic": 11,
+      "top_genes": [
+        "LINC00402",
+        "DLX6-AS1",
+        "FOXP3",
+        "MSMP",
+        "NPR1",
+        "CCSER1",
+        "IGHA1",
+        "CCR7",
+        "MYO7B",
+        "IGHM"
+      ],
+      "most_active_in": "OPC_GABA_like_tumor",
+      "mean_theta": 0.03467195853590965
+    },
+    {
+      "topic": 12,
+      "top_genes": [
+        "MUCL1",
+        "HSPA1A",
+        "APOE",
+        "APOC1",
+        "BCAN",
+        "HES4",
+        "CCL18",
+        "GRM3",
+        "GUCY1B1",
+        "PPP4R4"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.03639475256204605
+    },
+    {
+      "topic": 13,
+      "top_genes": [
+        "HBB",
+        "HBA1",
+        "ZNF492",
+        "HBA2",
+        "AC127164.1",
+        "METTL24",
+        "IFNG",
+        "ZNF215",
+        "ODAPH",
+        "CTLA4"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.03649366647005081
+    },
+    {
+      "topic": 14,
+      "top_genes": [
+        "AC126768.2",
+        "PLA2G2A",
+        "KRT16",
+        "CLEC3B",
+        "IGFBP1",
+        "MRGPRF",
+        "CCL26",
+        "MEDAG",
+        "HCCAT5",
+        "AC019171.1"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.029431570321321487
+    },
+    {
+      "topic": 15,
+      "top_genes": [
+        "MTFR2",
+        "AC008080.4",
+        "CXCL13",
+        "POLQ",
+        "TK1",
+        "LINC01549",
+        "CENPE",
+        "WDR62",
+        "PLK1",
+        "GNLY"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.06319306045770645
+    },
+    {
+      "topic": 16,
+      "top_genes": [
+        "VNN2",
+        "GZMK",
+        "LINC02273",
+        "JAML",
+        "AC013264.1",
+        "S100A12",
+        "IGHM",
+        "ZNF831",
+        "IFITM1",
+        "TRBC1"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.03442135453224182
+    },
+    {
+      "topic": 17,
+      "top_genes": [
+        "CCL23",
+        "XCL2",
+        "CXCL13",
+        "CCL4L2",
+        "TNFSF9",
+        "KRT86",
+        "MZB1",
+        "AC022706.1",
+        "GNLY",
+        "GZMA"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.03567533195018768
+    },
+    {
+      "topic": 18,
+      "top_genes": [
+        "SLPI",
+        "MIRLET7DHG",
+        "FABP4",
+        "AL450311.2",
+        "CCL2",
+        "ARMC3",
+        "AC007493.1",
+        "CCL19",
+        "SFRP2",
+        "CASQ2"
+      ],
+      "most_active_in": "vascular",
+      "mean_theta": 0.022905485704541206
+    },
+    {
+      "topic": 19,
+      "top_genes": [
+        "AL365434.2",
+        "BIRC3",
+        "LINC01608",
+        "CCR4",
+        "AC083862.2",
+        "C5orf17",
+        "GPIHBP1",
+        "AC096677.1",
+        "FLT3",
+        "KCND3"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.026959821581840515
+    },
+    {
+      "topic": 20,
+      "top_genes": [
+        "SLC25A21-AS1",
+        "GPR17",
+        "PCDH15",
+        "AC008080.4",
+        "KCNT2",
+        "CASQ2",
+        "LUM",
+        "AC113383.1",
+        "TNR",
+        "ACHE"
+      ],
+      "most_active_in": "TAM1/TAM2/microglia",
+      "mean_theta": 0.040228471159935
+    },
+    {
+      "topic": 21,
+      "top_genes": [
+        "OSTM1-AS1",
+        "CD8B",
+        "TAC3",
+        "CD8A",
+        "LINC02446",
+        "AC067747.1",
+        "CHRNA1",
+        "CXCL13",
+        "HASPIN",
+        "ZBTB32"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.04937219247221947
+    },
+    {
+      "topic": 22,
+      "top_genes": [
+        "TK1",
+        "CCL20",
+        "CLSPN",
+        "TIMP1",
+        "CALB2",
+        "LINC00702",
+        "NRGN",
+        "CCL2",
+        "MYBL2",
+        "CASQ2"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.030553679913282394
+    },
+    {
+      "topic": 23,
+      "top_genes": [
+        "LINC00276",
+        "IGFL4",
+        "CCL19",
+        "COL17A1",
+        "AC092053.3",
+        "AL136531.1",
+        "DUOXA1",
+        "Z97832.2",
+        "GDF9",
+        "AC004233.4"
+      ],
+      "most_active_in": "TAM1/TAM2/microglia",
+      "mean_theta": 0.029422391206026077
+    },
+    {
+      "topic": 24,
+      "top_genes": [
+        "PCP4",
+        "MUCL1",
+        "IGHM",
+        "IGLC3",
+        "AC116563.1",
+        "LINC02285",
+        "MS4A4E",
+        "AC073072.1",
+        "MS4A1",
+        "G0S2"
+      ],
+      "most_active_in": "TAM1/TAM2/microglia",
+      "mean_theta": 0.029617344960570335
+    },
+    {
+      "topic": 25,
+      "top_genes": [
+        "ENO2",
+        "SLC1A6",
+        "SLC16A10",
+        "MARCH1",
+        "AC232271.1",
+        "AC003005.2",
+        "AL354956.1",
+        "GAPDH",
+        "MYCNOS",
+        "LINC00877"
+      ],
+      "most_active_in": "OPC_GABA_like_tumor",
+      "mean_theta": 0.04922095686197281
+    },
+    {
+      "topic": 26,
+      "top_genes": [
+        "HMCN2",
+        "DLGAP1-AS5",
+        "LINC02588",
+        "TAC1",
+        "AC100803.3",
+        "PCDHA5",
+        "AC025211.1",
+        "LINC00470",
+        "SLC29A2",
+        "VSTM2A"
+      ],
+      "most_active_in": "OPC_GABA_like_tumor",
+      "mean_theta": 0.05315883085131645
+    },
+    {
+      "topic": 27,
+      "top_genes": [
+        "AC239803.1",
+        "PCDH8",
+        "KLHL25",
+        "GPD1",
+        "PDZRN4",
+        "G0S2",
+        "DLX5",
+        "PTTG2",
+        "NPTX1",
+        "GAS1"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.02980981580913067
+    },
+    {
+      "topic": 28,
+      "top_genes": [
+        "DLGAP5",
+        "TSPAN2",
+        "CCNB1",
+        "HIST1H2BI",
+        "KRT16",
+        "IL2",
+        "PI3",
+        "TRGV2",
+        "ASB9",
+        "FAM83D"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.03411104902625084
+    },
+    {
+      "topic": 29,
+      "top_genes": [
+        "MGP",
+        "SPP1",
+        "APOD",
+        "IGFBP3",
+        "NPR1",
+        "PLVAP",
+        "GAL3ST1",
+        "FBLN2",
+        "PLLP",
+        "AZGP1"
+      ],
+      "most_active_in": "astrocyte",
+      "mean_theta": 0.026327960193157196
+    },
+    {
+      "topic": 30,
+      "top_genes": [
+        "HIST1H2BM",
+        "IGHM",
+        "NEUROD4",
+        "GASAL1",
+        "HMCN2",
+        "IL2RA",
+        "CD79A",
+        "MS4A1",
+        "CACNA1H",
+        "AC025211.1"
+      ],
+      "most_active_in": "T cell",
+      "mean_theta": 0.04767856001853943
+    },
+    {
+      "topic": 31,
+      "top_genes": [
+        "CXCL8",
+        "IFNG",
+        "AL135960.1",
+        "IER3",
+        "TNF",
+        "AC103719.1",
+        "TEX14",
+        "AC103706.1",
+        "TIAF1",
+        "ATP1B3-AS1"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.04571721330285072
+    },
+    {
+      "topic": 32,
+      "top_genes": [
+        "AC012615.2",
+        "IL12A-AS1",
+        "CXCL13",
+        "G0S2",
+        "ADAMTS4",
+        "SPINK6",
+        "IL1B",
+        "SH2D1B",
+        "HTR1F",
+        "IL1A"
+      ],
+      "most_active_in": "fibroblast",
+      "mean_theta": 0.031699784100055695
+    },
+    {
+      "topic": 33,
+      "top_genes": [
+        "PLA2G2A",
+        "THBS1",
+        "AL451085.1",
+        "MXRA5",
+        "CXCL10",
+        "MMP7",
+        "AC120498.9",
+        "VCAM1",
+        "CEMIP",
+        "SFRP2"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.03224620968103409
+    },
+    {
+      "topic": 34,
+      "top_genes": [
+        "LCNL1",
+        "PI16",
+        "CARMIL3",
+        "SFRP2",
+        "SLC22A6",
+        "SLC25A18",
+        "AL158840.1",
+        "C9orf24",
+        "CFAP52",
+        "SLC6A11"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.039187923073768616
+    },
+    {
+      "topic": 35,
+      "top_genes": [
+        "LXN",
+        "PLEK2",
+        "MYLK2",
+        "CRABP1",
+        "ESM1",
+        "LINC01508",
+        "SERPIND1",
+        "EPHX4",
+        "FP236383.3",
+        "C16orf46"
+      ],
+      "most_active_in": "MES_like_tumor/TAM1/microglia",
+      "mean_theta": 0.021230548620224
+    },
+    {
+      "topic": 36,
+      "top_genes": [
+        "IBSP",
+        "LINC00996",
+        "PLVAP",
+        "AC239803.3",
+        "GPR17",
+        "DLL3",
+        "AC007998.3",
+        "AC008080.4",
+        "PCDH12",
+        "TNFRSF4"
+      ],
+      "most_active_in": "endothelial",
+      "mean_theta": 0.034192413091659546
+    },
+    {
+      "topic": 37,
+      "top_genes": [
+        "B3GNT7",
+        "NPTX1",
+        "NEK2",
+        "NSG2",
+        "KIAA1614-AS1",
+        "JSRP1",
+        "HIST1H3C",
+        "LINC00222",
+        "HOXC6",
+        "POU2AF1"
+      ],
+      "most_active_in": "cycling_tumor",
+      "mean_theta": 0.022042514756321907
+    },
+    {
+      "topic": 38,
+      "top_genes": [
+        "MSMP",
+        "PPP1R17",
+        "REG1B",
+        "TIMP1",
+        "GAD2",
+        "C6orf15",
+        "DLX5",
+        "AC133555.3",
+        "KIF4B",
+        "AL356417.2"
+      ],
+      "most_active_in": "OPC_GABA_AC_like_tumor",
+      "mean_theta": 0.02014223299920559
+    },
+    {
+      "topic": 39,
+      "top_genes": [
+        "AL139384.2",
+        "ARHGEF18",
+        "LGALS12",
+        "LINC01389",
+        "PPBP",
+        "GNAS-AS1",
+        "PKP3",
+        "MYO3A",
+        "GP9",
+        "HIST1H2AJ"
+      ],
+      "most_active_in": "cycling_tumor",
+      "mean_theta": 0.016196705400943756
+    },
+    {
+      "topic": 40,
+      "top_genes": [
+        "CCNB1",
+        "CENPA",
+        "CCNB2",
+        "MKI67",
+        "CCL20",
+        "ASPM",
+        "HMMR",
+        "AC138207.5",
+        "NEIL3",
+        "KIF20A"
+      ],
+      "most_active_in": "cycling_tumor",
+      "mean_theta": 0.01835792511701584
+    },
+    {
+      "topic": 41,
+      "top_genes": [
+        "CYP1B1",
+        "EDN3",
+        "CXCL1",
+        "APOD",
+        "AKR1C2",
+        "SRARP",
+        "ITIH2",
+        "FBLN1",
+        "DCN",
+        "ABCA9"
+      ],
+      "most_active_in": "vascular",
+      "mean_theta": 0.0361919067800045
+    },
+    {
+      "topic": 42,
+      "top_genes": [
+        "FGFBP2",
+        "MT1E",
+        "GZMB",
+        "ODAPH",
+        "MT2A",
+        "CHI3L1",
+        "ZFYVE28",
+        "IFIT1",
+        "ACSBG1",
+        "IFI27"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.04133644700050354
+    },
+    {
+      "topic": 43,
+      "top_genes": [
+        "DES",
+        "MYH11",
+        "APLN",
+        "ALKAL2",
+        "MANCR",
+        "TNFRSF14-AS1",
+        "CLIC5",
+        "MPZL2",
+        "ACE",
+        "MFSD14A"
+      ],
+      "most_active_in": "endothelial",
+      "mean_theta": 0.025121750310063362
+    },
+    {
+      "topic": 44,
+      "top_genes": [
+        "MUCL1",
+        "FEZF2",
+        "PPBP",
+        "C2CD4A",
+        "ICAM5",
+        "RBP4",
+        "FCGR3B",
+        "S100P",
+        "AC008610.1",
+        "MMP9"
+      ],
+      "most_active_in": "astrocyte",
+      "mean_theta": 0.019149834290146828
+    },
+    {
+      "topic": 45,
+      "top_genes": [
+        "REG1A",
+        "MORC1",
+        "LINC01546",
+        "GNG3",
+        "EIF4EBP3",
+        "SLC27A6",
+        "REG1B",
+        "ATP2B3",
+        "AC007402.1",
+        "LINC01170"
+      ],
+      "most_active_in": "MES_like_tumor/TAM1/microglia",
+      "mean_theta": 0.03503281623125076
+    },
+    {
+      "topic": 46,
+      "top_genes": [
+        "IL2RA",
+        "CEP55",
+        "TNFRSF4",
+        "HIST1H2BI",
+        "RNASE1",
+        "NEIL3",
+        "TPX2",
+        "CCNB1",
+        "IQGAP3",
+        "GAS2L3"
+      ],
+      "most_active_in": "TAM1/TAM2/microglia",
+      "mean_theta": 0.06963565200567245
+    },
+    {
+      "topic": 47,
+      "top_genes": [
+        "MGARP",
+        "JUN",
+        "LMF1-AS1",
+        "SLC6A13",
+        "SPON2",
+        "CTHRC1",
+        "AURKB",
+        "ZIC2",
+        "CYP4X1",
+        "UPB1"
+      ],
+      "most_active_in": "vascular",
+      "mean_theta": 0.02867666631937027
+    },
+    {
+      "topic": 48,
+      "top_genes": [
+        "CCL19",
+        "SFRP2",
+        "TRABD2B",
+        "SLPI",
+        "KLRD1",
+        "MYH11",
+        "TXK",
+        "LEPR",
+        "SLIT2",
+        "KRT81"
+      ],
+      "most_active_in": "oligodendrocytes",
+      "mean_theta": 0.036693960428237915
+    },
+    {
+      "topic": 49,
+      "top_genes": [
+        "MMP9",
+        "CU633967.1",
+        "BARX1",
+        "MT1H",
+        "IL2RA",
+        "COL4A1",
+        "SERPINA5",
+        "SEMA3G",
+        "C2CD4A",
+        "HTR1F"
+      ],
+      "most_active_in": "astrocyte",
+      "mean_theta": 0.016886616125702858
+    }
+  ]
+}

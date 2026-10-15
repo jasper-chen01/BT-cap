@@ -301,10 +301,13 @@ def _cmd_rank_genesets(args: argparse.Namespace) -> None:
         llm_keys=[k.strip() for k in args.llm_keys.split(",") if k.strip()],
         seeds=list(range(args.seeds)),
         n_splits=args.folds,
+        arm=args.arm,
+        embeddings=Path(args.embeddings) if args.embeddings else None,
+        knn_k=args.knn_k,
     )
     paths = write_gene_set_outputs(result, Path(args.out_dir), top=args.top)
     m = result.metrics
-    print(f"rows={m['n_rows']} genes={m['n_genes']} features={m['n_features']}")
+    print(f"arm={m['arm']} rows={m['n_rows']} genes={m['n_genes']} features={m['n_features']}")
     for name, s in m["sets"].items():
         row = s["row_level"]
         check = s["published_check"]
@@ -314,6 +317,33 @@ def _cmd_rank_genesets(args: argparse.Namespace) -> None:
             f"(prevalence {s['prevalence_rows']:.3f}) | published-33 median pct="
             f"{check.get('median_percentile_published', float('nan')):.2f}"
         )
+    for path in paths:
+        print(f"wrote {path}")
+
+
+def _cmd_compare_arms(args: argparse.Namespace) -> None:
+    from ephys_rag.lgbm_genesets import compare_arms, write_arm_outputs
+
+    results, checks = compare_arms(
+        arms=[a.strip() for a in args.arms.split(",") if a.strip()],
+        embeddings=Path(args.embeddings) if args.embeddings else None,
+        knn_k=args.knn_k,
+        top=args.top,
+        universe=args.universe,
+        sets=[s.strip() for s in args.sets.split(",") if s.strip()],
+        immune_human_only=args.immune_human_only,
+        seeds=list(range(args.seeds)),
+        n_splits=args.folds,
+    )
+    paths = write_arm_outputs(results, checks, Path(args.out_dir), top=args.top)
+    for arm, by_set in checks.items():
+        for name, c in by_set.items():
+            print(
+                f"{arm:13s} {name:15s} AUROC={c['auroc_rows']:.3f} AUPRC={c['auprc_rows']:.3f} "
+                f"housekeeping@{args.top}={c[f'housekeeping_top{args.top}']} "
+                f"label@{args.top}={c[f'label_set_top{args.top}']} "
+                f"published33 median pct={c['published_median_percentile']:.2f}"
+            )
     for path in paths:
         print(f"wrote {path}")
 
@@ -385,11 +415,30 @@ def build_parser() -> argparse.ArgumentParser:
     gs.add_argument("--seeds", type=int, default=5)
     gs.add_argument("--folds", type=int, default=5)
     gs.add_argument("--top", type=int, default=25)
+    gs.add_argument("--arm", choices=["tables", "tables_scetm", "scetm_only"], default="tables")
+    gs.add_argument("--embeddings", help="scETM gene embedding CSV (gene, emb_00..); default knowledge/gene_embeddings")
+    gs.add_argument("--knn-k", type=int, default=20)
     gs.add_argument(
         "--out-dir",
         default=str(Path(__file__).resolve().parents[3] / "turnin" / "lgbm_genesets"),
     )
     gs.set_defaults(func=_cmd_rank_genesets)
+
+    arms_p = sub.add_parser("compare-arms", help="Week 5: tables vs tables+scETM vs scETM-only, with checks")
+    arms_p.add_argument("--arms", default="tables,tables_scetm,scetm_only")
+    arms_p.add_argument("--embeddings", help="scETM gene embedding CSV (gene, emb_00..); default knowledge/gene_embeddings")
+    arms_p.add_argument("--knn-k", type=int, default=20)
+    arms_p.add_argument("--universe", choices=["cellchat", "deg"], default="deg")
+    arms_p.add_argument("--sets", default="tumor_synaptic,immune_synapse")
+    arms_p.add_argument("--immune-human-only", action="store_true")
+    arms_p.add_argument("--seeds", type=int, default=5)
+    arms_p.add_argument("--folds", type=int, default=5)
+    arms_p.add_argument("--top", type=int, default=100, help="Top-N genes for the housekeeping / label checks")
+    arms_p.add_argument(
+        "--out-dir",
+        default=str(Path(__file__).resolve().parents[3] / "turnin" / "lgbm_scetm"),
+    )
+    arms_p.set_defaults(func=_cmd_compare_arms)
     return parser
 
 
