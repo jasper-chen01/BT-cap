@@ -4,6 +4,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
+import pandas as pd
+
 from ephys_rag.config import (
     ANNOTATION_CELLS_CSV,
     ANNOTATION_COUNTS_CSV,
@@ -11,6 +13,7 @@ from ephys_rag.config import (
     CELLCHAT_CSV,
     DEG_IDH_CSV,
     LOW_N_CELLS,
+    NOMINATE_SCORES_CSV,
 )
 from ephys_rag.contrasts import exclusive_pathways, pathway_contrasts, summarize_dataset
 from ephys_rag.ingest import (
@@ -43,6 +46,34 @@ def _match_compartment(value: str, query: str | None) -> bool:
     return value.lower() == query.lower()
 
 
+def _top_feature_names(value: object, limit: int = 3) -> list[str]:
+    names = []
+    for part in str(value or "").split(";"):
+        name = part.strip().split("=", 1)[0].strip()
+        if name and name.lower() != "nan":
+            names.append(name)
+    return names[:limit]
+
+
+def _feature_family(features: list[str]) -> str:
+    families = {"scETM" if name.startswith(("emb_", "knn_")) else "tables" for name in features}
+    if len(families) > 1:
+        return "mixed"
+    return next(iter(families), "none")
+
+
+def _optional_number(value: object, *, integer: bool = False):
+    if pd.isna(value):
+        return None
+    return int(value) if integer else round(float(value), 6)
+
+
+def _optional_text(value: object) -> str | None:
+    if value is None or pd.isna(value) or not str(value).strip():
+        return None
+    return str(value)
+
+
 @dataclass
 class ToolRegistry:
     """Look up rows. Do not paste whole CSVs into a prompt."""
@@ -50,6 +81,105 @@ class ToolRegistry:
     interactions: list[Interaction] = field(default_factory=load_interactions)
     degs_idh: list[DegRecord] = field(default_factory=load_degs_idh)
     degs_pooled: list[DegRecord] = field(default_factory=load_degs_pooled)
+    nominee_scores: pd.DataFrame | None = field(default=None, repr=False)
+
+    def _prepared_nominee_scores(self) -> pd.DataFrame:
+        if self.nominee_scores is None:
+            if not NOMINATE_SCORES_CSV.exists():
+                raise FileNotFoundError(
+                    f"Missing ranker scores: {NOMINATE_SCORES_CSV}. "
+                    "Run rank-genesets with --arm tables_scetm first."
+                )
+            self.nominee_scores = pd.read_csv(NOMINATE_SCORES_CSV)
+        frame = self.nominee_scores
+        for program in ("tumor_synaptic", "immune_synapse"):
+            rank_col = f"{program.split('_')[0]}_rank_in_context"
+            score_col = f"p_{program}"
+            if rank_col not in frame:
+                frame[rank_col] = frame.groupby(["celltype_id", "IDH_status"])[score_col].rank(
+                    method="min", ascending=False, na_option="keep"
+                )
+        return frame
+
+    def nominate_lookup(
+        self,
+        *,
+        gene: str | None = None,
+        celltype: str | None = None,
+        idh: str | None = None,
+        order_by: str = "tumor",
+        exclude_syngo: bool = False,
+        limit: int = 15,
+    ) -> ToolResult:
+        """Look up held-out tables+scETM scores and evidence for gene nomination."""
+        if order_by not in {"tumor", "immune"}:
+            raise ValueError("order_by must be 'tumor' or 'immune'")
+        frame = self._prepared_nominee_scores()
+        hits = frame
+        if gene:
+            hits = hits[hits["gene"].str.upper() == gene.upper()]
+        if celltype:
+            hits = hits[hits["celltype_id"].map(lambda value: _match_cell(str(value), celltype))]
+        idh_norm = normalize_idh(idh)
+        if idh_norm:
+            hits = hits[hits["IDH_status"] == idh_norm]
+        if exclude_syngo:
+            hits = hits[hits["in_tumor_synaptic"].fillna(0).astype(int) == 0]
+
+        score_col = f"p_{order_by}_synaptic" if order_by == "tumor" else "p_immune_synapse"
+        if gene is None:
+            hits = hits.dropna(subset=[score_col])
+        hits = hits.sort_values(score_col, ascending=False, na_position="last")
+
+        rows = []
+        for rec in hits.head(limit).to_dict(orient="records"):
+            tumor_features = _top_feature_names(rec.get("why_tumor_synaptic"))
+            immune_features = _top_feature_names(rec.get("why_immune_synapse"))
+            rows.append(
+                {
+                    "gene": rec["gene"],
+                    "celltype_id": rec["celltype_id"],
+                    "IDH_status": rec["IDH_status"],
+                    "p_tumor_synaptic": _optional_number(rec.get("p_tumor_synaptic")),
+                    "p_immune_synapse": _optional_number(rec.get("p_immune_synapse")),
+                    "tumor_rank_in_context": _optional_number(
+                        rec.get("tumor_rank_in_context"), integer=True
+                    ),
+                    "immune_rank_in_context": _optional_number(
+                        rec.get("immune_rank_in_context"), integer=True
+                    ),
+                    "top3_tumor_features": tumor_features,
+                    "top3_immune_features": immune_features,
+                    "tumor_feature_family": _feature_family(tumor_features),
+                    "immune_feature_family": _feature_family(immune_features),
+                    "in_cellchat": bool(float(rec.get("cc_edges", 0) or 0) > 0),
+                    "cc_edges": _optional_number(rec.get("cc_edges", 0), integer=True),
+                    "deg_log2fc": _optional_number(rec.get("deg_log2fc")),
+                    "min_n": _optional_number(rec.get("ctx_min_n"), integer=True),
+                    "passes_three_table": bool(int(rec.get("rule_pass", 0) or 0)),
+                    "in_syngo": bool(int(rec.get("in_tumor_synaptic", 0) or 0)),
+                    "in_go_0001772": bool(int(rec.get("in_immune_synapse", 0) or 0)),
+                    "tumor_scoring_folds": _optional_text(rec.get("folds_tumor_synaptic")),
+                    "immune_scoring_folds": _optional_text(rec.get("folds_immune_synapse")),
+                }
+            )
+        return ToolResult(
+            tool="nominate_lookup",
+            source_file=str(NOMINATE_SCORES_CSV.name),
+            filters={
+                "gene": gene,
+                "celltype": celltype,
+                "idh": idh_norm,
+                "order_by": order_by,
+                "exclude_syngo": exclude_syngo or None,
+            },
+            n_hits=len(hits),
+            rows=rows,
+            note=(
+                "Probabilities are held-out tables+scETM scores averaged across seeds; scoring_folds "
+                "lists the held-out fold for each seed. Top features come from the full explanation model."
+            ),
+        )
 
     def cellchat_lookup(
         self,
@@ -530,6 +660,9 @@ def infer_query_slots(question: str) -> dict:
     elif "mes" in lowered:
         slots["celltype"] = "MES_like"
         slots["compartment"] = "tumor"
+    elif any(term in lowered for term in ("opc-like", "opc_like", "opc like")):
+        slots["celltype"] = "OPC_GABA_like_tumor"
+        slots["compartment"] = "tumor"
     elif "opc" in lowered:
         slots["celltype"] = "OPC_GABA"
         slots["compartment"] = "tumor"
@@ -569,6 +702,33 @@ def dispatch_tools(question: str, registry: Optional[ToolRegistry] = None) -> li
         )
     )
     both_idh = "idh-mutant" in lowered and ("idh-wt" in lowered or "idh_wt" in lowered or "idh-wild" in lowered)
+    wants_nominate = any(
+        term in lowered
+        for term in (
+            "score",
+            "rank",
+            "candidate",
+            "nominate",
+            "three-table",
+            "three table",
+            "cell-count check",
+        )
+    )
+
+    if wants_nominate:
+        order_by = "immune" if "immune" in lowered else "tumor"
+        exclude_syngo = any(
+            term in lowered for term in ("not on syngo", "not in syngo", "outside syngo")
+        )
+        traces.append(
+            tools.nominate_lookup(
+                gene=slots["genes"][0] if slots["genes"] else None,
+                celltype=slots["celltype"],
+                idh=slots["idh"],
+                order_by=order_by,
+                exclude_syngo=exclude_syngo,
+            )
+        )
 
     if "neuron" in lowered:
         traces.append(tools.annotation_lookup(ask_neurons=True))

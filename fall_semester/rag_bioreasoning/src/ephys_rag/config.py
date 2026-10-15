@@ -51,6 +51,13 @@ DEG_POOLED_CSV = (
 )
 DEG_IDH_SUMMARY_CSV = DATA_DIR / "within_cluster_ephys_DEGs_by_IDH" / "DEG_summary_by_IDH_and_cluster.csv"
 DEG_POOLED_SUMMARY_CSV = DATA_DIR / "within_cluster_ephys_DEGs" / "DEG_summary_by_cluster.csv"
+NOMINATE_SCORES_CSV = (
+    ROOT.parent
+    / "turnin"
+    / "lgbm_scetm"
+    / "tables_scetm"
+    / "genesets_scores.csv"
+)
 
 DEFAULT_TOP_K = 10
 LOW_N_CELLS = 50

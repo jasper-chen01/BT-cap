@@ -171,9 +171,21 @@ def rank_gene_sets(
                 values = neighbours.feature(row_genes, genes, set(row_genes[train_idx]))
                 return pd.DataFrame({knn_col: values}, index=index)
 
-        score, sd = oof_scores(X, y, row_genes, seeds, n_splits, fold_features=fold_features)
+        score, sd, fold_ids = oof_scores(
+            X,
+            y,
+            row_genes,
+            seeds,
+            n_splits,
+            fold_features=fold_features,
+            return_folds=True,
+        )
         frame.loc[mask, score_col] = score
         frame.loc[mask, f"{score_col}_sd"] = sd
+        frame.loc[mask, f"folds_{name}"] = [
+            ";".join(f"seed{seed}:fold{fold_ids[i, row]}" for i, seed in enumerate(seeds))
+            for row in range(len(sub))
+        ]
         if emb is not None:
             # Explanations come from a model fit on every gene; its knn feature uses all labelled
             # genes as neighbours (self still excluded). Scores above never see this column.
@@ -244,7 +256,7 @@ def write_gene_set_outputs(result: GeneSetResult, out_dir: Path, top: int = 25) 
 
     keep = KEY + ["compartment", "in_published_33", "published_tier", "novel", "housekeeping"]
     for name in sets:
-        keep += [f"in_{name}", f"p_{name}", f"p_{name}_sd"]
+        keep += [f"in_{name}", f"p_{name}", f"p_{name}_sd", f"folds_{name}"]
     keep += SUMMARY_FEATURES + [c for c in KNN_FEATURE.values() if c in result.scores]
     keep += [f"why_{name}" for name in sets]
     result.scores[keep].to_csv(paths[0], index=False)

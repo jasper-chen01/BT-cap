@@ -113,3 +113,28 @@ These should fire `deg_lookup`, `count_lookup`, `annotation_lookup`, or `support
     - Must retrieve: NCAM1
 38. If a model claims T-cell Ephys_2 is the synaptic (NRXN/GRIA) program, what would refute it?
     - Must retrieve: T cell and AREG or EGF. Empty T-cell NRXN is allowed.
+
+---
+
+## Q39–Q44 — ranker tool (held-out tables + scETM scores)
+
+These should fire `nominate_lookup`. Scores are out-of-fold; feature explanations identify whether tables or scETM drove the score.
+
+39. What is NRXN1's tumor-synaptic score in IDH-mutant cycling tumor, and which feature drove it?
+    - Must retrieve: NRXN1, `p_tumor_synaptic`, a feature name, and scoring fold
+    - Tool: `nominate_lookup`
+40. Is HLA-DRA scored immune or synaptic in TAM/microglia?
+    - Must retrieve: HLA-DRA, `p_immune_synapse`, `p_tumor_synaptic`, and TAM/microglia
+    - Tool: `nominate_lookup`
+41. Which gene ranks highest for immune synapse in T cells?
+    - Must retrieve: the rank-1 gene, `p_immune_synapse`, and T cell
+    - Tool: `nominate_lookup`
+42. Name a gene that is not on SynGO but ranks as tumor-synaptic.
+    - Must retrieve: a gene, `in_syngo=False`, and `p_tumor_synaptic`
+    - Tool: `nominate_lookup`
+43. Where does GRIA2 rank in OPC-like tumor, and does its score come from tables or scETM features?
+    - Must retrieve: GRIA2, tumor rank, top features, and tables, scETM, or mixed feature family
+    - Tool: `nominate_lookup`
+44. Does NCL pass the CellChat + DEG + cell-count checks?
+    - Must retrieve: NCL, `passes_three_table`, `in_cellchat`, and `min_n`
+    - Tool: `nominate_lookup`

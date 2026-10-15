@@ -481,7 +481,8 @@ def oof_scores(
     seeds: Sequence[int],
     n_splits: int,
     fold_features: Callable[[np.ndarray], pd.DataFrame] | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+    return_folds: bool = False,
+) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Out-of-fold scores averaged over seeds.
 
     fold_features(train_idx) returns extra label-derived columns for every row, built from the
@@ -491,14 +492,19 @@ def oof_scores(
     from sklearn.model_selection import StratifiedGroupKFold
 
     scores = np.zeros((len(seeds), len(y)))
+    fold_ids = np.full((len(seeds), len(y)), -1, dtype=int)
     for i, seed in enumerate(seeds):
         cv = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=seed)
-        for train_idx, test_idx in cv.split(X, y, groups):
+        for fold_id, (train_idx, test_idx) in enumerate(cv.split(X, y, groups)):
             Xf = X if fold_features is None else pd.concat([X, fold_features(train_idx)], axis=1)
             model = lgb.LGBMClassifier(**_lgb_params(seed, _pos_weight(y[train_idx])))
             model.fit(Xf.iloc[train_idx], y[train_idx])
             scores[i, test_idx] = model.predict_proba(Xf.iloc[test_idx])[:, 1]
-    return scores.mean(axis=0), scores.std(axis=0)
+            fold_ids[i, test_idx] = fold_id
+    mean, sd = scores.mean(axis=0), scores.std(axis=0)
+    if return_folds:
+        return mean, sd, fold_ids
+    return mean, sd
 
 
 def fit_full(X: pd.DataFrame, y: np.ndarray, seeds: Sequence[int]) -> tuple[pd.DataFrame, np.ndarray]:

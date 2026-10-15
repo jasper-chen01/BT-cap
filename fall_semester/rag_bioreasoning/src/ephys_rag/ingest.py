@@ -22,13 +22,13 @@ from ephys_rag.schema import CountRow, DegRecord, Interaction, compartment_of, p
 
 
 def load_pathway_knowledge(path: Path = PATHWAY_BIOLOGY_YAML) -> dict:
-    with path.open() as handle:
+    with path.open(encoding="utf-8") as handle:
         payload = yaml.safe_load(handle) or {}
     return payload.get("pathways", {})
 
 
 def load_hypotheses(path: Path = HYPOTHESES_YAML) -> list[dict]:
-    with path.open() as handle:
+    with path.open(encoding="utf-8") as handle:
         payload = yaml.safe_load(handle) or {}
     return payload.get("hypotheses", [])
 
