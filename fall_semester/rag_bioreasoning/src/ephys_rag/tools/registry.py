@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Optional
 
 import pandas as pd
@@ -41,6 +42,20 @@ def _mentions_alias(text: str, aliases: tuple[str, ...]) -> bool:
         re.search(rf"(?<![A-Za-z0-9]){re.escape(alias)}(?![A-Za-z0-9])", text, re.I)
         for alias in aliases
     )
+
+
+@lru_cache(maxsize=1)
+def _known_hyphenated_gene_symbols() -> frozenset[str]:
+    """Return table-backed symbols whose hyphen is part of one gene name."""
+    symbols = {
+        gene.upper()
+        for row in load_interactions()
+        for gene in (row.ligand, row.receptor)
+        if "-" in gene
+    }
+    symbols.update(row.gene.upper() for row in load_degs_idh() if "-" in row.gene)
+    symbols.update(row.gene.upper() for row in load_degs_pooled() if "-" in row.gene)
+    return frozenset(symbols)
 
 
 def _match_cell(value: str, query: str | None) -> bool:
@@ -555,9 +570,16 @@ def infer_query_slots(question: str) -> dict:
         "pathway": None,
     }
 
-    pair = _PAIR_RE.search(text)
-    if pair and (pair.group(2) != "-" or _PAIR_CONTEXT_RE.search(text)):
+    for pair in _PAIR_RE.finditer(text):
+        separator = pair.group(2)
+        if separator == "-":
+            candidate = re.sub(r"\s+", "", pair.group(0)).upper()
+            if candidate in _known_hyphenated_gene_symbols():
+                continue
+            if not _PAIR_CONTEXT_RE.search(text):
+                continue
         slots["pair"] = (pair.group(1), pair.group(3))
+        break
 
     knowledge = load_pathway_knowledge()
     for name in sorted(knowledge, key=len, reverse=True):
@@ -640,7 +662,7 @@ def infer_query_slots(question: str) -> dict:
     elif re.search(r"ephys[_\s-]?1", lowered):
         slots["ephys"] = "Ephys_1"
 
-    if _mentions_alias(text, ("t cell", "t-cell", "tcell")):
+    if _mentions_alias(text, ("t cell", "t cells", "t-cell", "t-cells", "tcell", "tcells")):
         slots["celltype"] = "T cell"
         slots["compartment"] = "tcell"
     elif _mentions_alias(text, ("cycling",)):
