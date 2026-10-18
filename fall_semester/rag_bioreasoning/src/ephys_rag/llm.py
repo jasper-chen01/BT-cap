@@ -118,6 +118,10 @@ class LLMCallResult:
     error: str | None = None
 
 
+class ModelUnavailableError(RuntimeError):
+    """A configured model cannot run because its credentials are unavailable."""
+
+
 class MedGemmaClient:
     """Vertex dedicated-endpoint MedGemma via OpenAI-style chatCompletions rawPredict."""
 
@@ -131,23 +135,31 @@ class MedGemmaClient:
         self._creds = None
 
     def _credentials(self):
-        if self._creds is None:
-            from google.oauth2 import service_account
-            from google.auth.transport.requests import Request
+        from google.auth.exceptions import GoogleAuthError
+        from google.auth.transport.requests import Request
+        from google.oauth2 import service_account
 
-            path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
-            if not path:
-                raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS is not set")
-            creds = service_account.Credentials.from_service_account_file(
-                path,
-                scopes=["https://www.googleapis.com/auth/cloud-platform"],
-            )
-            creds.refresh(Request())
-            self._creds = creds
-        elif not self._creds.valid:
-            from google.auth.transport.requests import Request
-
-            self._creds.refresh(Request())
+        try:
+            if self._creds is None:
+                path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
+                if not path:
+                    raise ModelUnavailableError("GOOGLE_APPLICATION_CREDENTIALS is not set")
+                creds = service_account.Credentials.from_service_account_file(
+                    path,
+                    scopes=["https://www.googleapis.com/auth/cloud-platform"],
+                )
+                creds.refresh(Request())
+                self._creds = creds
+            elif not self._creds.valid:
+                self._creds.refresh(Request())
+        except (OSError, ValueError, GoogleAuthError) as error:
+            # Credential loaders may raise JSONDecodeError/ValueError; refresh
+            # raises GoogleAuthError subclasses. Keep classification here so
+            # application ValueErrors outside authentication still propagate.
+            raise ModelUnavailableError(
+                "MedGemma credentials unavailable; check GOOGLE_APPLICATION_CREDENTIALS "
+                "and service account access"
+            ) from error
         return self._creds
 
     def _url(self) -> str:

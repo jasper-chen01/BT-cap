@@ -1,5 +1,6 @@
 """HTTP contracts exercise real score filtering and grounded answer serialization."""
 import importlib
+import json
 import sys
 from types import ModuleType
 
@@ -210,6 +211,49 @@ def test_unavailable_model_returns_503(client, monkeypatch):
     response = client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "gemini"})
     assert response.status_code == 503
     assert "Gemini" in response.json()["detail"]
+
+
+@pytest.mark.parametrize("failure", ["malformed", "invalid_json", "refresh", "cached_refresh"])
+def test_medgemma_credential_failures_return_503(client, monkeypatch, failure):
+    from google.auth.exceptions import RefreshError
+    from google.oauth2 import service_account
+    from ephys_rag import llm
+
+    monkeypatch.setattr(llm, "medgemma_available", lambda: True)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "test-only-credential-path.json")
+    error = {"malformed": ValueError("invalid credential configuration"),
+             "invalid_json": json.JSONDecodeError("invalid credentials JSON", "{", 1),
+             "refresh": RefreshError("credential refresh rejected"),
+             "cached_refresh": RefreshError("expired credential refresh rejected")}[failure]
+
+    class Credentials:
+        valid = False
+
+        def refresh(self, request):
+            raise error
+
+    def load(*args, **kwargs):
+        if failure != "refresh":
+            raise error
+        return Credentials()
+
+    monkeypatch.setattr(service_account.Credentials, "from_service_account_file", load)
+    if failure == "cached_refresh":
+        provider = llm.MedGemmaClient()
+        provider._creds = Credentials()
+        monkeypatch.setattr(llm, "MedGemmaClient", lambda: provider)
+    response = client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "medgemma"})
+    assert response.status_code == 503
+    assert "MedGemma" in response.json()["detail"]
+
+
+def test_unrelated_provider_value_error_is_not_reported_as_unavailable(client, monkeypatch):
+    def broken_provider(*args, **kwargs):
+        raise ValueError("programmer error outside credential loading")
+
+    monkeypatch.setattr(service, "generate_answer", broken_provider)
+    with pytest.raises(ValueError, match="programmer error"):
+        client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "medgemma"})
 
 
 def test_main_registers_reasoning_and_genes_under_api(monkeypatch, client, tmp_path):
