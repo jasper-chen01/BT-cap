@@ -20,6 +20,7 @@ import {
 import Button from './ui/Button';
 import Card from './ui/Card';
 import ChatPage from './ChatPage';
+import GenesTab from './GenesTab';
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -927,10 +928,17 @@ const PortalPage = () => {
           >
             Electrophysiology
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('genes')}
+            className={`px-4 py-1.5 rounded-full text-sm transition ${activeTab === 'genes' ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+          >
+            Genes
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      {activeTab === 'genes' ? <GenesTab /> : <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-1 space-y-6">
           <Card
             className={`relative overflow-hidden transition-all duration-300 group ${
@@ -2238,6 +2246,7 @@ const PortalPage = () => {
         </div>
       </div>
 
+      }
       {!showChat && (
         <button
           type="button"
