@@ -106,6 +106,20 @@ def test_neighbors_use_only_embedding_columns_and_program_labels(store):
     assert len(store.neighbors("ALPHA", model="tumor_synaptic", k=1)) == 1
 
 
+@pytest.mark.parametrize("model,symbol", [
+    ("tumor_synaptic", "ABCC8"),
+    ("immune_synapse", "STX11"),
+])
+def test_neighbors_label_embedding_genes_absent_from_score_tables(store, model, symbol):
+    """Canonical positives retain neighbour labels outside the ranking universe."""
+    embeddings = pd.DataFrame({"gene": ["QUERY", symbol, "UNLABELED"],
+                               "emb_00": [1., 1., 0.], "emb_01": [0., 0., 1.]})
+    loaded = NominationStore(store.arm_scores, store.gene_ranks, embeddings)
+    assert symbol not in set(store.gene_ranks["gene"])
+    assert loaded.neighbors("QUERY", model=model, k=1) == [
+        {"gene": symbol, "similarity": 1., "in_label_set": True}]
+
+
 def test_unknown_gene_raises_lookup_error(store):
     with pytest.raises(KeyError):
         store.gene_rows("MISSING")

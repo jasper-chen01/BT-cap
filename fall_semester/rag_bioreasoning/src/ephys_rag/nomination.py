@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from ephys_rag import config
+from ephys_rag.gene_sets import load_gene_set
 from ephys_rag.schema import normalize_idh
 
 MODELS = ("tumor_synaptic", "immune_synapse")
@@ -60,6 +61,14 @@ class NominationStore:
                 labels = self._labels.setdefault(rec["gene"], {})
                 for name in ("in_tumor_synaptic", "in_immune_synapse", "in_published_33", "housekeeping"):
                     labels[name] = labels.get(name, False) or _flag(rec.get(name))
+        # Neighbours span the full embedding vocabulary, beyond the score-table
+        # universe. Load complete canonical labels once without changing saved
+        # score-row flags or the existing nomination tool's presentation.
+        self._neighbor_labels = {
+            model: {symbol.upper() for symbol in load_gene_set(model)}
+            | {gene for gene, labels in self._labels.items() if labels.get(f"in_{model}", False)}
+            for model in MODELS
+        }
         self._embedding_genes = np.array([], dtype=str)
         self._vectors = np.empty((0, 0))
         if embeddings is not None:
@@ -178,5 +187,5 @@ class NominationStore:
         candidates = [i for i in range(len(similarities)) if self._embedding_genes[i] != symbol]
         candidates.sort(key=lambda i: (-similarities[i], self._embedding_genes[i]))
         return [{"gene": str(self._embedding_genes[i]), "similarity": float(similarities[i]),
-                 "in_label_set": self._labels.get(str(self._embedding_genes[i]), {}).get(f"in_{model}", False)}
+                 "in_label_set": str(self._embedding_genes[i]) in self._neighbor_labels[model]}
                 for i in candidates[:k]]
