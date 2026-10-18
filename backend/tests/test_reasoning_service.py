@@ -146,6 +146,56 @@ def test_real_dispatcher_cannot_drop_explicit_targets(
     provider.assert_not_called()
 
 
+@pytest.fixture(scope="module")
+def production_engine():
+    return RAGEngine.from_disk()
+
+
+@pytest.mark.parametrize("question", [
+    "What is the signaling evidence for hepatocytes?",
+    "What is the signaling evidence in hepatocytes when compared with tumor cells?",
+    "What is the signaling evidence for the nonexistent signaling pathway in tumor cells?",
+])
+@pytest.mark.parametrize("model", ["none", "medgemma", "gemini"])
+def test_production_engine_retains_unknown_targets_anywhere(
+        production_engine, tmp_path, monkeypatch, question, model):
+    provider = Mock(return_value="ungrounded answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(production_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, model)
+    assert result["answer"] == "not in the tables"
+    provider.assert_not_called()
+
+
+@pytest.mark.parametrize("modifier", ["top", "every", "all", "which", "what"])
+def test_production_engine_preserves_broad_pathway_queries(
+        production_engine, tmp_path, monkeypatch, modifier):
+    provider = Mock(return_value="grounded broad answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(production_engine, service.PortalAnswerCache(tmp_path)).ask(
+        f"What is the {modifier} pathway in tumor cells?", "gemini")
+    assert result["answer"] == "grounded broad answer"
+    provider.assert_called_once()
+
+
+@pytest.mark.parametrize("question", ["List every pathway in tumor cells?",
+                                     "Show all pathways in T cells?",
+                                     "What is the top pathway in TAM cells?"])
+def test_production_engine_accepts_broad_queries_with_known_cell_aliases(
+        production_engine, tmp_path, monkeypatch, question):
+    monkeypatch.setattr(service, "generate_answer", lambda *args, **kwargs: "supported answer")
+    result = service.ReasoningService(production_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, "gemini")
+    assert result["answer"] == "supported answer"
+
+
+def test_target_intent_preserves_multiword_unknown_pathway(production_engine):
+    intent = service.extract_target_intent(
+        "What is the signaling evidence for the nonexistent signaling pathway in tumor cells?",
+        production_engine)
+    assert intent.unsupported == ("nonexistent signaling",)
+
+
 @pytest.mark.parametrize("question", ["What is the signaling evidence for NRXN1_NLGN1?",
                                      "What is the evidence for the EGF pathway in tumor cells?"])
 def test_real_dispatcher_preserves_supported_explicit_targets(

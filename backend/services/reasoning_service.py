@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -89,11 +90,102 @@ class PortalAnswerCache:
                 temporary.unlink(missing_ok=True)
 
 
-def _question_targets_supported(question: str, result: dict) -> bool:
-    """Keep explicit targets that the permissive dispatcher may broaden away."""
+def _target_name(value: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", value.casefold()))
+
+
+@dataclass(frozen=True)
+class TargetIntent:
+    pair: tuple[str, str] | None
+    pathways: tuple[str, ...]
+    unsupported: tuple[str, ...]
+
+
+def extract_target_intent(question: str, engine: RAGEngine | None = None) -> TargetIntent:
+    """Resolve bounded named phrases against table vocabulary and cell aliases.
+
+    Unknown targets stay explicit rather than disappearing into broad dispatch.
+    Quantifiers and ranking modifiers do not turn broad pathway requests into
+    requests for a pathway literally named 'top' or 'every'.
+    """
     slots = infer_query_slots(question)
-    if slots["pair"]:
-        ligand, receptor = slots["pair"]
+    interactions = getattr(engine, "interactions", [])
+    if not isinstance(interactions, (list, tuple)):
+        interactions = []
+    pathways = {_target_name(row.pathway): row.pathway for row in interactions}
+    if slots["pathway"]:
+        pathways.setdefault(_target_name(slots["pathway"]), slots["pathway"])
+    cells = {_target_name(value) for row in interactions
+             for value in (row.source_cell, row.target_cell,
+                           row.source_compartment, row.target_compartment)}
+    # Aliases describe the compartments actually represented by the tools.
+    aliases = {"tumor": {"tumor", "tumour", "glioma", "tumor cell", "tumor cells"},
+               "tcell": {"t", "t cell", "t cells", "tcell", "tcells"},
+               "myeloid": {"tam", "tams", "myeloid", "microglia", "macrophage", "macrophages"}}
+    for compartment, names in aliases.items():
+        if compartment in cells:
+            cells.update(names)
+    # Keep exact table identities usable with common singular/plural wording.
+    cells.update(name.removesuffix("s") for name in tuple(cells))
+
+    broad = {"top", "every", "all", "which", "what", "how", "any", "each", "some", "many",
+             "the", "a", "an", "this", "that", "these", "those", "same", "other",
+             "signaling", "signalling", "exclusive", "dominant", "highest", "lowest",
+             "ranked", "major", "immune", "neuronal", "sender", "senders", "sent"}
+    boundaries = {"for", "of", "in", "on", "among", "within", "from", "with", "to",
+                  "is", "are", "does", "do", "has", "have", "the", "a", "an", "and",
+                  "list", "show", "describe", "name", "identify", "compare"}
+    words = re.findall(r"[\w-]+", question.casefold())
+
+    def preceding(index: int) -> list[str]:
+        phrase = words[max(0, index - 4):index]
+        cuts = [i for i, word in enumerate(phrase) if word in boundaries]
+        return phrase[cuts[-1] + 1:] if cuts else phrase
+
+    requested, unsupported = set(), set()
+    for index, word in enumerate(words):
+        if word in {"pathway", "pathways"}:
+            phrase = preceding(index)
+            if words[index + 1:index + 2] in (["called"], ["named"]):
+                phrase = []
+                for token in words[index + 2:index + 6]:
+                    if token in boundaries:
+                        break
+                    phrase.append(token)
+            name = _target_name(" ".join(phrase))
+            if not name:
+                continue
+            if name in pathways:
+                requested.add(pathways[name])
+                continue
+            # 'EGF signaling pathway' retains EGF; 'nonexistent signaling'
+            # retains the complete unknown name instead of dropping modifiers.
+            remainder = " ".join(token for token in name.split() if token not in broad)
+            if remainder in pathways:
+                requested.add(pathways[remainder])
+            elif remainder and remainder not in cells:
+                unsupported.add(name)
+        if re.fullmatch(r"[a-z-]+(?:cytes?|blasts?|phages?)", word):
+            name = _target_name(word)
+            if name not in cells and name.removesuffix("s") not in cells:
+                unsupported.add(name)
+        if word in {"cell", "cells"}:
+            phrase = preceding(index)
+            name = _target_name(" ".join(phrase))
+            remainder = " ".join(token for token in name.split() if token not in broad)
+            if (remainder and not any(token.isdigit() for token in phrase)
+                    and remainder not in cells and f"{remainder} cell" not in cells):
+                unsupported.add(f"{remainder} cells")
+    return TargetIntent(slots["pair"], tuple(sorted(requested)), tuple(sorted(unsupported)))
+
+
+def _question_targets_supported(question: str, result: dict,
+                                engine: RAGEngine | None = None) -> bool:
+    intent = extract_target_intent(question, engine)
+    if intent.unsupported:
+        return False
+    if intent.pair:
+        ligand, receptor = intent.pair
         exact = [trace for trace in result["traces"]
                  if trace.filters.get("ligand") == ligand
                  and trace.filters.get("receptor") == receptor]
@@ -101,43 +193,16 @@ def _question_targets_supported(question: str, result: dict) -> bool:
         if not any(trace.rows for trace in exact):
             return False
 
-    named_pathway = re.search(
-        r"\b(?:([\w-]+)\s+pathway|pathway\s+(?:called|named)\s+([\w-]+))\b",
-        question, re.IGNORECASE)
-    if named_pathway:
-        name = next(value for value in named_pathway.groups() if value).casefold()
-        descriptive = {"signaling", "signalling", "exclusive", "dominant", "same", "other",
-                       "the", "a", "an", "which", "what", "this", "that", "any", "each",
-                       "tumor", "tumour", "myeloid", "t-cell", "immune", "neuronal"}
-        if name not in descriptive and not name.endswith(("-sender", "-sent")):
-            matching = [trace for trace in result["traces"]
-                        if str(trace.filters.get("pathway", "")).casefold() == name]
-            if not any(trace.rows for trace in matching):
-                return False
-
-    # Unknown cell identities otherwise become an unfiltered CellChat lookup.
-    # Resolve simple explicit location phrases against structured cell fields,
-    # never against generic document titles or other free text.
-    location = re.search(
-        r"\b(?:in|among|within)\s+(?:the\s+)?([\w-]+(?:\s+[\w-]+){0,3}?)(?:\s+cells?)?\s*[?.!]*$",
-        question, re.IGNORECASE)
-    if location and not slots["celltype"] and not slots["compartment"]:
-        cell = location.group(1).casefold()
-        if cell not in {"dataset", "data", "table", "tables", "export", "neurons",
-                        "this dataset", "this data", "this table", "these tables", "this export"}:
-            fields = {"celltype", "celltype_id", "source_cell", "target_cell", "cell", "group",
-                      "source", "target", "source_label", "target_label"}
-            rows = [row for trace in result["traces"] for row in trace.rows]
-            rows.extend(hit.document.metadata for hit in result["hits"])
-            normalize = lambda value: re.sub(r"[^a-z0-9]", "", str(value).casefold())
-            if not any(normalize(cell) in normalize(value) for row in rows
-                       for key, value in row.items() if key in fields):
-                return False
+    for name in intent.pathways:
+        matching = [trace for trace in result["traces"]
+                    if _target_name(str(trace.filters.get("pathway", ""))) == _target_name(name)]
+        if not any(trace.rows for trace in matching):
+            return False
     return True
 
 
-def _has_evidence(result: dict, question: str = "") -> bool:
-    if question and not _question_targets_supported(question, result):
+def _has_evidence(result: dict, question: str = "", engine: RAGEngine | None = None) -> bool:
+    if question and not _question_targets_supported(question, result, engine):
         return False
     # Dispatched filters identify the requested biological target. Prefer the
     # most specific lookup over broad dataset summaries and lexical retrieval:
@@ -169,7 +234,7 @@ class ReasoningService:
                       "source_file": hit.document.metadata.get("source_file", "")}
                      for hit in grounded["hits"]],
         }
-        if not _has_evidence(grounded, question):
+        if not _has_evidence(grounded, question, engine):
             response["answer"] = "not in the tables"
         elif model != "none":
             context = grounded["context"]
@@ -204,7 +269,7 @@ def import_week2_cache(source_dir: Path, cache: PortalAnswerCache, engine: RAGEn
                 or not isinstance(answer, str) or not answer.strip()):
             continue
         grounded = engine.ask(question, use_llm=False)
-        if not _has_evidence(grounded, question):
+        if not _has_evidence(grounded, question, engine):
             continue
         key = cache.make_key(question, "medgemma", grounded["context"])
         if cache.get(key) is not None:
