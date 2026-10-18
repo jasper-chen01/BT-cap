@@ -13,7 +13,7 @@ load_dotenv()
 
 
 def resolve_data_dir() -> Path:
-    env = os.getenv("DATA_DIR", "").strip()
+    env = os.getenv("EPHYS_RAG_DATA_DIR", "").strip() or os.getenv("DATA_DIR", "").strip()
     if env:
         return Path(env).expanduser().resolve()
     sibling = ROOT.parent / "data"
@@ -24,7 +24,7 @@ def resolve_data_dir() -> Path:
         return local
     raise FileNotFoundError(
         "Could not find the fall_semester data drop. "
-        "Set DATA_DIR to the folder that contains cellchat_ephys_plus_celltype/."
+        "Set EPHYS_RAG_DATA_DIR (or DATA_DIR) to the folder that contains cellchat_ephys_plus_celltype/."
     )
 
 
@@ -51,12 +51,28 @@ DEG_POOLED_CSV = (
 )
 DEG_IDH_SUMMARY_CSV = DATA_DIR / "within_cluster_ephys_DEGs_by_IDH" / "DEG_summary_by_IDH_and_cluster.csv"
 DEG_POOLED_SUMMARY_CSV = DATA_DIR / "within_cluster_ephys_DEGs" / "DEG_summary_by_cluster.csv"
-NOMINATE_SCORES_CSV = (
-    ROOT.parent
-    / "turnin"
-    / "lgbm_scetm"
-    / "tables_scetm"
-    / "genesets_scores.csv"
+
+
+def configured_path(name: str, default: Path) -> Path:
+    value = os.getenv(name, "").strip()
+    return Path(value).expanduser().resolve() if value else default
+
+
+# Preserve repository defaults for CLI users without a runtime data override.
+_RUNTIME_DATA = os.getenv("EPHYS_RAG_DATA_DIR", "").strip() or os.getenv("DATA_DIR", "").strip()
+RANKER_DIR = configured_path(
+    "RANKER_DIR", DATA_DIR / "ranker" if _RUNTIME_DATA else ROOT.parent / "turnin/lgbm_scetm"
+)
+ARMS_GENE_RANKS_CSV = configured_path("ARMS_GENE_RANKS_CSV", RANKER_DIR / "arms_gene_ranks.csv")
+ARM_SCORE_FILES = {
+    arm: configured_path(f"{arm.upper()}_SCORES_CSV", RANKER_DIR / arm / "genesets_scores.csv")
+    for arm in ("tables", "tables_scetm", "scetm_only")
+}
+NOMINATE_SCORES_CSV = ARM_SCORE_FILES["tables_scetm"]
+SCETM_GENE_EMBEDDINGS_CSV = configured_path(
+    "SCETM_GENE_EMBEDDINGS_CSV",
+    (DATA_DIR / "gene_embeddings" if _RUNTIME_DATA else KNOWLEDGE_DIR / "gene_embeddings")
+    / "scetm_gene_embeddings_d32.csv",
 )
 
 DEFAULT_TOP_K = 10

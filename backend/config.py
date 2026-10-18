@@ -39,6 +39,14 @@ class Settings:
     
     # Data paths
     DATA_DIR: Path = BASE_DIR / "data"
+    EPHYS_RAG_DATA_DIR: Path = Path(
+        os.getenv("EPHYS_RAG_DATA_DIR", "").strip()
+        or os.getenv("DATA_DIR", "").strip()
+        or str(DATA_DIR / "reasoning")
+    ).expanduser().resolve()
+    EPHYS_RAG_RUNS_DIR: Path = Path(
+        os.getenv("EPHYS_RAG_RUNS_DIR", "").strip() or str(EPHYS_RAG_DATA_DIR / "runs" / "portal")
+    ).expanduser().resolve()
     REFERENCE_EMBEDDINGS_DIR: Path = DATA_DIR / "embeddings"
     ANNOTATIONS_DIR: Path = DATA_DIR / "annotations"
     REFERENCE_DATA_PATH: Path = DATA_DIR / "adata.h5ad"
