@@ -243,11 +243,24 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
 
 
 def _is_negative_control_question(question: str) -> bool:
-    return bool(re.search(
+    lowered = question.casefold()
+    pattern = re.compile(
         r"\b(?:refut\w*|falsif\w*|disprov\w*|counter[-\s]?evidence|"
-        r"counterexamples?|contradict\w*|negative controls?|rule\w*\s+out)\b",
-        question.casefold(),
-    ))
+        r"counterexamples?|contradict\w*|negative controls?|rule\w*\s+out)\b"
+    )
+    for match in pattern.finditer(lowered):
+        preceding = re.findall(r"[a-z]+", lowered[:match.start()])[-4:]
+        if any(word in {"not", "never", "without", "avoid", "avoiding", "than"}
+               for word in preceding):
+            continue
+        return True
+    return False
+
+
+def _row_scope_text(row: dict) -> str:
+    return _target_name(" ".join(str(row.get(field, "")) for field in (
+        "source", "target", "celltype", "celltype_id", "source_cell", "target_cell", "cell"
+    )))
 
 
 def _scope_matches_negative_evidence(
@@ -258,25 +271,40 @@ def _scope_matches_negative_evidence(
     target_compartment = _target_name(str(target.filters.get("compartment") or ""))
     evidence_compartment = _target_name(str(trace.filters.get("compartment") or ""))
     target_ephys = str(target.filters.get("ephys") or "")
+    target_celltype = _target_name(str(target.filters.get("celltype") or ""))
+
+    if not target_celltype:
+        return False
+    identity_pattern = re.compile(rf"\b{re.escape(target_celltype)}\b")
+    identity_rows = [row for row in trace.rows if identity_pattern.search(_row_scope_text(row))]
+    if not identity_rows:
+        return False
+
+    if target_ephys:
+        normalized_ephys = _target_name(target_ephys)
+        filter_matches = trace.filters.get("ephys") == target_ephys
+        row_matches = any(
+            re.search(rf"\b{re.escape(normalized_ephys)}\b", _row_scope_text(row))
+            for row in identity_rows
+        )
+        if not filter_matches and not row_matches:
+            return False
 
     if trace.tool == "pathway_contrast_lookup":
         if not target_compartment or evidence_compartment != target_compartment:
             return False
-        return not target_ephys or any(target_ephys in row for row in trace.rows)
+        return True
 
     if trace.tool not in {"pathway_filter", "exclusive_pathway_lookup"}:
         return False
     if not target_compartment or evidence_compartment != target_compartment:
         return False
-    if target_ephys and trace.filters.get("ephys") != target_ephys:
-        return False
-
     evidence = _target_name(json.dumps(
         {"filters": trace.filters, "rows": trace.rows}, ensure_ascii=False))
     family_relevant = bool(re.search(rf"\b{re.escape(_target_name(family))}[a-z0-9]*\b", evidence))
     program_relevant = (
         bool(re.search(r"\bsynap\w*\b", question, flags=re.I))
-        and "neuron tumor" in evidence
+        and ("neuron tumor" in evidence or "immune synapse" in evidence)
     ) or (
         "immune" in question.casefold() and "immune synapse" in evidence
     )

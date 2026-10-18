@@ -310,6 +310,66 @@ def test_unrelated_real_pathway_rows_cannot_ground_an_empty_family_refutation(
 
 
 @pytest.mark.parametrize("question", [
+    ("A model claims T-cell Ephys_2 has a GRIA synaptic program without refuting it. "
+     "What evidence supports this claim?"),
+    ("Do not refute it; what contrast evidence supports the claim that T-cell Ephys_2 "
+     "has a GRIA synaptic program?"),
+])
+def test_negated_refutation_language_cannot_enable_negative_family_evidence(
+        production_engine, tmp_path, monkeypatch, question):
+    raw = production_engine.ask(question, use_llm=False)
+    assert any(trace.filters.get("gene") == "GRIA" and not trace.rows
+               for trace in raw["traces"])
+    assert any(trace.rows for trace in raw["traces"]
+               if trace.tool in {"pathway_contrast_lookup", "pathway_filter"})
+    provider = Mock(side_effect=AssertionError("negated refutation must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+def test_real_ptn_rows_from_other_tumor_identities_cannot_ground_mes_like_gria(
+        production_engine, tmp_path, monkeypatch):
+    question = "What would refute a claim that MES-like Ephys_2 has a GRIA synaptic program?"
+    registry = production_engine.tools
+    traces = [
+        registry.cellchat_lookup(
+            gene="GRIA", celltype="MES_like", ephys="Ephys_2", compartment="tumor"),
+        registry.deg_lookup(gene="GRIA", celltype="MES_like"),
+        registry.pathway_filter(
+            pathway="PTN", compartment="tumor", ephys="Ephys_2", limit=20),
+    ]
+    assert not traces[0].rows and not traces[1].rows
+    assert traces[2].rows
+    assert all("MES" not in f"{row.get('source', '')} {row.get('target', '')}".upper()
+               for row in traces[2].rows)
+    context = format_traces(traces)
+    grounded = {
+        "answer": extractive_answer(question, context), "context": context,
+        "traces": traces, "hits": [],
+    }
+
+    class FixedTraceEngine(RAGEngine):
+        def ask(self, asked, *, use_llm):
+            assert asked == question and use_llm is False
+            return grounded
+
+    engine = FixedTraceEngine(
+        production_engine.interactions, production_engine.documents,
+        production_engine.retriever, production_engine.tools)
+    provider = Mock(side_effect=AssertionError("other tumor identities must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+@pytest.mark.parametrize("question", [
     "What is the signaling evidence for NRXN1 and NONEXISTENT99?",
     "What is the signaling evidence for the NRX gene?",
     "What is the signaling evidence for NRXN1_NLGN1 and MDK_NONEXISTENT99?",
