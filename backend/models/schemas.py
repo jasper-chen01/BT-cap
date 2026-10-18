@@ -1,9 +1,21 @@
 """
 Pydantic schemas for API requests and responses
 """
-from pydantic import BaseModel, validator
-from typing import List, Dict, Optional
+from pydantic import BaseModel, field_validator, validator
+from typing import List, Dict, Literal, Optional
 import numpy as np
+
+
+class ReasoningAskRequest(BaseModel):
+    question: str
+    model: Literal["none", "medgemma", "gemini"] = "none"
+
+    @field_validator("question")
+    @classmethod
+    def question_not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Question must not be blank")
+        return value
 
 
 class AnnotationRequest(BaseModel):
