@@ -89,6 +89,15 @@ class PortalAnswerCache:
 
 
 def _has_evidence(result: dict) -> bool:
+    # Dispatched filters identify the requested biological target. Prefer the
+    # most specific lookup over broad dataset summaries and lexical retrieval:
+    # matching "tumor" is not evidence for an absent named gene or pair.
+    for fields in (("gene", "ligand", "receptor", "pathway"),
+                   ("celltype", "sender", "receiver", "idh", "ephys")):
+        targeted = [trace for trace in result["traces"]
+                    if any(trace.filters.get(field) not in (None, "", []) for field in fields)]
+        if targeted:
+            return any(trace.rows for trace in targeted)
     return bool(result["hits"] or any(trace.rows for trace in result["traces"]))
 
 

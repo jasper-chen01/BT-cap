@@ -95,6 +95,27 @@ def test_empty_rows_and_hits_never_generate(tmp_path, model, monkeypatch):
     assert result["traces"][0]["n_hits"] == 0
 
 
+@pytest.mark.parametrize("model", ["none", "medgemma", "gemini"])
+@pytest.mark.parametrize("target_filter", [{"gene": "NONEXISTENT99"},
+                                          {"ligand": "MISSING", "receptor": "ABSENT"},
+                                          {"pathway": "Missing pathway"},
+                                          {"celltype": "Missing cell"}])
+def test_unrelated_hits_cannot_override_empty_target_lookup(
+        tmp_path, grounded, monkeypatch, model, target_filter):
+    provider = Mock(return_value="ungrounded answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+    engine = Mock()
+    engine.ask.return_value = {**grounded, "traces": [
+        ToolResult("lookup", "table.csv", target_filter, 0, []),
+        ToolResult("dataset_stats_lookup", "counts.csv", {}, 1, [{"n_cells": 999}])
+    ]}
+    result = service.ReasoningService(engine, service.PortalAnswerCache(tmp_path)).ask(
+        "What is the DEG evidence for NONEXISTENT99 in tumor cells?", model)
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
 def test_cache_atomic_write_and_interrupted_files_are_not_hits(tmp_path, monkeypatch):
     cache = service.PortalAnswerCache(tmp_path)
     key = cache.make_key("q", "gemini", "ctx")
