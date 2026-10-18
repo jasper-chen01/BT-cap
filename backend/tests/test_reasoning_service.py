@@ -167,7 +167,7 @@ def test_production_engine_retains_unknown_targets_anywhere(
     provider.assert_not_called()
 
 
-@pytest.mark.parametrize("modifier", ["top", "every", "all", "which", "what"])
+@pytest.mark.parametrize("modifier", ["top", "every", "all", "which", "what", "TOP", "STRONGEST"])
 def test_production_engine_preserves_broad_pathway_queries(
         production_engine, tmp_path, monkeypatch, modifier):
     provider = Mock(return_value="grounded broad answer")
@@ -194,6 +194,44 @@ def test_target_intent_preserves_multiword_unknown_pathway(production_engine):
         "What is the signaling evidence for the nonexistent signaling pathway in tumor cells?",
         production_engine)
     assert intent.unsupported == ("nonexistent signaling",)
+
+
+@pytest.mark.parametrize("question", [
+    "What is the signaling evidence for NRXN1 and NONEXISTENT99?",
+    "What is the signaling evidence for the NRX gene?",
+    "What is the signaling evidence for NRXN1_NLGN1 and MDK_NONEXISTENT99?",
+    "What is the evidence for pathway nonexistent in tumor cells?",
+    "What is the evidence for pathway EG in tumor cells?",
+    "What is the signaling evidence for micro cells?",
+    "What is the signaling evidence for oligodendroglia?",
+    "What is the signaling evidence for type 2 endothelial cells?",
+    "What is the signaling evidence in oligodendroglia compared with tumor cells?",
+])
+@pytest.mark.parametrize("model", ["medgemma", "gemini"])
+def test_production_engine_validates_every_explicit_target(
+        production_engine, tmp_path, monkeypatch, question, model):
+    provider = Mock(return_value="ungrounded answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(production_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, model)
+    assert result["answer"] == "not in the tables"
+    provider.assert_not_called()
+
+
+@pytest.mark.parametrize("question", [
+    "What is the signaling evidence in OPC-like cells?",
+    "What is the signaling evidence in MES-like cells?",
+    "What is the signaling evidence for EGF and MK pathways in tumor cells?",
+    "What are the top 3 pathways in tumor cells?",
+    "What is the strongest pathway in tumor cells?",
+])
+@pytest.mark.parametrize("model", ["medgemma", "gemini"])
+def test_production_engine_validates_supported_targets_directly(
+        production_engine, tmp_path, monkeypatch, question, model):
+    monkeypatch.setattr(service, "generate_answer", lambda *args, **kwargs: "supported answer")
+    result = service.ReasoningService(production_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, model)
+    assert result["answer"] == "supported answer"
 
 
 @pytest.mark.parametrize("question", ["What is the signaling evidence for NRXN1_NLGN1?",

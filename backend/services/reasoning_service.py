@@ -94,20 +94,39 @@ def _target_name(value: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", value.casefold()))
 
 
+@lru_cache(maxsize=1)
+def _router_cell_aliases() -> dict[str, str]:
+    aliases = {}
+    for alias in ("tumor", "tumour", "glioma", "T cell", "T cells", "T-cell", "T",
+                  "TAM", "TAM/microglia", "microglia", "myeloid", "OPC-like", "OPC",
+                  "MES-like", "cycling tumor"):
+        parsed = infer_query_slots(alias)
+        canonical = parsed["celltype"] or parsed["compartment"]
+        if canonical:
+            aliases[_target_name(alias)] = canonical
+    aliases["t"] = aliases.get("t cell", "T cell")
+    return aliases
+
+
+@lru_cache(maxsize=2048)
+def _gene_tokens(token: str) -> tuple[str, ...]:
+    # These are context labels in the shared schema, never gene symbols.
+    if re.fullmatch(r"IDH[-_](?:WT|MUTANT)", token):
+        return ()
+    return tuple(infer_query_slots(token)["genes"])
+
+
 @dataclass(frozen=True)
 class TargetIntent:
-    pair: tuple[str, str] | None
+    pairs: tuple[tuple[str, str], ...]
+    genes: tuple[str, ...]
     pathways: tuple[str, ...]
+    cells: tuple[str, ...]
     unsupported: tuple[str, ...]
 
 
 def extract_target_intent(question: str, engine: RAGEngine | None = None) -> TargetIntent:
-    """Resolve bounded named phrases against table vocabulary and cell aliases.
-
-    Unknown targets stay explicit rather than disappearing into broad dispatch.
-    Quantifiers and ranking modifiers do not turn broad pathway requests into
-    requests for a pathway literally named 'top' or 'every'.
-    """
+    """Extract every explicit target, retaining unknown names for exact lookup."""
     slots = infer_query_slots(question)
     interactions = getattr(engine, "interactions", [])
     if not isinstance(interactions, (list, tuple)):
@@ -115,23 +134,24 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
     pathways = {_target_name(row.pathway): row.pathway for row in interactions}
     if slots["pathway"]:
         pathways.setdefault(_target_name(slots["pathway"]), slots["pathway"])
-    cells = {_target_name(value) for row in interactions
-             for value in (row.source_cell, row.target_cell,
-                           row.source_compartment, row.target_compartment)}
-    # Aliases describe the compartments actually represented by the tools.
-    aliases = {"tumor": {"tumor", "tumour", "glioma", "tumor cell", "tumor cells"},
-               "tcell": {"t", "t cell", "t cells", "tcell", "tcells"},
-               "myeloid": {"tam", "tams", "myeloid", "microglia", "macrophage", "macrophages"}}
-    for compartment, names in aliases.items():
-        if compartment in cells:
-            cells.update(names)
-    # Keep exact table identities usable with common singular/plural wording.
-    cells.update(name.removesuffix("s") for name in tuple(cells))
+    cell_aliases = {_target_name(value): value for row in interactions
+                    for value in (row.source_cell, row.target_cell)}
+    if isinstance(engine, RAGEngine):
+        cell_aliases.update({_target_name(row["celltype_id"]): row["celltype_id"]
+                             for row in engine.tools.annotation_lookup().rows})
+    # Resolve language aliases with the router's own normalization, including
+    # OPC-like/MES-like rather than reproducing its biological mappings here.
+    cell_aliases.update(_router_cell_aliases())
+    for alias, canonical in tuple(cell_aliases.items()):
+        if alias.endswith(" tumor"):
+            cell_aliases.setdefault(alias.removesuffix(" tumor"), canonical)
+        cell_aliases.setdefault(alias.removesuffix("s"), canonical)
 
     broad = {"top", "every", "all", "which", "what", "how", "any", "each", "some", "many",
              "the", "a", "an", "this", "that", "these", "those", "same", "other",
              "signaling", "signalling", "exclusive", "dominant", "highest", "lowest",
-             "ranked", "major", "immune", "neuronal", "sender", "senders", "sent"}
+             "ranked", "major", "immune", "neuronal", "sender", "senders", "sent",
+             "strongest", "weakest", "probability", "only", "labeled", "labelled"}
     boundaries = {"for", "of", "in", "on", "among", "within", "from", "with", "to",
                   "is", "are", "does", "do", "has", "have", "the", "a", "an", "and",
                   "list", "show", "describe", "name", "identify", "compare"}
@@ -142,13 +162,40 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
         cuts = [i for i, word in enumerate(phrase) if word in boundaries]
         return phrase[cuts[-1] + 1:] if cuts else phrase
 
-    requested, unsupported = set(), set()
+    normalized = _target_name(question)
+    requested = {canonical for name, canonical in pathways.items()
+                 if re.search(rf"\b{re.escape(name)}\b", normalized)}
+    requested_cells = {canonical for alias, canonical in cell_aliases.items()
+                       if alias != "t" and re.search(rf"\b{re.escape(alias)}\b", normalized)}
+    unsupported = set()
+    # Enumerate all pairs and standalone genes; infer_query_slots itself keeps
+    # only the first pair/four genes. Remove pair spans before standalone scan.
+    pair_pattern = r"\b([A-Z][A-Z0-9-]+)(?:_|–|→|->)([A-Z][A-Z0-9-]+)\b"
+    pairs = {match.groups() for match in re.finditer(pair_pattern, question)
+             if match.group(1) not in {"IDH", "EPHYS"}}
+    standalone = re.sub(pair_pattern, " ", question)
+    # A table-backed pathway/family expression such as glutamate–GRIA is a
+    # receptor-family target, not a standalone gene literally named GRIA.
+    for match in re.finditer(r"\b([a-z][a-z-]*)[–-]([A-Z]+)\b", standalone):
+        pathway, family = match.groups()
+        canonical = pathways.get(_target_name(pathway))
+        if canonical and any(row.pathway == canonical and row.receptor.startswith(family)
+                             for row in interactions):
+            standalone = standalone.replace(match.group(), pathway)
+    genes = set()
+    for token in re.findall(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*\b", standalone):
+        if _target_name(token) in pathways or _target_name(token) in broad:
+            continue
+        genes.update(_gene_tokens(token))
     for index, word in enumerate(words):
         if word in {"pathway", "pathways"}:
             phrase = preceding(index)
-            if words[index + 1:index + 2] in (["called"], ["named"]):
+            following = words[index + 1:index + 2]
+            if following and (following[0] in {"called", "named"}
+                              or following[0] not in boundaries | broad):
                 phrase = []
-                for token in words[index + 2:index + 6]:
+                start = index + (2 if following[0] in {"called", "named"} else 1)
+                for token in words[start:start + 4]:
                     if token in boundaries:
                         break
                     phrase.append(token)
@@ -160,50 +207,82 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
                 continue
             # 'EGF signaling pathway' retains EGF; 'nonexistent signaling'
             # retains the complete unknown name instead of dropping modifiers.
-            remainder = " ".join(token for token in name.split() if token not in broad)
+            remainder = " ".join(token for token in name.split()
+                                 if token not in broad and not token.isdigit())
             if remainder in pathways:
                 requested.add(pathways[remainder])
-            elif remainder and remainder not in cells:
+            elif remainder and remainder not in cell_aliases:
+                # A phrase containing separately known pathway names is a
+                # multi-target query (e.g. EGF and MK), not one invented name.
+                known_words = {part for name in pathways for part in name.split()}
+                if all(token in known_words or token == "and" for token in remainder.split()):
+                    continue
+                requested.add(name)
                 unsupported.add(name)
-        if re.fullmatch(r"[a-z-]+(?:cytes?|blasts?|phages?)", word):
+        if re.fullmatch(r"[a-z-]+(?:cytes?|blasts?|phages?|glia)", word):
             name = _target_name(word)
-            if name not in cells and name.removesuffix("s") not in cells:
+            canonical = cell_aliases.get(name, cell_aliases.get(name.removesuffix("s")))
+            requested_cells.add(canonical or name)
+            if canonical is None:
                 unsupported.add(name)
         if word in {"cell", "cells"}:
             phrase = preceding(index)
             name = _target_name(" ".join(phrase))
             remainder = " ".join(token for token in name.split() if token not in broad)
-            if (remainder and not any(token.isdigit() for token in phrase)
-                    and remainder not in cells and f"{remainder} cell" not in cells):
-                unsupported.add(f"{remainder} cells")
-    return TargetIntent(slots["pair"], tuple(sorted(requested)), tuple(sorted(unsupported)))
+            # Pure counts are broad; numbers inside names ('type 2 endothelial')
+            # remain part of the explicit cell identity.
+            if remainder and not all(token.isdigit() for token in remainder.split()):
+                canonical = cell_aliases.get(remainder)
+                requested_cells.add(canonical or remainder)
+                if canonical is None:
+                    unsupported.add(f"{remainder} cells")
+    return TargetIntent(tuple(sorted(pairs)), tuple(sorted(genes)), tuple(sorted(requested)),
+                        tuple(sorted(requested_cells)), tuple(sorted(unsupported)))
 
 
 def _question_targets_supported(question: str, result: dict,
                                 engine: RAGEngine | None = None) -> bool:
     intent = extract_target_intent(question, engine)
-    if intent.unsupported:
-        return False
-    if intent.pair:
-        ligand, receptor = intent.pair
-        exact = [trace for trace in result["traces"]
-                 if trace.filters.get("ligand") == ligand
-                 and trace.filters.get("receptor") == receptor]
-        # Ligand-only CellChat evidence cannot establish the requested pair.
-        if not any(trace.rows for trace in exact):
-            return False
-
-    for name in intent.pathways:
-        matching = [trace for trace in result["traces"]
-                    if _target_name(str(trace.filters.get("pathway", ""))) == _target_name(name)]
-        if not any(trace.rows for trace in matching):
-            return False
-    return True
+    if isinstance(engine, RAGEngine):
+        registry = engine.tools
+        for ligand, receptor in intent.pairs:
+            if not registry.support_join(ligand=ligand, receptor=receptor).rows:
+                return False
+        for gene in intent.genes:
+            found = registry.cellchat_lookup(gene=gene).rows
+            found += registry.deg_lookup(gene=gene).rows
+            found += registry.deg_lookup(gene=gene, pooled=True).rows
+            # Tool lookups intentionally support gene families/prefixes. A
+            # standalone symbol must occur exactly, including complex members.
+            exact = any(gene == member for row in found
+                        for key in ("gene", "ligand", "receptor")
+                        for member in str(row.get(key, "")).upper().split("_"))
+            if not exact:
+                exact = any(row.get("gene") == gene
+                            for row in registry.nominate_lookup(gene=gene).rows)
+            if not exact:
+                return False
+        for name in intent.pathways:
+            if not any(_target_name(row["pathway"]) == _target_name(name)
+                       for row in registry.pathway_filter(pathway=name).rows):
+                return False
+        for cell in intent.cells:
+            if not (registry.cellchat_lookup(celltype=cell).rows
+                    or registry.annotation_lookup(celltype=cell).rows):
+                return False
+    # Unknown names cannot become valid merely because a permissive tool
+    # matched their substring (e.g. 'micro' in 'microglia').
+    return not intent.unsupported
 
 
 def _has_evidence(result: dict, question: str = "", engine: RAGEngine | None = None) -> bool:
     if question and not _question_targets_supported(question, result, engine):
         return False
+    if isinstance(engine, RAGEngine):
+        # The exact direct lookups above are authoritative. Requiring the
+        # dispatcher's partial filters again would reject supported targets it
+        # omitted or broad words it accidentally treated as gene symbols.
+        return bool(result["hits"] or any(trace.rows for trace in result["traces"]))
     # Dispatched filters identify the requested biological target. Prefer the
     # most specific lookup over broad dataset summaries and lexical retrieval:
     # matching "tumor" is not evidence for an absent named gene or pair.
