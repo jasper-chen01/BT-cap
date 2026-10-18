@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { createServer } from 'vite';
 import { getGene, getRankedGenes, getNeighbors, askReasoning, rowsToCsv, normalizeChatMessage } from './reasoningApi.js';
 
 test('API paths encode gene symbols and send endpoint filter defaults', async (t) => {
@@ -41,4 +45,27 @@ test('message normalization preserves supplied fields and trace arrays', () => {
   assert.deepEqual(message, { id: 7, role: 'assistant', content: 'Answer', traces });
   assert.equal(normalizeChatMessage({ content: 'Hello' }).role, 'assistant');
   assert.deepEqual(normalizeChatMessage({ content: 'Hello' }).traces, []);
+  assert.deepEqual(normalizeChatMessage({ role: 'user', content: 'Question', traces: null }).traces, []);
+});
+
+test('chat assistant messages show collapsed traces while ordinary and user messages do not', async () => {
+  const server = await createServer({ root: fileURLToPath(new URL('../../', import.meta.url)),
+    server: { middlewareMode: true }, appType: 'custom' });
+  try {
+    const { ChatMessage } = await server.ssrLoadModule('/src/components/ChatPage.jsx');
+    const traces = [{ tool: 'nominate_lookup', source_file: 'tables.csv', n_hits: 1,
+      filters: { gene: 'NRXN1' }, rows: [{ gene: 'NRXN1', score: null }], note: 'held-out' }];
+    const render = (message) => renderToStaticMarkup(React.createElement(ChatMessage, {
+      message: normalizeChatMessage(message),
+    }));
+    const assistant = render({ role: 'assistant', content: 'Grounded answer', traces });
+    assert.match(assistant, /Grounded answer/);
+    assert.match(assistant, /Tool traces \(1\)/);
+    assert.match(assistant, /nominate_lookup/);
+    assert.doesNotMatch(assistant, /<details[^>]*\bopen(?:=|\s|>)/);
+    assert.doesNotMatch(render({ role: 'assistant', content: 'Hello' }), /<details/);
+    assert.doesNotMatch(render({ role: 'user', content: 'Question', traces }), /<details/);
+  } finally {
+    await server.close();
+  }
 });
