@@ -59,7 +59,7 @@ def configured_path(name: str, default: Path) -> Path:
 
 
 # Preserve repository defaults for CLI users without a runtime data override.
-_RUNTIME_DATA = os.getenv("EPHYS_RAG_DATA_DIR", "").strip() or os.getenv("DATA_DIR", "").strip()
+_RUNTIME_DATA = os.getenv("EPHYS_RAG_DATA_DIR", "").strip()
 RANKER_DIR = configured_path(
     "RANKER_DIR", DATA_DIR / "ranker" if _RUNTIME_DATA else ROOT.parent / "turnin/lgbm_scetm"
 )

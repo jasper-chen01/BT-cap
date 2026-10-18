@@ -75,14 +75,33 @@ def test_config_prefers_ephys_rag_data_dir(tmp_path, monkeypatch, preferred):
         monkeypatch.delenv(name, raising=False)
     rag = load_module("fall_semester/rag_bioreasoning/src/ephys_rag/config.py")
     assert rag.DATA_DIR == selected
-    assert rag.RANKER_DIR == selected / "ranker"
-    assert rag.ARMS_GENE_RANKS_CSV == selected / "ranker/arms_gene_ranks.csv"
+    ranker = selected / "ranker" if preferred.strip() else ROOT / "fall_semester/turnin/lgbm_scetm"
+    assert rag.RANKER_DIR == ranker
+    assert rag.ARMS_GENE_RANKS_CSV == ranker / "arms_gene_ranks.csv"
     assert rag.ARM_SCORE_FILES == {
-        arm: selected / f"ranker/{arm}/genesets_scores.csv"
+        arm: ranker / arm / "genesets_scores.csv"
         for arm in ("tables", "tables_scetm", "scetm_only")
     }
     assert rag.NOMINATE_SCORES_CSV == rag.ARM_SCORE_FILES["tables_scetm"]
-    assert rag.SCETM_GENE_EMBEDDINGS_CSV == selected / "gene_embeddings/scetm_gene_embeddings_d32.csv"
+    embeddings = selected if preferred.strip() else ROOT / "fall_semester/rag_bioreasoning/knowledge"
+    assert rag.SCETM_GENE_EMBEDDINGS_CSV == embeddings / "gene_embeddings/scetm_gene_embeddings_d32.csv"
     backend = load_module("backend/config.py")
     assert backend.settings.EPHYS_RAG_DATA_DIR == selected
     assert backend.settings.EPHYS_RAG_RUNS_DIR == selected / "runs/portal"
+
+
+@pytest.mark.parametrize("ranker_override", [False, True])
+def test_legacy_data_dir_preserves_tracked_nomination_scores(monkeypatch, tmp_path, ranker_override):
+    monkeypatch.setenv("EPHYS_RAG_DATA_DIR", "")
+    monkeypatch.setenv("DATA_DIR", str(ROOT / "fall_semester/data"))
+    monkeypatch.setenv("TABLES_SCETM_SCORES_CSV", "")
+    monkeypatch.setenv("RANKER_DIR", "")
+    expected = ROOT / "fall_semester/turnin/lgbm_scetm/tables_scetm/genesets_scores.csv"
+    if ranker_override:
+        expected = tmp_path / "custom-ranker/tables_scetm/genesets_scores.csv"
+        expected.parent.mkdir(parents=True)
+        expected.write_text("gene,score\nNRXN1,0.8\n")
+        monkeypatch.setenv("RANKER_DIR", str(tmp_path / "custom-ranker"))
+    rag = load_module("fall_semester/rag_bioreasoning/src/ephys_rag/config.py")
+    assert rag.NOMINATE_SCORES_CSV == expected
+    assert "NRXN1" in rag.NOMINATE_SCORES_CSV.read_text()
