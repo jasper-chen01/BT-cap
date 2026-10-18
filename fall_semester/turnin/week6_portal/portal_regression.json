@@ -1,0 +1,2036 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-18T22:01:47.520559+00:00",
+  "transport": "FastAPI TestClient /api production reasoning router",
+  "questions_file": "fall_semester\\questions.md",
+  "questions_sha256": "5adb399af40c18a0c5a452e9e01ee17d3648dbf9c6b9a96c5ce4c2d4b33c602c",
+  "data_dir": "C:\\Users\\gojas\\BT-CAP-Capstone.git\\week6-portal-integration\\data\\reasoning",
+  "cli_collection": "separately constructed cli.RAGEngine; CLI ask parser, --no-llm",
+  "matched": 44,
+  "total": 44,
+  "questions": [
+    {
+      "question_id": 1,
+      "question": "Which pathways are exclusive to Ephys_2 tumor senders?",
+      "requirement": "Glutamate, MK, CNTN, NOTCH",
+      "expected_tools": [
+        [
+          "exclusive_pathway_lookup"
+        ]
+      ],
+      "api_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "cli_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "Glutamate": true,
+        "MK": true,
+        "CNTN": true,
+        "NOTCH": true
+      },
+      "cli_terms": {
+        "Glutamate": true,
+        "MK": true,
+        "CNTN": true,
+        "NOTCH": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 2,
+      "question": "Does T-cell ligand identity flip between Ephys_1 and Ephys_2?",
+      "requirement": "MHC-II, MIF, CD99, EGF",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "MHC-II": true,
+        "MIF": true,
+        "CD99": true,
+        "EGF": true
+      },
+      "cli_terms": {
+        "MHC-II": true,
+        "MIF": true,
+        "CD99": true,
+        "EGF": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 3,
+      "question": "Are neurons present as a CellChat source or target identity in this table?",
+      "requirement": "a dataset-overview or annotation chunk that lists cell types",
+      "expected_tools": [
+        [
+          "annotation_lookup"
+        ]
+      ],
+      "api_tools": [
+        "annotation_lookup"
+      ],
+      "cli_tools": [
+        "annotation_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "cell-type overview": true
+      },
+      "cli_terms": {
+        "cell-type overview": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 4,
+      "question": "Name one program that myeloid Ephys_2 senders use and myeloid Ephys_1 senders do not.",
+      "requirement": "GALECTIN or Glutamate",
+      "expected_tools": [],
+      "api_tools": [
+        "exclusive_pathway_lookup",
+        "pathway_contrast_lookup"
+      ],
+      "cli_tools": [
+        "exclusive_pathway_lookup",
+        "pathway_contrast_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "GALECTIN or Glutamate": true
+      },
+      "cli_terms": {
+        "GALECTIN or Glutamate": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 5,
+      "question": "What is the highest-probability tumor–tumor pair?",
+      "requirement": "PTN_PTPRZ1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "PTN_PTPRZ1": true
+      },
+      "cli_terms": {
+        "PTN_PTPRZ1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 6,
+      "question": "How many significant interactions are in the table, and what is the dominant compartment flow?",
+      "requirement": "overview or raw interaction stats",
+      "expected_tools": [
+        [
+          "dataset_stats_lookup"
+        ]
+      ],
+      "api_tools": [
+        "count_lookup",
+        "dataset_stats_lookup"
+      ],
+      "cli_tools": [
+        "count_lookup",
+        "dataset_stats_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "interaction statistics": true
+      },
+      "cli_terms": {
+        "interaction statistics": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 7,
+      "question": "Which receptors does the Glutamate pathway hit in this table?",
+      "requirement": "GRIA2, GRIA3, GRIA4, or GRIK2",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "GRIA2 or GRIA3 or GRIA4 or GRIK2": true
+      },
+      "cli_terms": {
+        "GRIA2 or GRIA3 or GRIA4 or GRIK2": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 8,
+      "question": "What does NRXN bind in this table?",
+      "requirement": "NLGN1 or NLGN3 or LRRTM",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NLGN1 or NLGN3 or LRRTM": true
+      },
+      "cli_terms": {
+        "NLGN1 or NLGN3 or LRRTM": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 9,
+      "question": "Is PTN an Ephys discriminator among tumor senders, or a shared scaffold?",
+      "requirement": "PTN and PTPRZ1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "PTN": true,
+        "PTPRZ1": true
+      },
+      "cli_terms": {
+        "PTN": true,
+        "PTPRZ1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 10,
+      "question": "Which receptor does MHC-II use here?",
+      "requirement": "CD4",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "CD4": true
+      },
+      "cli_terms": {
+        "CD4": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 11,
+      "question": "What is the APOE receptor complex in this table?",
+      "requirement": "TREM2_TYROBP or APOE_TREM2_TYROBP",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "TREM2_TYROBP or APOE_TREM2_TYROBP": true
+      },
+      "cli_terms": {
+        "TREM2_TYROBP or APOE_TREM2_TYROBP": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 12,
+      "question": "Which T-cell-sent pathway is private to Ephys_2?",
+      "requirement": "EGF or AREG_EGFR",
+      "expected_tools": [],
+      "api_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "cli_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "EGF or AREG_EGFR": true
+      },
+      "cli_terms": {
+        "EGF or AREG_EGFR": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 13,
+      "question": "Name a tumor-sender pathway that is exclusive (or nearly exclusive) to Ephys_1.",
+      "requirement": "ANNEXIN or MHC-I or MHC-II",
+      "expected_tools": [],
+      "api_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "cli_tools": [
+        "exclusive_pathway_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "ANNEXIN or MHC-I or MHC-II": true
+      },
+      "cli_terms": {
+        "ANNEXIN or MHC-I or MHC-II": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 14,
+      "question": "Which receptors does SPP1 use here?",
+      "requirement": "CD44 or ITGAV_ITGB1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "CD44 or ITGAV_ITGB1": true
+      },
+      "cli_terms": {
+        "CD44 or ITGAV_ITGB1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 15,
+      "question": "What does CLEC bind on T cells in this table?",
+      "requirement": "KLRB1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "KLRB1": true
+      },
+      "cli_terms": {
+        "KLRB1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 16,
+      "question": "Do CellChat p-values vary in this export?",
+      "requirement": "a row that shows the pval field",
+      "expected_tools": [
+        [
+          "cellchat_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "pval": true
+      },
+      "cli_terms": {
+        "pval": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 17,
+      "question": "CNTN1 binds which partners here?",
+      "requirement": "NRCAM or NOTCH1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRCAM or NOTCH1": true
+      },
+      "cli_terms": {
+        "NRCAM or NOTCH1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 18,
+      "question": "What is the highest-probability myeloid self-loop?",
+      "requirement": "APOE_TREM2_TYROBP",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "APOE_TREM2_TYROBP": true
+      },
+      "cli_terms": {
+        "APOE_TREM2_TYROBP": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 19,
+      "question": "Interpret NRXN1–NLGN1 and glutamate–GRIA in this dataset. Are neurons required for that interpretation?",
+      "requirement": "NRXN and Glutamate",
+      "expected_tools": [],
+      "api_tools": [
+        "annotation_lookup",
+        "cellchat_lookup",
+        "pathway_filter",
+        "support_join"
+      ],
+      "cli_tools": [
+        "annotation_lookup",
+        "cellchat_lookup",
+        "pathway_filter",
+        "support_join"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRXN": true,
+        "Glutamate": true
+      },
+      "cli_terms": {
+        "NRXN": true,
+        "Glutamate": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 20,
+      "question": "If a model claims NRXN is Ephys_1-enriched in tumor, what count evidence would refute it?",
+      "requirement": "NRXN tumor contrast",
+      "expected_tools": [
+        [
+          "pathway_contrast_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRXN": true,
+        "tumor": true,
+        "Ephys_1": true,
+        "Ephys_2": true
+      },
+      "cli_terms": {
+        "NRXN": true,
+        "tumor": true,
+        "Ephys_1": true,
+        "Ephys_2": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 21,
+      "question": "Is NRXN1 DEG-supported as Ephys_2-high in IDH-mutant cycling tumor?",
+      "requirement": "NRXN1, cycling, IDH",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRXN1": true,
+        "cycling": true,
+        "IDH": true
+      },
+      "cli_terms": {
+        "NRXN1": true,
+        "cycling": true,
+        "IDH": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 22,
+      "question": "Is HLA-DRA DEG-supported as Ephys_1-high in tumor?",
+      "requirement": "HLA-DRA, Ephys_1",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "HLA-DRA": true,
+        "Ephys_1": true
+      },
+      "cli_terms": {
+        "HLA-DRA": true,
+        "Ephys_1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 23,
+      "question": "Is AREG a T-cell Ephys_2-high DEG?",
+      "requirement": "AREG, T cell",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "AREG": true,
+        "T cell": true
+      },
+      "cli_terms": {
+        "AREG": true,
+        "T cell": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 24,
+      "question": "Does GRIA2 go the same Ephys direction in IDH-mutant and IDH-WT OPC-like tumor?",
+      "requirement": "GRIA2 and both IDH groups",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "GRIA2": true,
+        "both IDH groups": true
+      },
+      "cli_terms": {
+        "GRIA2": true,
+        "both IDH groups": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 25,
+      "question": "Is EGFR Ephys_2-high in IDH-mutant cycling tumor? Does IDH-WT OPC-like tumor agree?",
+      "requirement": "EGFR, cycling or OPC, IDH",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "EGFR": true,
+        "cycling or OPC": true,
+        "IDH": true
+      },
+      "cli_terms": {
+        "EGFR": true,
+        "cycling or OPC": true,
+        "IDH": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 26,
+      "question": "In IDH-mutant TAM/microglia, is HLA-DRA Ephys_1-high?",
+      "requirement": "HLA-DRA, TAM or microglia",
+      "expected_tools": [
+        [
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "HLA-DRA": true,
+        "TAM or microglia": true
+      },
+      "cli_terms": {
+        "HLA-DRA": true,
+        "TAM or microglia": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 27,
+      "question": "Which labeled group has only 6 cells?",
+      "requirement": "MES and 6",
+      "expected_tools": [
+        [
+          "count_lookup"
+        ],
+        [
+          "annotation_lookup"
+        ]
+      ],
+      "api_tools": [
+        "annotation_lookup",
+        "count_lookup"
+      ],
+      "cli_tools": [
+        "annotation_lookup",
+        "count_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "MES": true,
+        "6": true
+      },
+      "cli_terms": {
+        "MES": true,
+        "6": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 28,
+      "question": "How many T cells are labeled Ephys_1 vs Ephys_2?",
+      "requirement": "T cell and a count",
+      "expected_tools": [
+        [
+          "count_lookup"
+        ]
+      ],
+      "api_tools": [
+        "count_lookup",
+        "dataset_stats_lookup"
+      ],
+      "cli_tools": [
+        "count_lookup",
+        "dataset_stats_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "T cell": true,
+        "cell count": true
+      },
+      "cli_terms": {
+        "T cell": true,
+        "cell count": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 29,
+      "question": "Is AC-like tumor / Ephys_2 large enough to treat as a trusted sender?",
+      "requirement": "AC_like and n_cells",
+      "expected_tools": [
+        [
+          "count_lookup"
+        ]
+      ],
+      "api_tools": [
+        "count_lookup"
+      ],
+      "cli_tools": [
+        "count_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "AC_like": true,
+        "n_cells": true
+      },
+      "cli_terms": {
+        "AC_like": true,
+        "n_cells": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 30,
+      "question": "Is NRXN1 both a CellChat ligand and a DEG in IDH-mutant cycling Ephys_2?",
+      "requirement": "NRXN1 from CellChat and from deg_lookup",
+      "expected_tools": [
+        [
+          "support_join"
+        ],
+        [
+          "cellchat_lookup",
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRXN1": true,
+        "CellChat and DEG": true
+      },
+      "cli_terms": {
+        "NRXN1": true,
+        "CellChat and DEG": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 31,
+      "question": "Is AREG both the T-cell EGF ligand in CellChat and a T-cell DEG?",
+      "requirement": "AREG and EGF or EGFR",
+      "expected_tools": [
+        [
+          "support_join"
+        ],
+        [
+          "cellchat_lookup",
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "AREG": true,
+        "EGF or EGFR": true
+      },
+      "cli_terms": {
+        "AREG": true,
+        "EGF or EGFR": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 32,
+      "question": "Does HLA-DRA appear as both an MHC-II CellChat ligand and an Ephys_1-high tumor DEG?",
+      "requirement": "HLA-DRA and MHC-II",
+      "expected_tools": [
+        [
+          "support_join"
+        ],
+        [
+          "cellchat_lookup",
+          "deg_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "HLA-DRA": true,
+        "MHC-II": true
+      },
+      "cli_terms": {
+        "HLA-DRA": true,
+        "MHC-II": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 33,
+      "question": "What does MIF bind in this table?",
+      "requirement": "CD74",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "CD74": true
+      },
+      "cli_terms": {
+        "CD74": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 34,
+      "question": "What does LGALS9 (GALECTIN) bind?",
+      "requirement": "HAVCR2 or PTPRC or CD44",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "HAVCR2 or PTPRC or CD44": true
+      },
+      "cli_terms": {
+        "HAVCR2 or PTPRC or CD44": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 35,
+      "question": "Name a glutamate ligand (sender side), not just a receptor.",
+      "requirement": "SLC1A1 or SLC1A3 or GLS",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "SLC1A1 or SLC1A3 or GLS": true
+      },
+      "cli_terms": {
+        "SLC1A1 or SLC1A3 or GLS": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 36,
+      "question": "Do T cells send NRXN or Glutamate in this table?",
+      "requirement": "T cell. An empty NRXN/Glutamate hit on T-cell senders is correct.",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "T cell": true
+      },
+      "cli_terms": {
+        "T cell": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 37,
+      "question": "Is NCAM used as a tumor–tumor adhesion pair?",
+      "requirement": "NCAM1",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NCAM1": true
+      },
+      "cli_terms": {
+        "NCAM1": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 38,
+      "question": "If a model claims T-cell Ephys_2 is the synaptic (NRXN/GRIA) program, what would refute it?",
+      "requirement": "T cell and AREG or EGF. Empty T-cell NRXN is allowed.",
+      "expected_tools": [],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "pathway_contrast_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "T cell": true,
+        "AREG or EGF": true
+      },
+      "cli_terms": {
+        "T cell": true,
+        "AREG or EGF": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 39,
+      "question": "What is NRXN1's tumor-synaptic score in IDH-mutant cycling tumor, and which feature drove it?",
+      "requirement": "NRXN1, p_tumor_synaptic, a feature name, and scoring fold",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NRXN1": true,
+        "p_tumor_synaptic": true,
+        "feature name": true,
+        "scoring fold": true
+      },
+      "cli_terms": {
+        "NRXN1": true,
+        "p_tumor_synaptic": true,
+        "feature name": true,
+        "scoring fold": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 40,
+      "question": "Is HLA-DRA scored immune or synaptic in TAM/microglia?",
+      "requirement": "HLA-DRA, p_immune_synapse, p_tumor_synaptic, and TAM/microglia",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "HLA-DRA": true,
+        "p_immune_synapse": true,
+        "p_tumor_synaptic": true,
+        "TAM/microglia": true
+      },
+      "cli_terms": {
+        "HLA-DRA": true,
+        "p_immune_synapse": true,
+        "p_tumor_synaptic": true,
+        "TAM/microglia": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 41,
+      "question": "Which gene ranks highest for immune synapse in T cells?",
+      "requirement": "the rank-1 gene, p_immune_synapse, and T cell",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "rank-1 gene": true,
+        "p_immune_synapse": true,
+        "T cell": true
+      },
+      "cli_terms": {
+        "rank-1 gene": true,
+        "p_immune_synapse": true,
+        "T cell": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 42,
+      "question": "Name a gene that is not on SynGO but ranks as tumor-synaptic.",
+      "requirement": "a gene, in_syngo=False, and p_tumor_synaptic",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "cli_tools": [
+        "nominate_lookup",
+        "pathway_filter"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "a gene": true,
+        "in_syngo=False": true,
+        "p_tumor_synaptic": true
+      },
+      "cli_terms": {
+        "a gene": true,
+        "in_syngo=False": true,
+        "p_tumor_synaptic": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 43,
+      "question": "Where does GRIA2 rank in OPC-like tumor, and does its score come from tables or scETM features?",
+      "requirement": "GRIA2, tumor rank, top features, and tables, scETM, or mixed feature family",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "GRIA2": true,
+        "tumor rank": true,
+        "feature name": true,
+        "feature family": true
+      },
+      "cli_terms": {
+        "GRIA2": true,
+        "tumor rank": true,
+        "feature name": true,
+        "feature family": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    },
+    {
+      "question_id": 44,
+      "question": "Does NCL pass the CellChat + DEG + cell-count checks?",
+      "requirement": "NCL, passes_three_table, in_cellchat, and min_n",
+      "expected_tools": [
+        [
+          "nominate_lookup"
+        ]
+      ],
+      "api_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup"
+      ],
+      "cli_tools": [
+        "cellchat_lookup",
+        "deg_lookup",
+        "nominate_lookup"
+      ],
+      "tools_match": true,
+      "expected_tools_ok": true,
+      "api_terms": {
+        "NCL": true,
+        "passes_three_table": true,
+        "in_cellchat": true,
+        "min_n": true
+      },
+      "cli_terms": {
+        "NCL": true,
+        "passes_three_table": true,
+        "in_cellchat": true,
+        "min_n": true
+      },
+      "api_required_ok": true,
+      "cli_required_ok": true,
+      "required_terms_match": true,
+      "matched": true,
+      "extractive_answer_equal": true
+    }
+  ],
+  "published_33": {
+    "passed": true,
+    "genes_checked": 33,
+    "expected_genes": 33,
+    "scored_genes": 32,
+    "unscored_genes": [
+      "AXL"
+    ],
+    "precision": "nominate_lookup context probabilities rounded to 6 decimal places; ranks exact",
+    "arm": "tables_scetm",
+    "genes": [
+      {
+        "gene": "APOE",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 19,
+        "errors": []
+      },
+      {
+        "gene": "AXL",
+        "matched": true,
+        "contexts_checked": 0,
+        "status": "unscored_absence_equal",
+        "errors": []
+      },
+      {
+        "gene": "CD4",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 3,
+        "errors": []
+      },
+      {
+        "gene": "CD44",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 8,
+        "errors": []
+      },
+      {
+        "gene": "CD74",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 16,
+        "errors": []
+      },
+      {
+        "gene": "CD99",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 8,
+        "errors": []
+      },
+      {
+        "gene": "CLEC2D",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 6,
+        "errors": []
+      },
+      {
+        "gene": "CNTN1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 12,
+        "errors": []
+      },
+      {
+        "gene": "CXCR4",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 7,
+        "errors": []
+      },
+      {
+        "gene": "DLL3",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 16,
+        "errors": []
+      },
+      {
+        "gene": "EGFR",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 12,
+        "errors": []
+      },
+      {
+        "gene": "ENTPD1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 2,
+        "errors": []
+      },
+      {
+        "gene": "GRIA2",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 12,
+        "errors": []
+      },
+      {
+        "gene": "GRIA3",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 6,
+        "errors": []
+      },
+      {
+        "gene": "GRIA4",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 12,
+        "errors": []
+      },
+      {
+        "gene": "HAVCR2",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 5,
+        "errors": []
+      },
+      {
+        "gene": "HLA-DRA",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 18,
+        "errors": []
+      },
+      {
+        "gene": "KLRB1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 1,
+        "errors": []
+      },
+      {
+        "gene": "LGALS9",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 3,
+        "errors": []
+      },
+      {
+        "gene": "LILRB4",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 4,
+        "errors": []
+      },
+      {
+        "gene": "MIF",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 12,
+        "errors": []
+      },
+      {
+        "gene": "NCAM1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 17,
+        "errors": []
+      },
+      {
+        "gene": "NLGN1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 8,
+        "errors": []
+      },
+      {
+        "gene": "NLGN3",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 8,
+        "errors": []
+      },
+      {
+        "gene": "NOTCH1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 4,
+        "errors": []
+      },
+      {
+        "gene": "NRXN1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 10,
+        "errors": []
+      },
+      {
+        "gene": "PDGFRA",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 16,
+        "errors": []
+      },
+      {
+        "gene": "PTN",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 7,
+        "errors": []
+      },
+      {
+        "gene": "PTPRZ1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 17,
+        "errors": []
+      },
+      {
+        "gene": "SPP1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 15,
+        "errors": []
+      },
+      {
+        "gene": "TGFB1",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 2,
+        "errors": []
+      },
+      {
+        "gene": "TREM2",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 5,
+        "errors": []
+      },
+      {
+        "gene": "TYROBP",
+        "status": "scored",
+        "matched": true,
+        "contexts_checked": 19,
+        "errors": []
+      }
+    ]
+  },
+  "medgemma_cache": {
+    "passed": true,
+    "hits": 24,
+    "total": 24,
+    "provider_calls": 0,
+    "cache_unchanged": true,
+    "before": {
+      "20b7bae3e463cbe36c815d2d9b6e58a07a872c2b5c8fc149b920ccf65500cd92.json": {
+        "sha256": "26582ddeb3c64735d5aaa505e43b2cf5867425a510b458c2a08ce232b53c96b2",
+        "size": 2591,
+        "mtime_ns": 1792349844446777700
+      },
+      "28585520999a13ca33b7e8825f074a2434314764d6a23467b4d2ec7202e68d58.json": {
+        "sha256": "79d9460ff6e2130312e661a933ca28634776920e7f52acd768f24addb6bdb03e",
+        "size": 3336,
+        "mtime_ns": 1792349844285670800
+      },
+      "2c7532022912270871fc803c12c7671ddbb7d5fcd680a70a40ba1aa928cab619.json": {
+        "sha256": "d843a2e364c386532a904ae957cce86ed63164ad8989db34ef4056d1eca17a99",
+        "size": 472,
+        "mtime_ns": 1792349843642423300
+      },
+      "2cb4de24f4d6b2e1bf0ec908070f25c1097437a6e3383803525a5abe632987b1.json": {
+        "sha256": "b519378fb3cda8e5dc9a01f8151180784c221192d9fde875095dfb761a17a55e",
+        "size": 818,
+        "mtime_ns": 1792349843823209200
+      },
+      "2cc160efbc410afd8619689c3e0bab920494598a77fee788f5978b9435aac950.json": {
+        "sha256": "db6c5ac58d99f04c08f4e96637c6a346a891a3c5c9cd9151b08e4fc1205622c4",
+        "size": 1086,
+        "mtime_ns": 1792349844989357500
+      },
+      "36a5abb1c8493cabb03f062408dc9e8c6ad1dcbe9a32c52bfdd6ba67246449ba.json": {
+        "sha256": "f360a709d24c9779dff95c2116f3d399323d4c5bec4ac153c428d1c7a1981d71",
+        "size": 1083,
+        "mtime_ns": 1792349844093307400
+      },
+      "4e8f2545ae3e0ae5875ab4a4db4e5296ee1972cd42f14e6f0b844d130ed47318.json": {
+        "sha256": "8da285600ab323c67bb0a2a9909b39ff4157538e7e6d777c3593d5725fd6aaba",
+        "size": 1083,
+        "mtime_ns": 1792349843750089800
+      },
+      "5a2f18526498329c3bc180f880301cffc575936308a3292a49c7b855bd754c38.json": {
+        "sha256": "d8eabf269cdf128a7e730281e1371be3051aee245ba720dc3d737d0157e1464d",
+        "size": 1092,
+        "mtime_ns": 1792349844364008200
+      },
+      "5edb86f33ac83ee661f4cb1ed0cf6a734c333b4685214fc27433547426e45953.json": {
+        "sha256": "a79b4570a0e3bf6b961c8cc5735931cfdf8d4ef5e76787e86db88230d17ce229",
+        "size": 1085,
+        "mtime_ns": 1792349845082527600
+      },
+      "6dc43f875daac94551a6440c598e18edf14e93317d1080632bdea41588f7314c.json": {
+        "sha256": "30dbc397280531cf85d11a42c749b8ddb08afbaad4d67b4b3c7e89c1799e808f",
+        "size": 4845,
+        "mtime_ns": 1792349844630967300
+      },
+      "718ce58abe4cc5da2d59fe1d2ba060cd34bbed4285c8e43f6c9835cca7fa5add.json": {
+        "sha256": "5dec8593d698a3f9368b8e008cf652cf887d46826d611c9b2e622b9b1a9915c0",
+        "size": 2642,
+        "mtime_ns": 1792349845340158000
+      },
+      "73ee18c606fc66e59bda28ddf11775b2a47a998daa65c5991249231abad11a08.json": {
+        "sha256": "c845b6e40f56d85dc7eedce79474c2d978cd32429059b53c0e180c191f5ffa72",
+        "size": 471,
+        "mtime_ns": 1792349845206549500
+      },
+      "8eddc9b4535f17b33ae1167d414bd325565768a078189d74d01437390402616a.json": {
+        "sha256": "8df5233876caa325098e96007c82b19ecf3ef59e680b10caf5d9773f4cbe011a",
+        "size": 594,
+        "mtime_ns": 1792349843895139100
+      },
+      "9921b224b84bbc96b958f9982c000bc461c231a8c63fdfd6271fa983d59f2c3d.json": {
+        "sha256": "fc925cd3af3842965dbb72bbb351f1f05654b62b1b58e37f3a2e48c55a8eac5e",
+        "size": 1087,
+        "mtime_ns": 1792349843263807500
+      },
+      "9aa903fd808f70d897cfad9c7ea36d8e0d1563d04e11ad6fff5d26f78ae16e2a.json": {
+        "sha256": "1540d25d707836f46dd3d0738d1f6dde79f8c2ce8c409b68e4fb93e1b4c6e9a6",
+        "size": 2431,
+        "mtime_ns": 1792349844808775000
+      },
+      "9b81680cefebbbf0b25b0cbf798d984823ee8796e6ee9002ff2e79edd65fa73f.json": {
+        "sha256": "2a0acfc1ca071a05d206580e451205464f530421f17f7afa7537f0d7a5f0c2dc",
+        "size": 2678,
+        "mtime_ns": 1792349843973277000
+      },
+      "b6c85bc8b202df2a1b0b50be547b9059e66f9606ed95a008423c31e44eca0093.json": {
+        "sha256": "5de9db55e4ec96fa51dabdd5c6c18e5516859b4ba2c65e7e79135218bb1a856e",
+        "size": 1081,
+        "mtime_ns": 1792349843144517900
+      },
+      "c7d99677e0fb11ed68d0c18965c4dc13410ae1c2f60ecf8109c7c1765947e7a7.json": {
+        "sha256": "a3786357522a3c6968c23004c20b41bf35182142e6387eb271f1a46b192863f9",
+        "size": 4042,
+        "mtime_ns": 1792349844199492300
+      },
+      "cb4e95eb1b7f76049475687bc5426817e5c5abd31969460ccde50bd73016fc1e.json": {
+        "sha256": "153d0fcbe9c630e3eedf5a6d5b4b2fc3a711bc2de9ea95e2eb24ae6e953dd3ee",
+        "size": 1087,
+        "mtime_ns": 1792349843377180300
+      },
+      "cbd999f8dbae2a62a04dd05c9ca1b2278f20032604edb5acf4b47188bc497077.json": {
+        "sha256": "fb6f6be978c667daa12a151d4ec06fbcffeb0657c08a612500cb24080ce0ddd5",
+        "size": 642,
+        "mtime_ns": 1792349844897902100
+      },
+      "de92671aea098cc0e4de4251953734b68a1b4e05a9fa29bcba357f33d01db393.json": {
+        "sha256": "1db067c7656912817252b69838b3d1a42de90a6aa1848de7fff5c1b28cfa4d1d",
+        "size": 1148,
+        "mtime_ns": 1792357906396019800
+      },
+      "e504418c31c313827264e8cd52e67374a90baeb1b8a74c3c657a38ddd5d5142b.json": {
+        "sha256": "62cb909dac9312e70fe3fa1d1e97d23bac99e47757dc278d68ade7b03be31da4",
+        "size": 1081,
+        "mtime_ns": 1792349844535686500
+      },
+      "ec47208e37e6e1ee4ffb5f5be9f31673b9d4bb6c422ef4d217334cb9f2ebc015.json": {
+        "sha256": "430fbd1e321ad49d67c4828870aac97e1391048bf820e15ba8302a27cd0220ec",
+        "size": 729,
+        "mtime_ns": 1792349843459094300
+      },
+      "f268faeffef128b1245a75a4d2bd141d911f0a5889832936920edcae444f682d.json": {
+        "sha256": "0f9d4dab14a285ff5b7ec201c184dd2eb95ecfb0ee9fa296c7a4ce2dfb105b9d",
+        "size": 2914,
+        "mtime_ns": 1792349843538311700
+      },
+      "ff4ae50fe7e0fc46e3bd7c2d9d4ca6cc2329f5c4b3c77db698d2f558438fbca5.json": {
+        "sha256": "d614d3e580da5673b858c1562eb60c299e4312fa5389f6b12bc9181c98dee567",
+        "size": 2867,
+        "mtime_ns": 1792349844720636200
+      }
+    },
+    "after": {
+      "20b7bae3e463cbe36c815d2d9b6e58a07a872c2b5c8fc149b920ccf65500cd92.json": {
+        "sha256": "26582ddeb3c64735d5aaa505e43b2cf5867425a510b458c2a08ce232b53c96b2",
+        "size": 2591,
+        "mtime_ns": 1792349844446777700
+      },
+      "28585520999a13ca33b7e8825f074a2434314764d6a23467b4d2ec7202e68d58.json": {
+        "sha256": "79d9460ff6e2130312e661a933ca28634776920e7f52acd768f24addb6bdb03e",
+        "size": 3336,
+        "mtime_ns": 1792349844285670800
+      },
+      "2c7532022912270871fc803c12c7671ddbb7d5fcd680a70a40ba1aa928cab619.json": {
+        "sha256": "d843a2e364c386532a904ae957cce86ed63164ad8989db34ef4056d1eca17a99",
+        "size": 472,
+        "mtime_ns": 1792349843642423300
+      },
+      "2cb4de24f4d6b2e1bf0ec908070f25c1097437a6e3383803525a5abe632987b1.json": {
+        "sha256": "b519378fb3cda8e5dc9a01f8151180784c221192d9fde875095dfb761a17a55e",
+        "size": 818,
+        "mtime_ns": 1792349843823209200
+      },
+      "2cc160efbc410afd8619689c3e0bab920494598a77fee788f5978b9435aac950.json": {
+        "sha256": "db6c5ac58d99f04c08f4e96637c6a346a891a3c5c9cd9151b08e4fc1205622c4",
+        "size": 1086,
+        "mtime_ns": 1792349844989357500
+      },
+      "36a5abb1c8493cabb03f062408dc9e8c6ad1dcbe9a32c52bfdd6ba67246449ba.json": {
+        "sha256": "f360a709d24c9779dff95c2116f3d399323d4c5bec4ac153c428d1c7a1981d71",
+        "size": 1083,
+        "mtime_ns": 1792349844093307400
+      },
+      "4e8f2545ae3e0ae5875ab4a4db4e5296ee1972cd42f14e6f0b844d130ed47318.json": {
+        "sha256": "8da285600ab323c67bb0a2a9909b39ff4157538e7e6d777c3593d5725fd6aaba",
+        "size": 1083,
+        "mtime_ns": 1792349843750089800
+      },
+      "5a2f18526498329c3bc180f880301cffc575936308a3292a49c7b855bd754c38.json": {
+        "sha256": "d8eabf269cdf128a7e730281e1371be3051aee245ba720dc3d737d0157e1464d",
+        "size": 1092,
+        "mtime_ns": 1792349844364008200
+      },
+      "5edb86f33ac83ee661f4cb1ed0cf6a734c333b4685214fc27433547426e45953.json": {
+        "sha256": "a79b4570a0e3bf6b961c8cc5735931cfdf8d4ef5e76787e86db88230d17ce229",
+        "size": 1085,
+        "mtime_ns": 1792349845082527600
+      },
+      "6dc43f875daac94551a6440c598e18edf14e93317d1080632bdea41588f7314c.json": {
+        "sha256": "30dbc397280531cf85d11a42c749b8ddb08afbaad4d67b4b3c7e89c1799e808f",
+        "size": 4845,
+        "mtime_ns": 1792349844630967300
+      },
+      "718ce58abe4cc5da2d59fe1d2ba060cd34bbed4285c8e43f6c9835cca7fa5add.json": {
+        "sha256": "5dec8593d698a3f9368b8e008cf652cf887d46826d611c9b2e622b9b1a9915c0",
+        "size": 2642,
+        "mtime_ns": 1792349845340158000
+      },
+      "73ee18c606fc66e59bda28ddf11775b2a47a998daa65c5991249231abad11a08.json": {
+        "sha256": "c845b6e40f56d85dc7eedce79474c2d978cd32429059b53c0e180c191f5ffa72",
+        "size": 471,
+        "mtime_ns": 1792349845206549500
+      },
+      "8eddc9b4535f17b33ae1167d414bd325565768a078189d74d01437390402616a.json": {
+        "sha256": "8df5233876caa325098e96007c82b19ecf3ef59e680b10caf5d9773f4cbe011a",
+        "size": 594,
+        "mtime_ns": 1792349843895139100
+      },
+      "9921b224b84bbc96b958f9982c000bc461c231a8c63fdfd6271fa983d59f2c3d.json": {
+        "sha256": "fc925cd3af3842965dbb72bbb351f1f05654b62b1b58e37f3a2e48c55a8eac5e",
+        "size": 1087,
+        "mtime_ns": 1792349843263807500
+      },
+      "9aa903fd808f70d897cfad9c7ea36d8e0d1563d04e11ad6fff5d26f78ae16e2a.json": {
+        "sha256": "1540d25d707836f46dd3d0738d1f6dde79f8c2ce8c409b68e4fb93e1b4c6e9a6",
+        "size": 2431,
+        "mtime_ns": 1792349844808775000
+      },
+      "9b81680cefebbbf0b25b0cbf798d984823ee8796e6ee9002ff2e79edd65fa73f.json": {
+        "sha256": "2a0acfc1ca071a05d206580e451205464f530421f17f7afa7537f0d7a5f0c2dc",
+        "size": 2678,
+        "mtime_ns": 1792349843973277000
+      },
+      "b6c85bc8b202df2a1b0b50be547b9059e66f9606ed95a008423c31e44eca0093.json": {
+        "sha256": "5de9db55e4ec96fa51dabdd5c6c18e5516859b4ba2c65e7e79135218bb1a856e",
+        "size": 1081,
+        "mtime_ns": 1792349843144517900
+      },
+      "c7d99677e0fb11ed68d0c18965c4dc13410ae1c2f60ecf8109c7c1765947e7a7.json": {
+        "sha256": "a3786357522a3c6968c23004c20b41bf35182142e6387eb271f1a46b192863f9",
+        "size": 4042,
+        "mtime_ns": 1792349844199492300
+      },
+      "cb4e95eb1b7f76049475687bc5426817e5c5abd31969460ccde50bd73016fc1e.json": {
+        "sha256": "153d0fcbe9c630e3eedf5a6d5b4b2fc3a711bc2de9ea95e2eb24ae6e953dd3ee",
+        "size": 1087,
+        "mtime_ns": 1792349843377180300
+      },
+      "cbd999f8dbae2a62a04dd05c9ca1b2278f20032604edb5acf4b47188bc497077.json": {
+        "sha256": "fb6f6be978c667daa12a151d4ec06fbcffeb0657c08a612500cb24080ce0ddd5",
+        "size": 642,
+        "mtime_ns": 1792349844897902100
+      },
+      "de92671aea098cc0e4de4251953734b68a1b4e05a9fa29bcba357f33d01db393.json": {
+        "sha256": "1db067c7656912817252b69838b3d1a42de90a6aa1848de7fff5c1b28cfa4d1d",
+        "size": 1148,
+        "mtime_ns": 1792357906396019800
+      },
+      "e504418c31c313827264e8cd52e67374a90baeb1b8a74c3c657a38ddd5d5142b.json": {
+        "sha256": "62cb909dac9312e70fe3fa1d1e97d23bac99e47757dc278d68ade7b03be31da4",
+        "size": 1081,
+        "mtime_ns": 1792349844535686500
+      },
+      "ec47208e37e6e1ee4ffb5f5be9f31673b9d4bb6c422ef4d217334cb9f2ebc015.json": {
+        "sha256": "430fbd1e321ad49d67c4828870aac97e1391048bf820e15ba8302a27cd0220ec",
+        "size": 729,
+        "mtime_ns": 1792349843459094300
+      },
+      "f268faeffef128b1245a75a4d2bd141d911f0a5889832936920edcae444f682d.json": {
+        "sha256": "0f9d4dab14a285ff5b7ec201c184dd2eb95ecfb0ee9fa296c7a4ce2dfb105b9d",
+        "size": 2914,
+        "mtime_ns": 1792349843538311700
+      },
+      "ff4ae50fe7e0fc46e3bd7c2d9d4ca6cc2329f5c4b3c77db698d2f558438fbca5.json": {
+        "sha256": "d614d3e580da5673b858c1562eb60c299e4312fa5389f6b12bc9181c98dee567",
+        "size": 2867,
+        "mtime_ns": 1792349844720636200
+      }
+    },
+    "questions": [
+      {
+        "question_id": 9,
+        "cached": true,
+        "answer_sha256": "7ce8f67a3792d8b95f78db863a00319a1490da8d5c31b0b06fb34b2dbbe996bd"
+      },
+      {
+        "question_id": 10,
+        "cached": true,
+        "answer_sha256": "c1edbabbd674133216d1bc9837a9cdc7cfac788060f75eadc427ed1ed9f2195d"
+      },
+      {
+        "question_id": 11,
+        "cached": true,
+        "answer_sha256": "109acd70f79bcaace595cb5ac69f40b6458c4cf868778d94db9212770ec814f8"
+      },
+      {
+        "question_id": 12,
+        "cached": true,
+        "answer_sha256": "50101a5bfb5a1826b943f4dce0ddbf316e624df8fc44c260eaa61587dd3b897b"
+      },
+      {
+        "question_id": 13,
+        "cached": true,
+        "answer_sha256": "81970e2e11bc43602e2bc02d46074c30b7dcb0b303abd5e84bf18f229d928f7d"
+      },
+      {
+        "question_id": 14,
+        "cached": true,
+        "answer_sha256": "e22cf67e33ab376b57ecccd23a491a08cfc380ebd9d34239009825d5683df4ef"
+      },
+      {
+        "question_id": 15,
+        "cached": true,
+        "answer_sha256": "34e1aee758bbe87f0a66334339e71d5d7f4d95d5a0acae53929c00d79708220d"
+      },
+      {
+        "question_id": 16,
+        "cached": true,
+        "answer_sha256": "76ca8b2cf4fa06a5c16b57224b4bc31dc5cd8fcc61b38784f7718d93d24c92eb"
+      },
+      {
+        "question_id": 17,
+        "cached": true,
+        "answer_sha256": "90c74b7aae79c64103a2d7c27e86eaf7280e762fec5e8719be6bf68195669c14"
+      },
+      {
+        "question_id": 18,
+        "cached": true,
+        "answer_sha256": "b19871dff6560fbe24dbe242aa7ed590c3b1cde75d209818e2311623aba8eb27"
+      },
+      {
+        "question_id": 19,
+        "cached": true,
+        "answer_sha256": "fc146f70c31a8de38fd7c356e95aa451910d3b76c3b2e4c7183a75b810800d7e"
+      },
+      {
+        "question_id": 20,
+        "cached": true,
+        "answer_sha256": "6b0c0be5f26c908745fc056839de5547628e7c1281268c86b7720142b9b1adfb"
+      },
+      {
+        "question_id": 21,
+        "cached": true,
+        "answer_sha256": "e8739de088b3c97ea6c81940640aa93f91944e578c05e389fcc10f747a4a0430"
+      },
+      {
+        "question_id": 22,
+        "cached": true,
+        "answer_sha256": "3b6da316ff755e794055e025b959e45825ff61cb8e7f79a7ff5ac373713fff5a"
+      },
+      {
+        "question_id": 23,
+        "cached": true,
+        "answer_sha256": "9238a809ba0d70ad23cfdb43ac5467314100e23b0e29b8e3dc299655b7beddec"
+      },
+      {
+        "question_id": 24,
+        "cached": true,
+        "answer_sha256": "18e36d83a300112ba371fa5537df04847e2e53552bbf134b6aaf588bfcb2f656"
+      },
+      {
+        "question_id": 25,
+        "cached": true,
+        "answer_sha256": "267055d247a897b9152a4f4ff663aded50e47c0806be95e23014d843e1b667f5"
+      },
+      {
+        "question_id": 26,
+        "cached": true,
+        "answer_sha256": "a288f56067cbf2391ce2600d88b9aa505746bc9a9d944ba35b79512a75969630"
+      },
+      {
+        "question_id": 27,
+        "cached": true,
+        "answer_sha256": "86db4e91ebae7784015ea41a4cd143da87a5bec2a8e8b3fd4488f04fc62f21e9"
+      },
+      {
+        "question_id": 28,
+        "cached": true,
+        "answer_sha256": "77803ec3c666b10de191d19827c3da1ea690572d1a341fcfe8f43d3be9dc6ab9"
+      },
+      {
+        "question_id": 29,
+        "cached": true,
+        "answer_sha256": "5e3bbfa8e9e935f2aa00f77a6af9911b381f74786350dafcfd8273e0ee3a2068"
+      },
+      {
+        "question_id": 30,
+        "cached": true,
+        "answer_sha256": "5372606e77d8252f24cca02f7822ee8ca02d5b9d90fd3c3c9e06a2fad49ae60a"
+      },
+      {
+        "question_id": 31,
+        "cached": true,
+        "answer_sha256": "6db68ba735b238de0991da877f4224d9cec27abd5ee0f95d9a38ab9989982728"
+      },
+      {
+        "question_id": 32,
+        "cached": true,
+        "answer_sha256": "deea6988b3b0dd53d258cfe1238feb8592bd8ca052d1c02f58a2356ef2c4ec91"
+      }
+    ]
+  },
+  "passed": true
+}
