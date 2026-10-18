@@ -244,9 +244,43 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
 
 def _is_negative_control_question(question: str) -> bool:
     return bool(re.search(
-        r"\b(?:claims?|counterfactual|refut\w*|falsif\w*|disprov\w*)\b",
+        r"\b(?:refut\w*|falsif\w*|disprov\w*|counter[-\s]?evidence|"
+        r"counterexamples?|contradict\w*|negative controls?|rule\w*\s+out)\b",
         question.casefold(),
     ))
+
+
+def _scope_matches_negative_evidence(
+        trace: ToolResult, target: ToolResult, question: str, family: str) -> bool:
+    """Require corroborating evidence to describe the empty lookup's scope/program."""
+    if not trace.rows:
+        return False
+    target_compartment = _target_name(str(target.filters.get("compartment") or ""))
+    evidence_compartment = _target_name(str(trace.filters.get("compartment") or ""))
+    target_ephys = str(target.filters.get("ephys") or "")
+
+    if trace.tool == "pathway_contrast_lookup":
+        if not target_compartment or evidence_compartment != target_compartment:
+            return False
+        return not target_ephys or any(target_ephys in row for row in trace.rows)
+
+    if trace.tool not in {"pathway_filter", "exclusive_pathway_lookup"}:
+        return False
+    if not target_compartment or evidence_compartment != target_compartment:
+        return False
+    if target_ephys and trace.filters.get("ephys") != target_ephys:
+        return False
+
+    evidence = _target_name(json.dumps(
+        {"filters": trace.filters, "rows": trace.rows}, ensure_ascii=False))
+    family_relevant = bool(re.search(rf"\b{re.escape(_target_name(family))}[a-z0-9]*\b", evidence))
+    program_relevant = (
+        bool(re.search(r"\bsynap\w*\b", question, flags=re.I))
+        and "neuron tumor" in evidence
+    ) or (
+        "immune" in question.casefold() and "immune synapse" in evidence
+    )
+    return family_relevant or program_relevant
 
 
 def _uses_grounded_negative_family_evidence(
@@ -254,7 +288,7 @@ def _uses_grounded_negative_family_evidence(
     """Accept a real table-backed family as negative evidence in a scoped challenge.
 
     Family lookup is deliberately prefix-based in the table tools. It is useful
-    when a counterfactual asks whether any GRIA-family member occurs in one
+    when a refutation asks whether any GRIA-family member occurs in one
     cell/Ephys context, but it must not make an unsupported positive GRIA claim
     look like an exact gene hit.
     """
@@ -269,20 +303,22 @@ def _uses_grounded_negative_family_evidence(
     }
     if not any(member != gene and member.startswith(gene) for member in members):
         return False
-    targeted_empty = any(
-        str(trace.filters.get("gene") or "").upper() == gene
-        and not trace.rows
-        and any(trace.filters.get(key) for key in (
-            "celltype", "ephys", "compartment", "source_compartment", "target_compartment"
-        ))
+    targeted_empty = [
+        trace
+        for trace in result["traces"]
+        if (
+            str(trace.filters.get("gene") or "").upper() == gene
+            and not trace.rows
+            and any(trace.filters.get(key) for key in (
+                "celltype", "ephys", "compartment", "source_compartment", "target_compartment"
+            ))
+        )
+    ]
+    return bool(targeted_empty) and any(
+        _scope_matches_negative_evidence(trace, target, question, gene)
+        for target in targeted_empty
         for trace in result["traces"]
     )
-    grounded_context = any(
-        trace.tool in {"pathway_contrast_lookup", "pathway_filter", "exclusive_pathway_lookup"}
-        and bool(trace.rows)
-        for trace in result["traces"]
-    )
-    return targeted_empty and grounded_context
 
 
 def _question_targets_supported(question: str, result: dict,

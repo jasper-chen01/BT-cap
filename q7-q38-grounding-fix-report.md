@@ -13,10 +13,10 @@ This fix is limited to the portal reasoning service and its grounding tests. It 
 
 - Pathway-target parsing now recognizes common post-`pathway` predicates such as `hit`, `bind`, `use`, `occur`, `target`, `signal`, and `involve` as verbs rather than pathway names.
 - A family-level empty lookup can count as grounded negative evidence only when all of the following are true:
-  - the question explicitly frames a claim, counterfactual, or refutation;
+  - the question uses explicit negative-control language such as `refute`, `falsify`, `disprove`, `counterevidence`, or `contradict`; a bare `claim` is not sufficient;
   - the family prefix maps to real table genes elsewhere (for example, `GRIA2`, `GRIA3`, or `GRIA4` for `GRIA`);
   - the requested cell/Ephys-scoped family lookup is empty; and
-  - a nonempty pathway contrast, pathway filter, or exclusive-pathway trace accompanies it.
+  - a nonempty pathway contrast is routed for the same compartment and Ephys comparison, or a pathway trace matches the requested compartment/Ephys scope and the named family/program.
 - Answers admitted through that negative-control rule stay deterministic and extractive even if `gemini` or `medgemma` is requested. The provider is not called.
 - Ordinary positive family assertions and invented targets continue to fail closed as `not in the tables`.
 
@@ -27,11 +27,13 @@ This fix is limited to the portal reasoning service and its grounding tests. It 
 - Q7/Q38 extractive paths use a provider spy that fails the test if generation is attempted.
 - Q38 remains extractive when `gemini` is explicitly requested.
 - A positive, unsupported T-cell/Ephys_2 `GRIA` assertion still returns `not in the tables` without calling a provider.
+- Positive `claim + contrast` requests for both `GRIA` and the broader `NRX` prefix remain unsupported and provider-free.
+- Real, nonempty MK/tumor/Ephys_1 rows cannot corroborate an empty GRIA/T-cell/Ephys_2 lookup.
 
 ## Verification
 
-- Focused Q7/Q38 tests: **5 passed**.
-- Backend reasoning, chat-grounding, and API tests: **209 passed**.
-- Full available project suite (`backend/tests`, `fall_semester/rag_bioreasoning/tests`, and `tests`): **271 passed**.
+- Focused Q7/Q38 and safeguard tests: **8 passed**.
+- Backend reasoning, chat-grounding, and API tests: **212 passed**.
+- Full available project suite (`backend/tests`, `fall_semester/rag_bioreasoning/tests`, and `tests`): **274 passed**.
 - The only output was five existing dependency deprecation warnings (Pydantic and Starlette TestClient); there were no failures.
 

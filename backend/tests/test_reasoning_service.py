@@ -8,7 +8,8 @@ import pytest
 from backend.api import reasoning as reasoning_api
 from backend.models.schemas import ReasoningAskRequest
 from backend.services import reasoning_service as service
-from ephys_rag.chain import RAGEngine
+from ephys_rag.chain import RAGEngine, format_traces
+from ephys_rag.llm import extractive_answer
 from ephys_rag.retrieve import RetrievalHit
 from ephys_rag.schema import RAGDocument, ToolResult
 from ephys_rag.retrieve import HybridRetriever
@@ -247,6 +248,62 @@ def test_unsupported_positive_family_assertion_still_fails_closed(
     result = service.ReasoningService(
         production_engine, service.PortalAnswerCache(tmp_path)).ask(
             "What evidence shows GRIA is present in T-cell Ephys_2?", "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+@pytest.mark.parametrize("family", ["GRIA", "NRX"])
+def test_positive_claim_with_contrast_language_does_not_become_a_negative_control(
+        production_engine, tmp_path, monkeypatch, family):
+    question = (
+        f"A model claims T-cell Ephys_2 has a {family} synaptic program. "
+        "What contrast evidence supports this claim?"
+    )
+    raw = production_engine.ask(question, use_llm=False)
+    assert any(trace.tool == "pathway_contrast_lookup" and trace.rows
+               for trace in raw["traces"])
+    assert any(trace.filters.get("gene") == family and not trace.rows
+               for trace in raw["traces"])
+    provider = Mock(side_effect=AssertionError("positive unsupported claims must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+def test_unrelated_real_pathway_rows_cannot_ground_an_empty_family_refutation(
+        production_engine, tmp_path, monkeypatch):
+    question = "What would refute a claim that T-cell Ephys_2 has a GRIA synaptic program?"
+    registry = production_engine.tools
+    traces = [
+        registry.cellchat_lookup(
+            gene="GRIA", celltype="T cell", ephys="Ephys_2", compartment="tcell"),
+        registry.deg_lookup(gene="GRIA", celltype="T cell"),
+        registry.pathway_filter(pathway="MK", compartment="tumor", ephys="Ephys_1"),
+    ]
+    assert not traces[0].rows and not traces[1].rows
+    assert traces[2].rows
+    context = format_traces(traces)
+    grounded = {
+        "answer": extractive_answer(question, context), "context": context,
+        "traces": traces, "hits": [],
+    }
+
+    class FixedTraceEngine(RAGEngine):
+        def ask(self, asked, *, use_llm):
+            assert asked == question and use_llm is False
+            return grounded
+
+    engine = FixedTraceEngine(
+        production_engine.interactions, production_engine.documents,
+        production_engine.retriever, production_engine.tools)
+    provider = Mock(side_effect=AssertionError("unrelated evidence must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
     assert result["answer"] == "not in the tables"
     assert result["cached"] is False
     provider.assert_not_called()
