@@ -4,6 +4,7 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import TracePanel from './TracePanel';
 import { askReasoning, getGene, getNeighbors, getRankedGenes, rowsToCsv } from '../lib/reasoningApi';
+import { contextEvidence } from '../lib/contextEvidence';
 
 const CELL_TYPES = ['OPC_GABA_like_tumor', 'OPC_GABA_AC_like_tumor', 'cycling_tumor', 'AC_like_tumor', 'T cell', 'TAM1/TAM2/microglia'];
 const IDH_CONTEXTS = ['IDH_Mutant', 'IDH_WT'];
@@ -24,16 +25,6 @@ function ErrorMessage({ error }) {
 function DataTable({ rows, columns = rows.length ? Object.keys(rows[0]) : [] }) {
   if (!rows.length) return <p className="py-3 text-sm text-slate-500">No rows in the tables for this selection.</p>;
   return <div className="max-h-80 overflow-auto"><table className="w-full text-left text-xs text-slate-300"><thead className="sticky top-0 bg-slate-900 text-slate-400"><tr>{columns.map((key) => <th key={key} className="whitespace-nowrap p-2 font-medium">{key.replaceAll('_', ' ')}</th>)}</tr></thead><tbody className="divide-y divide-slate-700/50">{rows.map((row, index) => <tr key={index}>{columns.map((key) => <td key={key} className="p-2 align-top"><span className="block max-w-xs break-words">{display(row[key])}</span></td>)}</tr>)}</tbody></table></div>;
-}
-
-// Context selection only restricts already returned evidence; it never derives a rule or score.
-function contextEvidence(rows, celltype, idh) {
-  return (rows || []).filter((row) => {
-    if (row.IDH_status && row.IDH_status !== idh) return false;
-    if (row.celltype_id) return row.celltype_id === celltype;
-    if (row.source || row.target) return [row.source, row.target].some((value) => value?.split(' / ')[0] === celltype);
-    return true;
-  });
 }
 
 export default function GenesTab() {
@@ -122,7 +113,7 @@ export default function GenesTab() {
             <DataTable rows={contextRows} columns={['arm', 'score', 'rank_in_context', 'why', 'scoring_folds', 'passes_three_table', 'min_n']} />
             <h5 className="text-sm font-semibold text-slate-200">CellChat edges · {gene.cellchat?.source_file}</h5><p className="text-xs text-slate-500">CellChat evidence is pooled across IDH when the source has no IDH field.</p><DataTable rows={contextEvidence(gene.cellchat?.rows, celltype, idh)} />
             <h5 className="text-sm font-semibold text-slate-200">Context DEG · {gene.deg?.source_file}</h5><DataTable rows={contextEvidence(gene.deg?.rows, celltype, idh)} />
-            <details className="text-sm text-slate-400"><summary className="cursor-pointer">Pooled DEG evidence</summary><DataTable rows={contextEvidence(gene.pooled_deg?.rows, celltype, idh)} /></details>
+            <details className="text-sm text-slate-400"><summary className="cursor-pointer">Pooled DEG evidence</summary><DataTable rows={contextEvidence(gene.pooled_deg?.rows, celltype, idh, { pooled: true })} /></details>
           </div>
         </>}
       </Card>
