@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import pandas as pd
+from pathlib import Path
 
 from ephys_rag.tools.registry import ToolRegistry, dispatch_tools, infer_query_slots
+from ephys_rag.nomination import NominationStore
 
 
 def _scores() -> pd.DataFrame:
@@ -80,7 +82,7 @@ def _registry() -> ToolRegistry:
         interactions=[],
         degs_idh=[],
         degs_pooled=[],
-        nominee_scores=_scores(),
+        nomination_store=NominationStore({"tables_scetm": _scores()}),
     )
 
 
@@ -138,3 +140,19 @@ def test_opc_like_wording_selects_the_specific_opc_like_tumor_identity():
         "Where does GRIA2 rank in OPC-like tumor, and does scETM drive it?"
     )
     assert slots["celltype"] == "OPC_GABA_like_tumor"
+
+
+def test_nominate_lookup_preserves_week5_order_of_tied_real_scores():
+    """Changing the legacy tie sort must not reorder Q42 context evidence."""
+    path = (Path(__file__).resolve().parents[2] / "turnin/lgbm_scetm"
+            / "tables_scetm/genesets_scores.csv")
+    registry = ToolRegistry(interactions=[], degs_idh=[], degs_pooled=[],
+                            nomination_store=NominationStore({"tables_scetm": pd.read_csv(path)}))
+    rows = registry.nominate_lookup(exclude_syngo=True, limit=5).rows
+    assert [(r["gene"], r["celltype_id"], r["IDH_status"]) for r in rows] == [
+        ("PFDN5", "cycling_tumor", "IDH_WT"),
+        ("PFDN5", "OPC_GABA_like_tumor", "IDH_WT"),
+        ("TPT1", "cycling_tumor", "IDH_Mutant"),
+        ("TPT1", "cycling_tumor", "IDH_WT"),
+        ("TPT1", "OPC_GABA_like_tumor", "IDH_WT"),
+    ]

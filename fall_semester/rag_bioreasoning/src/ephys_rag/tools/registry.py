@@ -25,6 +25,7 @@ from ephys_rag.ingest import (
     load_pathway_knowledge,
 )
 from ephys_rag.schema import DegRecord, Interaction, ToolResult, normalize_idh
+from ephys_rag.nomination import NominationStore
 
 _GENE_RE = re.compile(r"\b([A-Z][A-Z0-9]{1,}(?:-[A-Z0-9]+)?)\b")
 _PAIR_RE = re.compile(r"\b([A-Z][A-Z0-9-]+)_([A-Z][A-Z0-9-]+)\b")
@@ -81,25 +82,12 @@ class ToolRegistry:
     interactions: list[Interaction] = field(default_factory=load_interactions)
     degs_idh: list[DegRecord] = field(default_factory=load_degs_idh)
     degs_pooled: list[DegRecord] = field(default_factory=load_degs_pooled)
-    nominee_scores: pd.DataFrame | None = field(default=None, repr=False)
+    nomination_store: NominationStore | None = field(default=None, repr=False)
 
-    def _prepared_nominee_scores(self) -> pd.DataFrame:
-        if self.nominee_scores is None:
-            if not NOMINATE_SCORES_CSV.exists():
-                raise FileNotFoundError(
-                    f"Missing ranker scores: {NOMINATE_SCORES_CSV}. "
-                    "Run rank-genesets with --arm tables_scetm first."
-                )
-            self.nominee_scores = pd.read_csv(NOMINATE_SCORES_CSV)
-        frame = self.nominee_scores
-        for program in ("tumor_synaptic", "immune_synapse"):
-            rank_col = f"{program.split('_')[0]}_rank_in_context"
-            score_col = f"p_{program}"
-            if rank_col not in frame:
-                frame[rank_col] = frame.groupby(["celltype_id", "IDH_status"])[score_col].rank(
-                    method="min", ascending=False, na_option="keep"
-                )
-        return frame
+    def _nomination_store(self) -> NominationStore:
+        if self.nomination_store is None:
+            self.nomination_store = NominationStore.from_config()
+        return self.nomination_store
 
     def nominate_lookup(
         self,
@@ -112,27 +100,14 @@ class ToolRegistry:
         limit: int = 15,
     ) -> ToolResult:
         """Look up held-out tables+scETM scores and evidence for gene nomination."""
-        if order_by not in {"tumor", "immune"}:
-            raise ValueError("order_by must be 'tumor' or 'immune'")
-        frame = self._prepared_nominee_scores()
-        hits = frame
-        if gene:
-            hits = hits[hits["gene"].str.upper() == gene.upper()]
-        if celltype:
-            hits = hits[hits["celltype_id"].map(lambda value: _match_cell(str(value), celltype))]
         idh_norm = normalize_idh(idh)
-        if idh_norm:
-            hits = hits[hits["IDH_status"] == idh_norm]
-        if exclude_syngo:
-            hits = hits[hits["in_tumor_synaptic"].fillna(0).astype(int) == 0]
-
-        score_col = f"p_{order_by}_synaptic" if order_by == "tumor" else "p_immune_synapse"
-        if gene is None:
-            hits = hits.dropna(subset=[score_col])
-        hits = hits.sort_values(score_col, ascending=False, na_position="last")
+        hits = self._nomination_store().nominate_rows(
+            gene=gene, celltype=celltype, idh=idh, order_by=order_by,
+            exclude_syngo=exclude_syngo, limit=None,
+        )
 
         rows = []
-        for rec in hits.head(limit).to_dict(orient="records"):
+        for rec in hits[:limit]:
             tumor_features = _top_feature_names(rec.get("why_tumor_synaptic"))
             immune_features = _top_feature_names(rec.get("why_immune_synapse"))
             rows.append(
