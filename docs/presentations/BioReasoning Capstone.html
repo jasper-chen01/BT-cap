@@ -1,0 +1,334 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BioReasoning Capstone</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one wide lane diagram (data column + three lanes), then a week-by-week table. */
+:root {
+  --bg: #F2F5F6; --surface: #FFFFFF; --fg: #16232A; --muted: #56676E;
+  --line: #CCD7DA; --line-strong: #8A9DA4; --accent: #0A7682;
+  --lane-a: #E7F0F3; --lane-b: #ECEBF5; --lane-c: #EBF2EA;
+  --done: #2C7549; --done-bg: #E1F0E6; --prog: #9C6210; --prog-bg: #FAEFDA; --skip: #87949A;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --cond: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1316; --surface: #141C20; --fg: #E1E9EC; --muted: #92A3A9;
+  --line: #2A383D; --line-strong: #5C6F76; --accent: #46BFC9;
+  --lane-a: #122027; --lane-b: #181A27; --lane-c: #141F17;
+  --done: #66BF8B; --done-bg: #15281D; --prog: #E2A84E; --prog-bg: #2A2013; --skip: #6E7C82;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1316; --surface: #141C20; --fg: #E1E9EC; --muted: #92A3A9;
+  --line: #2A383D; --line-strong: #5C6F76; --accent: #46BFC9;
+  --lane-a: #122027; --lane-b: #181A27; --lane-c: #141F17;
+  --done: #66BF8B; --done-bg: #15281D; --prog: #E2A84E; --prog-bg: #2A2013; --skip: #6E7C82;
+  color-scheme: dark }
+
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/1.55 var(--sans); }
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 48px; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+h1 { font: 600 30px/1.15 var(--cond); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 500 12.5px var(--sans); padding: 3px 10px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.pill.done { color: var(--done); background: var(--done-bg); border-color: var(--done); }
+.pill.prog { color: var(--prog); background: var(--prog-bg); border-color: var(--prog); }
+.pill.plan { color: var(--muted); background: var(--surface); border: 1px dashed var(--muted); }
+.pill.skip { color: var(--skip); background: transparent; border: 1px dashed var(--skip); }
+.pill.acc { color: var(--accent); background: transparent; border-color: var(--accent); }
+
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.scroll { overflow-x: auto; }
+figcaption { color: var(--muted); font-size: 14px; max-width: 80ch; }
+
+svg.pipe { display: block; width: 100%; min-width: 900px; height: auto; color: var(--fg); }
+.lane { stroke: none; } .lane-a { fill: var(--lane-a); } .lane-b { fill: var(--lane-b); } .lane-c { fill: var(--lane-c); }
+.box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.box.prog { stroke: var(--prog); stroke-width: 1.4; }
+.box.plan { stroke-dasharray: 5 4; }
+.t-title { font: 600 12.5px var(--sans); fill: var(--fg); }
+.t-body { font: 400 11px var(--sans); fill: var(--muted); }
+.t-small { font: 400 10.5px var(--sans); fill: var(--muted); }
+.t-mono { font: 400 11px var(--mono); fill: var(--fg); }
+.t-mono-m { font: 400 10.5px var(--mono); fill: var(--muted); }
+.t-lane { font: 600 11.5px var(--cond); letter-spacing: 0.09em; fill: var(--muted); }
+.t-edge { font: 500 10.5px var(--sans); fill: var(--muted); }
+.t-acc { fill: var(--accent); font-weight: 600; }
+.edge { fill: none; stroke: var(--muted); stroke-width: 1.3; }
+.edge.acc { stroke: var(--accent); stroke-width: 2.2; }
+.bus { fill: none; stroke: var(--line-strong); stroke-width: 1.3; }
+.mk { fill: var(--muted); } .mk-acc { fill: var(--accent); }
+.chip { stroke-width: 1; }
+.chip.done { fill: var(--done-bg); stroke: var(--done); }
+.chip.prog { fill: var(--prog-bg); stroke: var(--prog); }
+.chip.plan { fill: var(--surface); stroke: var(--muted); stroke-dasharray: 4 3; }
+.chip.skip { fill: none; stroke: var(--skip); stroke-dasharray: 4 3; }
+.chip-t { font: 500 10.5px var(--sans); }
+.chip-t.done { fill: var(--done); } .chip-t.prog { fill: var(--prog); } .chip-t.plan { fill: var(--muted); } .chip-t.skip { fill: var(--skip); }
+
+section { display: grid; gap: 12px; min-width: 0; }
+h2 { font: 600 20px/1.2 var(--cond); margin: 0; letter-spacing: 0.01em; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font: 600 11.5px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+td.wk { font: 600 15px var(--cond); white-space: nowrap; font-variant-numeric: tabular-nums; }
+td .name { font-weight: 600; display: block; }
+code { font: 400 12.5px var(--mono); }
+.note { color: var(--muted); font-size: 13.5px; margin: 0; max-width: 80ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>BioReasoning Capstone</h1>
+    <p class="lede">How the capstone pieces fit together, weeks 1 to 6. One set of derived tables feeds a question-answering agent and a gene ranker; in week 6 both go into the portal, which gives the same answers as the CLI. Status as of 18 October 2026.</p>
+    <div class="legend" aria-label="Status legend">
+      <span class="pill done">Done</span>
+      <span class="pill prog">In progress</span>
+      <span class="pill plan">Planned</span>
+      <span class="pill skip">Skipped</span>
+      <span class="pill acc">Ranker → agent link</span>
+    </div>
+  </header>
+
+  <figure>
+    <div class="scroll">
+      <svg class="pipe" viewBox="0 0 1160 790" role="img" aria-label="Pipeline diagram. The derived glioma tables feed three lanes: the agent, which routes a question to table tools, passes the tool traces to MedGemma or Gemini and checks the answer; the ranker, which turns the tables and scETM gene embeddings into two LightGBM models trained on public gene lists and returns to the agent as the nominate_lookup tool; and the week 6 portal, whose backend loads the agent and the week 5 score files once and serves them to the chat, to a Genes tab, and to a regression script that checks the portal against the CLI on Q1 to Q44.">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+          <marker id="arr-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-acc"/></marker>
+        </defs>
+
+        <!-- lanes -->
+        <rect x="255" y="16" width="895" height="222" rx="10" class="lane lane-a"/>
+        <text x="271" y="38" class="t-lane">AGENT · W1–W3</text>
+        <rect x="255" y="252" width="895" height="232" rx="10" class="lane lane-b"/>
+        <text x="271" y="274" class="t-lane">RANKER · W4–W5</text>
+        <rect x="255" y="498" width="895" height="276" rx="10" class="lane lane-c"/>
+        <text x="271" y="520" class="t-lane">PORTAL · W6 · NOTHING IS TRAINED HERE, IT READS FILES THE TWO LANES ABOVE PRODUCED</text>
+
+        <!-- data column -->
+        <text x="20" y="38" class="t-lane">DATA</text>
+        <text x="20" y="86" class="t-small">In-house</text>
+        <rect x="20" y="96" width="200" height="118" rx="8" class="box"/>
+        <text x="34" y="118" class="t-title">Derived tables</text>
+        <text x="34" y="138" class="t-body">CellChat · 922 interactions</text>
+        <text x="34" y="156" class="t-body">DEGs · 6 cell types × 2 IDH</text>
+        <text x="34" y="174" class="t-body">Cell counts per group</text>
+        <text x="34" y="192" class="t-body">all split Ephys_1 vs Ephys_2</text>
+
+        <rect x="20" y="286" width="200" height="88" rx="8" class="box"/>
+        <text x="34" y="308" class="t-title">Single cells</text>
+        <text x="34" y="328" class="t-mono">adata.h5ad</text>
+        <text x="34" y="346" class="t-body">254,777 cells × 26,969 genes</text>
+        <text x="34" y="364" class="t-body">cell type + Ephys state</text>
+        <path d="M120,286 V216" class="edge" marker-end="url(#arr)"/>
+        <text x="128" y="254" class="t-edge">computed upstream</text>
+
+        <text x="20" y="412" class="t-small">Public</text>
+        <rect x="20" y="420" width="200" height="96" rx="8" class="box"/>
+        <text x="34" y="442" class="t-title">Public gene lists</text>
+        <text x="34" y="462" class="t-body">SynGO → tumor synaptic</text>
+        <text x="34" y="480" class="t-body">GO:0001772 → immune synapse</text>
+        <text x="34" y="498" class="t-body">published 33 → check only</text>
+
+        <!-- table bus -->
+        <path d="M240,196 V620" class="bus"/>
+        <path d="M220,196 H535" class="bus" marker-end="url(#arr)"/>
+        <text x="400" y="190" text-anchor="middle" class="t-edge">tools read the tables</text>
+        <path d="M240,426 H275" class="bus" marker-end="url(#arr)"/>
+        <path d="M240,620 H275" class="bus" marker-end="url(#arr)"/>
+        <text x="236" y="640" text-anchor="end" class="t-edge">copied to</text>
+        <text x="236" y="654" text-anchor="end" class="t-mono-m">data/reasoning/</text>
+
+        <!-- agent lane -->
+        <rect x="271" y="70" width="96" height="50" rx="8" class="box"/>
+        <text x="319" y="92" text-anchor="middle" class="t-title">Question</text>
+        <text x="319" y="109" text-anchor="middle" class="t-body">plain English</text>
+
+        <rect x="403" y="70" width="96" height="50" rx="8" class="box"/>
+        <text x="451" y="92" text-anchor="middle" class="t-title">Router</text>
+        <text x="451" y="109" text-anchor="middle" class="t-body">picks tools</text>
+
+        <rect x="535" y="50" width="176" height="168" rx="8" class="box"/>
+        <text x="549" y="72" class="t-title">Tools</text>
+        <text x="549" y="92" class="t-mono">cellchat_lookup</text>
+        <text x="549" y="108" class="t-mono">deg_lookup</text>
+        <text x="549" y="124" class="t-mono">count_lookup</text>
+        <text x="549" y="140" class="t-mono">annotation_lookup</text>
+        <text x="549" y="156" class="t-mono">support_join</text>
+        <text x="549" y="172" class="t-mono">pathway_filter</text>
+        <text x="549" y="188" class="t-mono">sender_pathway_contrast</text>
+        <text x="549" y="208" class="t-mono t-acc">nominate_lookup</text>
+        <text x="697" y="208" text-anchor="end" class="t-edge t-acc">W5</text>
+
+        <rect x="747" y="70" width="104" height="50" rx="8" class="box"/>
+        <text x="799" y="92" text-anchor="middle" class="t-title">Tool traces</text>
+        <text x="799" y="109" text-anchor="middle" class="t-body">rows + source</text>
+
+        <rect x="887" y="70" width="116" height="50" rx="8" class="box"/>
+        <text x="945" y="92" text-anchor="middle" class="t-title">LLM</text>
+        <text x="945" y="109" text-anchor="middle" class="t-body">MedGemma · Gemini</text>
+
+        <rect x="1039" y="70" width="100" height="50" rx="8" class="box"/>
+        <text x="1089" y="92" text-anchor="middle" class="t-title">Answer</text>
+        <text x="1089" y="109" text-anchor="middle" class="t-body">invented? check</text>
+
+        <path d="M367,95 H403" class="edge" marker-end="url(#arr)"/>
+        <path d="M499,95 H535" class="edge" marker-end="url(#arr)"/>
+        <text x="517" y="88" text-anchor="middle" class="t-edge">calls</text>
+        <path d="M711,95 H747" class="edge" marker-end="url(#arr)"/>
+        <text x="729" y="88" text-anchor="middle" class="t-edge">rows</text>
+        <path d="M851,95 H887" class="edge" marker-end="url(#arr)"/>
+        <text x="869" y="88" text-anchor="middle" class="t-edge">prompt</text>
+        <path d="M1003,95 H1039" class="edge" marker-end="url(#arr)"/>
+        <text x="1021" y="88" text-anchor="middle" class="t-edge">writes</text>
+
+        <rect x="271" y="140" width="228" height="24" rx="12" class="chip done"/>
+        <text x="285" y="156" class="chip-t done">W1 · retrieval, no LLM · done</text>
+        <rect x="887" y="140" width="252" height="24" rx="12" class="chip done"/>
+        <text x="901" y="156" class="chip-t done">W2 · two LLMs, same traces · done</text>
+        <rect x="887" y="172" width="252" height="24" rx="12" class="chip skip"/>
+        <text x="901" y="188" class="chip-t skip">W3 · 5× runs skipped · cache lands in W6</text>
+
+        <!-- ranker lane -->
+        <rect x="489" y="262" width="170" height="22" rx="11" class="chip done"/>
+        <text x="503" y="277" class="chip-t done">W5 · scETM + tool · done</text>
+        <rect x="697" y="262" width="150" height="22" rx="11" class="chip done"/>
+        <text x="711" y="277" class="chip-t done">W4 · ranker · done</text>
+
+        <rect x="275" y="292" width="180" height="66" rx="8" class="box"/>
+        <text x="289" y="314" class="t-title">scETM</text>
+        <text x="289" y="333" class="t-body">20k cells · 32-d ρ · 50 topics</text>
+        <text x="289" y="350" class="t-body">no labels</text>
+        <path d="M220,325 H275" class="edge" marker-end="url(#arr)"/>
+
+        <rect x="489" y="292" width="170" height="66" rx="8" class="box"/>
+        <text x="503" y="314" class="t-title">Embedding features</text>
+        <text x="503" y="333" class="t-body">L1 · raw ρ, 32 dims</text>
+        <text x="503" y="350" class="t-body">L2 · neighbours' labels</text>
+        <path d="M455,325 H489" class="edge" marker-end="url(#arr)"/>
+        <text x="472" y="319" text-anchor="middle" class="t-edge">ρ</text>
+
+        <rect x="275" y="384" width="180" height="84" rx="8" class="box"/>
+        <text x="289" y="406" class="t-title">Feature table</text>
+        <text x="289" y="424" class="t-body">gene × cell type × IDH</text>
+        <text x="289" y="441" class="t-body">~9,580 genes · 27k rows</text>
+        <text x="289" y="458" class="t-body">DEG · CellChat · counts</text>
+
+        <rect x="693" y="300" width="170" height="148" rx="8" class="box"/>
+        <text x="707" y="322" class="t-title">LightGBM × 2 · 3 arms</text>
+        <text x="707" y="344" class="t-body">tumor synaptic</text>
+        <text x="707" y="361" class="t-body">immune synapse</text>
+        <text x="707" y="388" class="t-body">tables · tables + scETM</text>
+        <text x="707" y="405" class="t-body">· scETM only</text>
+        <text x="707" y="428" class="t-body">GroupKFold · L2 per fold</text>
+        <path d="M659,325 H693" class="edge" marker-end="url(#arr)"/>
+        <path d="M455,426 H693" class="edge" marker-end="url(#arr)"/>
+        <text x="574" y="420" text-anchor="middle" class="t-edge">features</text>
+        <path d="M220,478 H778 V450" class="edge" marker-end="url(#arr)"/>
+        <text x="770" y="472" text-anchor="end" class="t-edge">labels</text>
+
+        <rect x="897" y="318" width="128" height="112" rx="8" class="box"/>
+        <text x="911" y="340" class="t-title">Held-out scores</text>
+        <text x="911" y="362" class="t-mono">p_tumor_synaptic</text>
+        <text x="911" y="379" class="t-mono">p_immune_synapse</text>
+        <text x="911" y="402" class="t-body">AUROC 0.74 · 0.73</text>
+        <text x="911" y="419" class="t-body">tables alone 0.68 · 0.67</text>
+        <path d="M863,374 H897" class="edge" marker-end="url(#arr)"/>
+
+        <rect x="1051" y="318" width="96" height="112" rx="8" class="box"/>
+        <text x="1063" y="340" class="t-title">Nominees</text>
+        <text x="1063" y="362" class="t-small">pass CellChat</text>
+        <text x="1063" y="379" class="t-small">+ DEG + count</text>
+        <text x="1063" y="396" class="t-small">housekeeping</text>
+        <text x="1063" y="413" class="t-small">removed</text>
+        <path d="M1025,374 H1051" class="edge" marker-end="url(#arr)"/>
+
+        <!-- ranker becomes a tool -->
+        <path d="M961,318 V245 H623 V220" class="edge acc" marker-end="url(#arr-acc)"/>
+        <text x="792" y="236" text-anchor="middle" class="t-edge t-acc">ranker becomes a tool · W5</text>
+
+        <!-- score files go to the portal -->
+        <path d="M961,430 V491 H385 V546" class="edge" marker-end="url(#arr)"/>
+        <text x="673" y="487" text-anchor="middle" class="t-edge">arms_gene_ranks.csv · per-arm rows · ρ</text>
+
+        <!-- portal lane -->
+        <rect x="1003" y="506" width="138" height="22" rx="11" class="chip done"/>
+        <text x="1017" y="521" class="chip-t done">W6 · done</text>
+
+        <rect x="275" y="546" width="220" height="150" rx="8" class="box prog"/>
+        <text x="289" y="568" class="t-title">Backend</text>
+        <text x="289" y="586" class="t-mono-m">backend/api/reasoning.py</text>
+        <text x="289" y="604" class="t-body">pip install -e rag_bioreasoning</text>
+        <text x="289" y="620" class="t-body">RAGEngine, scores, ρ loaded once</text>
+        <text x="289" y="640" class="t-mono-m">POST /api/reasoning/ask</text>
+        <text x="289" y="655" class="t-mono-m">GET  /api/genes/{symbol}</text>
+        <text x="289" y="670" class="t-mono-m">GET  /api/genes/ranked</text>
+        <text x="289" y="685" class="t-mono-m">GET  /api/genes/{symbol}/neighbors</text>
+
+        <rect x="535" y="546" width="230" height="66" rx="8" class="box prog"/>
+        <text x="549" y="568" class="t-title">Chat</text>
+        <text x="549" y="586" class="t-body">slot parser finds a gene → agent, with traces</text>
+        <text x="549" y="602" class="t-body">never bare Gemini · "not in the tables"</text>
+
+        <rect x="535" y="630" width="230" height="66" rx="8" class="box prog"/>
+        <text x="549" y="652" class="t-title">Genes tab</text>
+        <text x="549" y="670" class="t-body">gene card · ranked list · neighbours · ask</text>
+        <text x="549" y="686" class="t-body">browser computes nothing</text>
+
+        <rect x="805" y="546" width="336" height="150" rx="8" class="box prog"/>
+        <text x="819" y="568" class="t-title">Regression</text>
+        <text x="819" y="586" class="t-mono-m">scripts/portal_regression.py</text>
+        <text x="819" y="608" class="t-body">Q1–Q44 via the API = CLI --no-llm, 44/44</text>
+        <text x="819" y="624" class="t-body">(tools fired + required term; Q1–Q38 not</text>
+        <text x="819" y="640" class="t-body">taken over by the new router words)</text>
+        <text x="819" y="660" class="t-body">published 33: same p and gene_rank as nominate_lookup</text>
+        <text x="819" y="680" class="t-body">Q9–Q32 with MedGemma answered from runs/, no new calls</text>
+
+        <path d="M495,579 H535" class="edge" marker-end="url(#arr)"/>
+        <text x="515" y="573" text-anchor="middle" class="t-edge">serves</text>
+        <path d="M495,663 H535" class="edge" marker-end="url(#arr)"/>
+        <text x="515" y="657" text-anchor="middle" class="t-edge">serves</text>
+        <path d="M765,579 H805" class="edge" marker-end="url(#arr)"/>
+        <path d="M765,663 H805" class="edge" marker-end="url(#arr)"/>
+        <text x="785" y="627" text-anchor="middle" class="t-edge">checks</text>
+
+        <text x="275" y="722" class="t-edge">Every LLM call writes runs/portal/&lt;hash&gt;.json before returning, so the same question, model and context return the cached answer. Traces stay JSON; the frontend draws them.</text>
+        <text x="275" y="740" class="t-edge">Demo: NRXN1 gene card · tumor-synaptic top 10, housekeeping off, novel, passes the rule · RPL5 neighbours · Q39 in chat with its nominate_lookup trace · a question the tables cannot answer.</text>
+        <text x="275" y="758" class="t-edge">Model dropdown: none (extractive, deterministic) · medgemma (on the backend machine) · gemini (Vertex).</text>
+      </svg>
+    </div>
+    <figcaption>All three lanes read the same derived tables. The ranker feeds back into the agent as the <code>nominate_lookup</code> tool (teal arrow, week 5). The week 6 portal wraps the agent and reads the week 5 score files through the same loader as <code>nominate_lookup</code>, so the Genes tab and the chat cannot disagree. Orange outlines are this week's work.</figcaption>
+  </figure>
+
+  <section>
+    <h2>Week by week</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Week</th><th>What it adds</th><th>What comes out</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="wk">1</td><td><span class="name">Retrieval agent</span>A question in English is routed to table tools, which return rows and the source file. No LLM.</td><td>Tool traces for Q1–Q8</td><td><span class="pill done">Done</span></td></tr>
+          <tr><td class="wk">2</td><td><span class="name">LLMs write the answer</span>MedGemma and Gemini answer from the same tool traces.</td><td>Comparison of 24 answers, Q9–Q32; no invented genes</td><td><span class="pill done">Done</span></td></tr>
+          <tr><td class="wk">3</td><td><span class="name">Free, repeatable runs</span>Local MedGemma, every call cached, 5 runs per question.</td><td>5× table not produced. The cache is now a week 6 requirement: <code>runs/portal/&lt;hash&gt;.json</code>, and Q9–Q32 must replay from it</td><td><span class="pill skip">Skipped</span> cache moves to week 6</td></tr>
+          <tr><td class="wk">4</td><td><span class="name">Gene ranker</span>Two LightGBM models on a gene × context feature table. Labels from SynGO and GO:0001772, folds grouped by gene family, published 33 held out.</td><td>Held-out scores; AUROC 0.68 and 0.67 vs baselines 0.51 and 0.55; nominee lists</td><td><span class="pill done">Done</span></td></tr>
+          <tr><td class="wk">5</td><td><span class="name">scETM features + ranker as a tool</span>32-d gene vectors learned from 20k cells with no labels. Raw-vector and neighbours'-label features, the second rebuilt inside each fold. Three arms per model. <code>nominate_lookup</code> added to the agent, Q39–Q44 added.</td><td>Best arm tables + scETM: AUROC 0.74 tumor, 0.73 immune. Housekeeping count unchanged (83/100) but ribosomal block replaces MT/histone genes. Immune top moves to CD28, LCP2, CD2. Published 33 drop under scETM only (0.72 / 0.49), so both views are kept. <code>arms_gene_ranks.csv</code>, per-arm rows, ρ</td><td><span class="pill done">Done</span></td></tr>
+          <tr><td class="wk">6</td><td><span class="name">Portal</span>Installed the agent in the portal, added the <code>/api/reasoning</code> and <code>/api/genes</code> router, sent gene questions in chat to the agent instead of bare Gemini, built the Genes tab (<code>GenesTab.jsx</code>, four panels), and added the regression script.</td><td>Portal answers Q1–Q44 identically to the CLI (44/44); published 33 match <code>nominate_lookup</code>; Q9–Q32 replay from cache; 5-minute demo verified</td><td><span class="pill done">Done</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Week 6 follows WEEK6.md. Week 4 numbers are from Eric's slide; Jasper's agree to two decimals. Week 5 numbers are from WEEK5_RESULTS.md (5 seeds × 5 folds, out of fold). The benchmark that was pencilled in for week 6 is deferred.</p>
+  </section>
+</div>
+</body>
+</html>
+
+</body></html>
