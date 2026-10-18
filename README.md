@@ -228,6 +228,104 @@ and `EMBEDDING_FINETUNE_SUBDIR` if your tree differs.
 
 ## Quick start (recommended: React portal + API)
 
+### Week 6 grounded reasoning demo
+
+The **Genes** tab adds held-out gene scores, context evidence, filtered rankings,
+scETM neighbours, and grounded questions. Biological chat uses the same Python
+package. The browser displays saved outputs and does not calculate biological
+scores, ranks, similarities, or rule membership.
+
+Use Python 3.11 in a separate environment. The legacy `requirements.txt` pins
+older scikit-learn and Vertex versions than the editable reasoning package
+requires. This dedicated demo setup accommodates both imports. From the
+repository root in PowerShell:
+
+```powershell
+py -3.11 -m venv .venv-week6
+.\.venv-week6\Scripts\python.exe -m pip install -e fall_semester/rag_bioreasoning
+.\.venv-week6\Scripts\python.exe -m pip install fastapi uvicorn python-multipart openpyxl pytest httpx google-cloud-storage google-cloud-firestore passlib[bcrypt] argon2-cffi python-jose[cryptography]
+.\.venv-week6\Scripts\python.exe -m pip install numpy==1.26.4 pandas==2.1.3 scipy==1.11.4 scikit-learn==1.4.2 lightgbm==4.3.0 scanpy==1.9.3 anndata==0.10.5 matplotlib==3.8.2 numba==0.60.0 umap-learn==0.5.6 faiss-cpu==1.7.4
+.\.venv-week6\Scripts\python.exe scripts/prepare_reasoning_data.py --source . --destination data/reasoning
+$env:EPHYS_RAG_DATA_DIR = (Resolve-Path data/reasoning).Path
+$env:EPHYS_RAG_RUNS_DIR = Join-Path $env:EPHYS_RAG_DATA_DIR 'runs/portal'
+npm ci --prefix frontend-react
+```
+
+Preparation validates and copies existing Weeks 1–5 outputs without retraining.
+Keep `data/reasoning/runs/portal` when restarting: it contains historical
+MedGemma answers. `EPHYS_RAG_DATA_DIR` takes precedence over the legacy `DATA_DIR`
+fallback; `.env.example` lists optional score and embedding overrides.
+Extractive questions (`none`) need no model credentials. Live MedGemma/Gemini
+requires separately configured providers; this demo uses cached MedGemma.
+Missing runtime tables return a preparation error / HTTP 503.
+
+For a fresh runtime cache, import the saved Q9–Q32 answers once before the
+regression. This conversion preserves historical provenance and skips existing
+entries; regression itself never imports cache or calls providers:
+
+```powershell
+.\.venv-week6\Scripts\python.exe -c "from pathlib import Path; from backend.services.reasoning_service import PortalAnswerCache,get_rag_engine,import_week2_cache; from backend.config import settings; print(import_week2_cache(Path('fall_semester/turnin/week2_traces'), PortalAnswerCache(settings.EPHYS_RAG_RUNS_DIR), get_rag_engine()))"
+```
+
+Start the API in that terminal:
+
+```powershell
+.\.venv-week6\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, start the frontend:
+
+```powershell
+npm run dev --prefix frontend-react -- --host 127.0.0.1 --port 5173
+```
+
+Open [the portal](http://localhost:5173), choose **Get started**, and use the
+local demo sign-in defined in `backend/api/auth.py`. Open **Genes** after
+sign-in. Authentication is held in memory, so refreshing requires sign-in
+again. No Firestore account is needed for demo sign-in. Backend health can
+report missing annotation assets independently of prepared Week 6 data.
+Keep the API on port 8000; the shared reasoning client accepts
+`VITE_API_BASE_URL` for a different backend.
+
+Run complete checks from the repository root with the data variables above
+set (allow local sockets for FastAPI TestClient):
+
+```powershell
+$env:OPENBLAS_NUM_THREADS = '1'
+$env:OMP_NUM_THREADS = '1'
+.\.venv-week6\Scripts\python.exe -m pytest fall_semester/rag_bioreasoning/tests backend/tests tests -v
+npm test --prefix frontend-react
+npm run build --prefix frontend-react
+.\.venv-week6\Scripts\python.exe scripts/portal_regression.py --questions fall_semester/questions.md --output-dir fall_semester/turnin/week6_portal
+```
+
+The regression target is 44/44 tool-and-term matches, with extractive answer
+equality reported separately, published-33 score/rank checks, and 24/24 cached
+MedGemma responses with zero provider calls and an unchanged cache. JSON, CSV
+and Markdown evidence is under `fall_semester/turnin/week6_portal/`.
+`--base-url http://127.0.0.1:8000` optionally checks a running API; only the
+default in-process run can instrument provider calls/cache mutation for acceptance.
+
+Five-minute demo sequence:
+
+1. Find **NRXN1** in Genes; select **cycling_tumor / IDH_Mutant** to inspect
+   both score arms, explanations, fold provenance, CellChat and DEG evidence.
+2. Use **Tumor synaptic**, **Tables + scETM**, **Exclude housekeeping**,
+   **Novel only**, **Three-table rule: Pass**, and result limit **10**.
+   The CSV button exports displayed endpoint rows.
+3. Find **RPL5** in **Top 20 scETM neighbours** and inspect the ribosomal block.
+4. In **Ask the tables**, select **MedGemma** and ask exact cached Q21:
+   `Is NRXN1 DEG-supported as Ephys_2-high in IDH-mutant cycling tumor?`
+   Confirm **Cached response** and expand the structured traces.
+5. Open chat and ask Q39:
+   `What is NRXN1's tumor-synaptic score in IDH-mutant cycling tumor, and which feature drove it?`
+   Expand the trace to show `nominate_lookup`, its arm and scoring fold.
+6. Ask `Does the invented pathway occur?` and inspect `not in the tables`.
+
+The four demo captures belong in `docs/presentations/screenshots/`:
+`genes-nrxn1.png`, `ranked-novel.png`, `chat-q39-trace.png`, and
+`not-in-tables.png`. Stop both servers with Ctrl+C after the demonstration.
+
 **Python:** 3.10 or 3.11 (Geneformer / scientific stack is not stable on 3.12+  
 for embedding jobs).
 
