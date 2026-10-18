@@ -243,24 +243,38 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
 
 
 def _is_negative_control_question(question: str) -> bool:
-    lowered = question.casefold()
+    lowered = question.casefold().replace("\u2019", "'")
     pattern = re.compile(
         r"\b(?:refut\w*|falsif\w*|disprov\w*|counter[-\s]?evidence|"
         r"counterexamples?|contradict\w*|negative controls?|rule\w*\s+out)\b"
     )
-    for match in pattern.finditer(lowered):
-        preceding = re.findall(r"[a-z]+", lowered[:match.start()])[-4:]
-        if any(word in {"not", "never", "without", "avoid", "avoiding", "than"}
-               for word in preceding):
-            continue
-        return True
+    negation = re.compile(
+        r"(?:\bdo\s+not\b|\bdon't\b|\bdont\b|\bnot\b|\bnever\b|\bwithout\b|"
+        r"\bavoid(?:ing)?\b|\brather\s+than\b|\binstead\s+of\b)"
+    )
+    # A keyword only expresses an affirmative challenge when it is not under a
+    # negator in the same clause.  A comma starts a new local clause, so
+    # "Without using an LLM, what would refute ..." remains affirmative while
+    # arbitrarily long "without ... carefully disprove" spans remain negated.
+    for clause in re.split(r"[;.!?]+", lowered):
+        for match in pattern.finditer(clause):
+            local_prefix = clause[:match.start()].rsplit(",", 1)[-1]
+            if negation.search(local_prefix):
+                continue
+            return True
     return False
 
 
-def _row_scope_text(row: dict) -> str:
-    return _target_name(" ".join(str(row.get(field, "")) for field in (
-        "source", "target", "celltype", "celltype_id", "source_cell", "target_cell", "cell"
-    )))
+def _participant_scope_texts(row: dict) -> tuple[str, ...]:
+    """Return participant labels separately so their attributes cannot mix."""
+    return tuple(
+        _target_name(str(row.get(field, "")))
+        for field in (
+            "source", "target", "celltype", "celltype_id",
+            "source_cell", "target_cell", "cell",
+        )
+        if row.get(field)
+    )
 
 
 def _scope_matches_negative_evidence(
@@ -276,18 +290,20 @@ def _scope_matches_negative_evidence(
     if not target_celltype:
         return False
     identity_pattern = re.compile(rf"\b{re.escape(target_celltype)}\b")
-    identity_rows = [row for row in trace.rows if identity_pattern.search(_row_scope_text(row))]
-    if not identity_rows:
+    matching_participants = [
+        participant
+        for row in trace.rows
+        for participant in _participant_scope_texts(row)
+        if identity_pattern.search(participant)
+    ]
+    if not matching_participants:
         return False
 
     if target_ephys:
         normalized_ephys = _target_name(target_ephys)
-        filter_matches = trace.filters.get("ephys") == target_ephys
-        row_matches = any(
-            re.search(rf"\b{re.escape(normalized_ephys)}\b", _row_scope_text(row))
-            for row in identity_rows
-        )
-        if not filter_matches and not row_matches:
+        ephys_pattern = re.compile(rf"\b{re.escape(normalized_ephys)}\b")
+        if not any(ephys_pattern.search(participant)
+                   for participant in matching_participants):
             return False
 
     if trace.tool == "pathway_contrast_lookup":

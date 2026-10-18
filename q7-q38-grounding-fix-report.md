@@ -13,10 +13,10 @@ This fix is limited to the portal reasoning service and its grounding tests. It 
 
 - Pathway-target parsing now recognizes common post-`pathway` predicates such as `hit`, `bind`, `use`, `occur`, `target`, `signal`, and `involve` as verbs rather than pathway names.
 - A family-level empty lookup can count as grounded negative evidence only when all of the following are true:
-  - the question uses affirmative negative-control language such as `refute`, `falsify`, `disprove`, `counterevidence`, or `contradict`; a bare `claim` is not sufficient, and bounded negations such as `without refuting` or `do not refute` do not activate the exception;
+  - the question uses affirmative negative-control language such as `refute`, `falsify`, `disprove`, `counterevidence`, or `contradict`; a bare `claim` is not sufficient, and clause-aware negation handles contractions such as `don't`, `do not`, and arbitrarily long `without ... disprove/falsify` spans without activating the exception;
   - the family prefix maps to real table genes elsewhere (for example, `GRIA2`, `GRIA3`, or `GRIA4` for `GRIA`);
   - the requested cell/Ephys-scoped family lookup is empty; and
-  - corroborating pathway rows contain the requested normalized cell identity in a source, target, or celltype field, match the requested compartment/Ephys scope, and match the named family/program.
+  - corroborating pathway rows contain the requested normalized cell identity and Ephys label in the same source, target, or celltype participant, match the requested compartment, and match the named family/program. A broad trace-level Ephys filter cannot substitute for that participant-level match.
 - Answers admitted through that negative-control rule stay deterministic and extractive even if `gemini` or `medgemma` is requested. The provider is not called.
 - Ordinary positive family assertions and invented targets continue to fail closed as `not in the tables`.
 
@@ -30,12 +30,15 @@ This fix is limited to the portal reasoning service and its grounding tests. It 
 - Positive `claim + contrast` requests for both `GRIA` and the broader `NRX` prefix remain unsupported and provider-free.
 - Real, nonempty MK/tumor/Ephys_1 rows cannot corroborate an empty GRIA/T-cell/Ephys_2 lookup.
 - Positive support prompts containing `without refuting it` or `Do not refute it` remain unsupported and provider-free.
+- Exact contraction and long-span prompts (`Don't refute ...` and `Without ... carefully disprove or falsify ...`) remain unsupported and provider-free.
 - Real PTN rows from cycling/OPC/AC tumor identities cannot corroborate an empty MES-like/Ephys_2 GRIA lookup.
+- A real `PPIA_BSG` row with T-cell/Ephys_1 as source and tumor/Ephys_2 as target cannot be misread as T-cell/Ephys_2 evidence.
 
 ## Verification
 
-- Focused Q7/Q38 and safeguard tests: **11 passed**.
-- Backend reasoning, chat-grounding, and API tests: **215 passed**.
-- Full available project suite (`backend/tests`, `fall_semester/rag_bioreasoning/tests`, and `tests`): **277 passed**.
-- The only output was five existing dependency deprecation warnings (Pydantic and Starlette TestClient); there were no failures.
+- Focused Q7/Q38 and safeguard tests: **14 passed**.
+- Backend reasoning, chat-grounding, and API tests: **218 passed**.
+- Remaining RAG and integration tests: **62 passed**.
+- Full available project suite (`backend/tests`, `fall_semester/rag_bioreasoning/tests`, and `tests`), run in two resource-bounded groups: **280 passed**.
+- The only warnings were five existing dependency deprecation warnings (Pydantic and Starlette TestClient); there were no failures.
 

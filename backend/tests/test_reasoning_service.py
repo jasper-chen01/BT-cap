@@ -331,6 +331,29 @@ def test_negated_refutation_language_cannot_enable_negative_family_evidence(
     provider.assert_not_called()
 
 
+@pytest.mark.parametrize("question", [
+    ("Don't refute the claim; what contrast evidence supports the claim that T-cell "
+     "Ephys_2 has a GRIA synaptic program?"),
+    ("Without asking for any additional analysis that would carefully disprove or "
+     "falsify the claim, what evidence supports the claim that T-cell Ephys_2 has a "
+     "GRIA synaptic program?"),
+])
+def test_clause_negation_cannot_enable_negative_family_evidence(
+        production_engine, tmp_path, monkeypatch, question):
+    raw = production_engine.ask(question, use_llm=False)
+    assert any(trace.filters.get("gene") == "GRIA" and not trace.rows
+               for trace in raw["traces"])
+    assert any(trace.rows for trace in raw["traces"]
+               if trace.tool in {"pathway_contrast_lookup", "pathway_filter"})
+    provider = Mock(side_effect=AssertionError("negated refutation must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
 def test_real_ptn_rows_from_other_tumor_identities_cannot_ground_mes_like_gria(
         production_engine, tmp_path, monkeypatch):
     question = "What would refute a claim that MES-like Ephys_2 has a GRIA synaptic program?"
@@ -361,6 +384,49 @@ def test_real_ptn_rows_from_other_tumor_identities_cannot_ground_mes_like_gria(
         production_engine.interactions, production_engine.documents,
         production_engine.retriever, production_engine.tools)
     provider = Mock(side_effect=AssertionError("other tumor identities must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+def test_tcell_and_ephys_must_match_in_the_same_real_ppia_bsg_participant(
+        production_engine, tmp_path, monkeypatch):
+    question = "What would refute a claim that T-cell Ephys_2 has a GRIA synaptic program?"
+    registry = production_engine.tools
+    cypa = registry.pathway_filter(
+        pathway="CypA", compartment="tcell", ephys="Ephys_2", limit=500)
+    mixed_row = next(
+        row for row in cypa.rows
+        if row.get("pair") == "PPIA_BSG"
+        and row.get("source") == "T cell / Ephys_1"
+        and str(row.get("target", "")).endswith("/ Ephys_2")
+    )
+    traces = [
+        registry.cellchat_lookup(
+            gene="GRIA", celltype="T cell", ephys="Ephys_2", compartment="tcell"),
+        registry.deg_lookup(gene="GRIA", celltype="T cell"),
+        ToolResult(
+            cypa.tool, cypa.source_file, cypa.filters, 1, [mixed_row], cypa.note),
+    ]
+    assert not traces[0].rows and not traces[1].rows
+    context = format_traces(traces)
+    grounded = {
+        "answer": extractive_answer(question, context), "context": context,
+        "traces": traces, "hits": [],
+    }
+
+    class FixedTraceEngine(RAGEngine):
+        def ask(self, asked, *, use_llm):
+            assert asked == question and use_llm is False
+            return grounded
+
+    engine = FixedTraceEngine(
+        production_engine.interactions, production_engine.documents,
+        production_engine.retriever, production_engine.tools)
+    provider = Mock(side_effect=AssertionError("mixed participant scope must not generate"))
     monkeypatch.setattr(service, "generate_answer", provider)
     result = service.ReasoningService(
         engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
