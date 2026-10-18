@@ -144,8 +144,12 @@ class MedGemmaClient:
                 path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
                 if not path:
                     raise ModelUnavailableError("GOOGLE_APPLICATION_CREDENTIALS is not set")
-                creds = service_account.Credentials.from_service_account_file(
-                    path,
+                with Path(path).open(encoding="utf-8") as handle:
+                    info = json.load(handle)
+                if not isinstance(info, dict):
+                    raise ValueError("Service account credentials must be a JSON object")
+                creds = service_account.Credentials.from_service_account_info(
+                    info,
                     scopes=["https://www.googleapis.com/auth/cloud-platform"],
                 )
                 creds.refresh(Request())

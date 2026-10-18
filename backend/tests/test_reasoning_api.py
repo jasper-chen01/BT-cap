@@ -214,13 +214,15 @@ def test_unavailable_model_returns_503(client, monkeypatch):
 
 
 @pytest.mark.parametrize("failure", ["malformed", "invalid_json", "refresh", "cached_refresh"])
-def test_medgemma_credential_failures_return_503(client, monkeypatch, failure):
+def test_medgemma_credential_failures_return_503(client, monkeypatch, tmp_path, failure):
     from google.auth.exceptions import RefreshError
     from google.oauth2 import service_account
     from ephys_rag import llm
 
     monkeypatch.setattr(llm, "medgemma_available", lambda: True)
-    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "test-only-credential-path.json")
+    credential_file = tmp_path / "credentials.json"
+    credential_file.write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(credential_file))
     error = {"malformed": ValueError("invalid credential configuration"),
              "invalid_json": json.JSONDecodeError("invalid credentials JSON", "{", 1),
              "refresh": RefreshError("credential refresh rejected"),
@@ -237,7 +239,7 @@ def test_medgemma_credential_failures_return_503(client, monkeypatch, failure):
             raise error
         return Credentials()
 
-    monkeypatch.setattr(service_account.Credentials, "from_service_account_file", load)
+    monkeypatch.setattr(service_account.Credentials, "from_service_account_info", load)
     if failure == "cached_refresh":
         provider = llm.MedGemmaClient()
         provider._creds = Credentials()
@@ -253,6 +255,28 @@ def test_unrelated_provider_value_error_is_not_reported_as_unavailable(client, m
 
     monkeypatch.setattr(service, "generate_answer", broken_provider)
     with pytest.raises(ValueError, match="programmer error"):
+        client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "medgemma"})
+
+
+@pytest.mark.parametrize("document", ["[]", "null", '"credential string"'])
+def test_non_object_credential_json_returns_503_with_real_loader(client, monkeypatch, tmp_path, document):
+    from ephys_rag import llm
+
+    credential_file = tmp_path / "credentials.json"
+    credential_file.write_text(document, encoding="utf-8")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(credential_file))
+    monkeypatch.setattr(llm, "medgemma_available", lambda: True)
+    response = client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "medgemma"})
+    assert response.status_code == 503
+    assert "MedGemma" in response.json()["detail"]
+
+
+def test_unrelated_provider_attribute_error_is_not_reported_as_unavailable(client, monkeypatch):
+    def broken_provider(*args, **kwargs):
+        raise AttributeError("programmer error outside credential loading")
+
+    monkeypatch.setattr(service, "generate_answer", broken_provider)
+    with pytest.raises(AttributeError, match="programmer error"):
         client.post("/api/reasoning/ask", json={"question": "ALPHA?", "model": "medgemma"})
 
 
