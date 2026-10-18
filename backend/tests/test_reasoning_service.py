@@ -334,6 +334,10 @@ def test_negated_refutation_language_cannot_enable_negative_family_evidence(
 @pytest.mark.parametrize("question", [
     ("Don't refute the claim; what contrast evidence supports the claim that T-cell "
      "Ephys_2 has a GRIA synaptic program?"),
+    ("Do not, under any circumstances, refute the claim; what contrast evidence "
+     "supports the claim that T-cell Ephys_2 has a GRIA synaptic program?"),
+    ("Don't, under any circumstances, refute the claim; what contrast evidence "
+     "supports the claim that T-cell Ephys_2 has a GRIA synaptic program?"),
     ("Without asking for any additional analysis that would carefully disprove or "
      "falsify the claim, what evidence supports the claim that T-cell Ephys_2 has a "
      "GRIA synaptic program?"),
@@ -350,6 +354,23 @@ def test_clause_negation_cannot_enable_negative_family_evidence(
     result = service.ReasoningService(
         production_engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
     assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
+
+
+def test_detached_without_clause_preserves_affirmative_q38(
+        production_engine, tmp_path, monkeypatch):
+    question = (
+        "Without using an LLM, what would refute a claim that T-cell Ephys_2 has a "
+        "GRIA synaptic program?"
+    )
+    provider = Mock(side_effect=AssertionError("extractive control must not generate"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    cli = production_engine.ask(question, use_llm=False)
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(question, "gemini")
+    assert result["answer"] == cli["answer"]
+    assert result["answer"] != "not in the tables"
     assert result["cached"] is False
     provider.assert_not_called()
 

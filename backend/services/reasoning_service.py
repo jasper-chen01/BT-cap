@@ -252,13 +252,21 @@ def _is_negative_control_question(question: str) -> bool:
         r"(?:\bdo\s+not\b|\bdon't\b|\bdont\b|\bnot\b|\bnever\b|\bwithout\b|"
         r"\bavoid(?:ing)?\b|\brather\s+than\b|\binstead\s+of\b)"
     )
+    question_pivot = re.compile(
+        r"\b(?:what|which|how|why|when|where)\b"
+        r"(?=[^;.!?]*\b(?:would|could|can|will|does|do|is|are)\b)"
+    )
     # A keyword only expresses an affirmative challenge when it is not under a
-    # negator in the same clause.  A comma starts a new local clause, so
-    # "Without using an LLM, what would refute ..." remains affirmative while
-    # arbitrarily long "without ... carefully disprove" spans remain negated.
+    # negator in the same sentence/semicolon-bounded clause. Because commas can
+    # enclose parentheticals, they cannot discard a governing "do not". An
+    # explicit question pivot starts the requested action, preserving
+    # "Without using an LLM, what would refute ..." as affirmative.
     for clause in re.split(r"[;.!?]+", lowered):
         for match in pattern.finditer(clause):
-            local_prefix = clause[:match.start()].rsplit(",", 1)[-1]
+            local_prefix = clause[:match.start()]
+            pivots = list(question_pivot.finditer(local_prefix))
+            if pivots:
+                local_prefix = local_prefix[pivots[-1].start():]
             if negation.search(local_prefix):
                 continue
             return True
