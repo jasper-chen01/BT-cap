@@ -166,14 +166,25 @@ class ChatAgent:
         # UI acronyms are not gene symbols; summary questions keep their flow.
         text = re.sub(r"\b(?:UMAP|PCA|API|UI|CSV|H5AD)\b", "", message, flags=re.I)
         slots = infer_query_slots(text)
-        if any(slots.get(key) for key in
-               ("genes", "pair", "pathway", "celltype", "ephys", "idh", "compartment")):
+        if any(slots.get(key) for key in ("genes", "pair", "pathway", "ephys", "idh")):
+            return True
+        # The shared parser deliberately uses permissive cell aliases (e.g.
+        # 'mes' in 'messages'). At the chat boundary require whole identities
+        # so ordinary portal language cannot masquerade as biological evidence.
+        cell_identity = re.search(r"\b([\w-]+)\s+cells?\b", text, flags=re.I)
+        if cell_identity and cell_identity.group(1).casefold() not in {
+            "total", "all", "many", "few", "more", "fewer", "most", "some",
+            "any", "these", "those", "the", "my", "your", "our", "of", "are",
+            "show", "count", "number", "upload", "uploaded", "annotated",
+        }:
             return True
         # Slot inference knows supported names. Generic biology and unknown
         # targets must also reach the service so it can decline without guessing.
         return bool(re.search(
             r"\b(?:genes?|ligands?|receptors?|pathways?|ephys|idh|cell[\s-]?types?|"
             r"cellchat|degs?|biology|biological|expression|synap\w*|"
+            r"neurons?|neuronal|tumou?rs?|gliomas?|cycling|mes(?:[_-]like)?|"
+            r"opc(?:[_-]like)?|myeloid|tam|t[\s-]?cells?|"
             r"[a-z]*(?:cytes?|blasts?|phages?|glia)|[a-z]+\d+[a-z\d]*)\b",
             text, flags=re.I,
         ))

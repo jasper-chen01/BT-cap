@@ -86,6 +86,9 @@ def test_biological_chat_uses_grounded_service(chat, question, with_context):
     ("Check system status", "System Status: Ready", None),
     ("Check portal status", "System Status: Ready", None),
     ("Check job status", "System Status: Ready", None),
+    ("help me read portal messages", "How to use", None),
+    ("Check system status messages", "System Status: Ready", None),
+    ("Help me understand portal messages", "How to use", None),
     ("annotate", "No file uploaded", "upload_file"),
 ])
 def test_existing_portal_commands_keep_precedence(chat, text, content, action):
@@ -187,3 +190,31 @@ def test_umap_acronym_is_not_a_gene(chat, monkeypatch):
     monkeypatch.setattr(agent, "_gemini_response", summarize)
     assert run(agent, "Summarize my UMAP").message.content == "UMAP summary"
     assert calls == []
+
+
+@pytest.fixture(scope="module")
+def table_engine():
+    # Use the real intent dispatcher, annotation tables, and target validation.
+    return reasoning_service.RAGEngine.from_disk()
+
+
+@pytest.mark.parametrize("question,unsupported", [
+    ("Are neurons present?", False), ("How do neurons communicate?", False),
+    ("Hi, are neurons present?", False), ("What about B cells?", True),
+    ("Hello, what about B cells?", True), ("What about invented cells?", True),
+])
+@pytest.mark.parametrize("with_context", [False, True])
+def test_cell_identity_chat_uses_real_table_reasoning(
+        chat, monkeypatch, table_engine, question, unsupported, with_context):
+    _, agent, _ = chat
+    monkeypatch.setattr(reasoning_service, "get_rag_engine", lambda: table_engine)
+    session = ChatSession(session_id="cells", messages=[],
+                          analysis_context={"total_cells": 42} if with_context else None)
+    response = run(agent, question, session=session)
+    assert response.message.traces
+    assert any(trace["tool"] == "annotation_lookup" for trace in response.message.traces)
+    if unsupported:
+        assert response.message.content == "not in the tables"
+    else:
+        assert any(trace["filters"].get("ask_neurons") for trace in response.message.traces)
+        assert "neuron" in response.message.content.lower()
