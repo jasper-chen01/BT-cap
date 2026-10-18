@@ -9,6 +9,8 @@ from collections import Counter
 
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
 from backend.services.annotation_service import AnnotationService
+from backend.services.reasoning_service import ReasoningService
+from ephys_rag.tools.registry import infer_query_slots
 from backend.config import settings
 from pathlib import Path
 from google.cloud import storage
@@ -31,6 +33,10 @@ except Exception:  # pragma: no cover - optional dependency
     vertexai = None
     GenerativeModel = None
     service_account = None
+
+
+class GroundedReasoningUnavailable(RuntimeError):
+    """The table-backed branch cannot answer because its runtime is unavailable."""
 
 
 class ChatAgent:
@@ -92,16 +98,18 @@ class ChatAgent:
 
         
         # Handle greetings
-        if any(self._has_keyword(message_lower, greeting) for greeting in self.greetings):
+        if (any(self._has_keyword(message_lower, greeting) for greeting in self.greetings)
+                and not self._is_grounded_question(user_message)):
             return self._greeting_response(session.session_id)
         
         # Handle help requests
-        if self._is_help_intent(message_lower):
+        if self._is_help_intent(message_lower) and not self._is_grounded_question(user_message):
             return self._help_response(session.session_id)
 
         
         # Handle status checks
-        if any(self._has_keyword(message_lower, keyword) for keyword in self.status_keywords):
+        if (any(self._has_keyword(message_lower, keyword) for keyword in self.status_keywords)
+                and not self._is_grounded_question(user_message)):
             return await self._status_response(session.session_id)
         
         # Handle file upload
@@ -127,6 +135,21 @@ class ChatAgent:
         top_k = self._extract_number(message_lower, r'top[_\s]?k[:\s]?(\d+)', default=10)
         threshold = self._extract_number(message_lower, r'threshold[:\s]?([\d.]+)', default=0.7, is_float=True)
 
+        # Keep biology ahead of both general-model paths, including UMAP context.
+        if self._is_grounded_question(user_message):
+            try:
+                result = await asyncio.to_thread(ReasoningService().ask, user_message, "none")
+            except (OSError, RuntimeError) as error:
+                raise GroundedReasoningUnavailable(
+                    "Reasoning runtime unavailable; run scripts/prepare_reasoning_data.py "
+                    "and check configured data/model settings."
+                ) from error
+            return ChatResponse(
+                session_id=session.session_id,
+                message=ChatMessage(role="assistant", content=result["answer"],
+                                    traces=result["traces"]),
+            )
+
         if getattr(session, "analysis_context", None) and self.gemini_enabled:
             return await self._gemini_response(session, user_message)
 
@@ -137,6 +160,23 @@ class ChatAgent:
         if self.gemini_enabled:
             return await self._gemini_response(session, user_message)
         return self._default_response(session.session_id, session.uploaded_files)
+
+    def _is_grounded_question(self, message: str) -> bool:
+        """Recognize table queries, including biological targets the tables lack."""
+        # UI acronyms are not gene symbols; summary questions keep their flow.
+        text = re.sub(r"\b(?:UMAP|PCA|API|UI|CSV|H5AD)\b", "", message, flags=re.I)
+        slots = infer_query_slots(text)
+        if any(slots.get(key) for key in
+               ("genes", "pair", "pathway", "celltype", "ephys", "idh", "compartment")):
+            return True
+        # Slot inference knows supported names. Generic biology and unknown
+        # targets must also reach the service so it can decline without guessing.
+        return bool(re.search(
+            r"\b(?:genes?|ligands?|receptors?|pathways?|ephys|idh|cell[\s-]?types?|"
+            r"cellchat|degs?|biology|biological|expression|synap\w*|"
+            r"[a-z]*(?:cytes?|blasts?|phages?|glia)|[a-z]+\d+[a-z\d]*)\b",
+            text, flags=re.I,
+        ))
     
     async def annotate_file(
         self,

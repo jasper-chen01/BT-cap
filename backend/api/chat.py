@@ -10,7 +10,7 @@ import uuid
 import json
 from backend.config import settings
 from backend.models.schemas import ChatMessage, ChatResponse, ChatSession
-from backend.services.chat_agent import ChatAgent
+from backend.services.chat_agent import ChatAgent, GroundedReasoningUnavailable
 
 router = APIRouter()
 
@@ -131,6 +131,9 @@ async def send_message(
         
         return response
         
+    except GroundedReasoningUnavailable as error:
+        session.messages.append(ChatMessage(role="assistant", content=str(error)))
+        raise HTTPException(status_code=503, detail=str(error)) from error
     except Exception as e:
         error_msg = ChatMessage(
             role="assistant",

@@ -114,6 +114,7 @@ class ChatMessage(BaseModel):
     timestamp: Optional[str] = None
     file_uploaded: Optional[str] = None
     annotation_results: Optional[Dict] = None
+    traces: Optional[List[Dict]] = None
     
     class Config:
         json_encoders = {
