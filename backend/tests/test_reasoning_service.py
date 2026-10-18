@@ -5,6 +5,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from backend.api import reasoning as reasoning_api
+from backend.models.schemas import ReasoningAskRequest
 from backend.services import reasoning_service as service
 from ephys_rag.chain import RAGEngine
 from ephys_rag.retrieve import RetrievalHit
@@ -194,6 +196,60 @@ def test_target_intent_preserves_multiword_unknown_pathway(production_engine):
         "What is the signaling evidence for the nonexistent signaling pathway in tumor cells?",
         production_engine)
     assert intent.unsupported == ("nonexistent signaling",)
+
+
+def test_target_intent_does_not_treat_a_post_pathway_verb_as_a_name(production_engine):
+    intent = service.extract_target_intent(
+        "Which receptors does the Glutamate pathway hit in this table?", production_engine)
+    assert intent.pathways == ("Glutamate",)
+    assert intent.unsupported == ()
+
+
+@pytest.mark.parametrize("question", [
+    "Which receptors does the Glutamate pathway hit in this table?",
+    "If a model claims T-cell Ephys_2 is the synaptic (NRXN/GRIA) program, what would refute it?",
+])
+def test_q7_q38_portal_answers_exactly_match_cli_without_provider(
+        production_engine, tmp_path, monkeypatch, question):
+    provider = Mock(side_effect=AssertionError("extractive path must not call a provider"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    cli = production_engine.ask(question, use_llm=False)
+    portal_service = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path))
+    api_result = reasoning_api.ask_reasoning(
+        ReasoningAskRequest(question=question, model="none"), portal_service)
+    assert api_result["answer"] == cli["answer"]
+    provider.assert_not_called()
+
+
+def test_q38_negative_family_evidence_stays_extractive_when_provider_requested(
+        production_engine, tmp_path, monkeypatch):
+    question = (
+        "If a model claims T-cell Ephys_2 is the synaptic (NRXN/GRIA) program, "
+        "what would refute it?"
+    )
+    provider = Mock(side_effect=AssertionError("negative controls must not call a provider"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    cli = production_engine.ask(question, use_llm=False)
+    portal_service = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path))
+    api_result = reasoning_api.ask_reasoning(
+        ReasoningAskRequest(question=question, model="gemini"), portal_service)
+    assert api_result["answer"] == cli["answer"]
+    assert api_result["cached"] is False
+    provider.assert_not_called()
+
+
+def test_unsupported_positive_family_assertion_still_fails_closed(
+        production_engine, tmp_path, monkeypatch):
+    provider = Mock(side_effect=AssertionError("unsupported targets must not call a provider"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(
+            "What evidence shows GRIA is present in T-cell Ephys_2?", "gemini")
+    assert result["answer"] == "not in the tables"
+    assert result["cached"] is False
+    provider.assert_not_called()
 
 
 @pytest.mark.parametrize("question", [

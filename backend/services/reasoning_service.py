@@ -155,6 +155,8 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
     boundaries = {"for", "of", "in", "on", "among", "within", "from", "with", "to",
                   "is", "are", "does", "do", "has", "have", "the", "a", "an", "and",
                   "list", "show", "describe", "name", "identify", "compare"}
+    pathway_predicates = {"hit", "hits", "bind", "binds", "use", "uses", "occur", "occurs",
+                          "target", "targets", "signal", "signals", "involve", "involves"}
     words = re.findall(r"[\w-]+", question.casefold())
 
     def preceding(index: int) -> list[str]:
@@ -192,7 +194,7 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
             phrase = preceding(index)
             following = words[index + 1:index + 2]
             if following and (following[0] in {"called", "named"}
-                              or following[0] not in boundaries | broad):
+                              or following[0] not in boundaries | broad | pathway_predicates):
                 phrase = []
                 start = index + (2 if following[0] in {"called", "named"} else 1)
                 for token in words[start:start + 4]:
@@ -240,6 +242,49 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
                         tuple(sorted(requested_cells)), tuple(sorted(unsupported)))
 
 
+def _is_negative_control_question(question: str) -> bool:
+    return bool(re.search(
+        r"\b(?:claims?|counterfactual|refut\w*|falsif\w*|disprov\w*)\b",
+        question.casefold(),
+    ))
+
+
+def _uses_grounded_negative_family_evidence(
+        question: str, result: dict, gene: str, found: list[dict]) -> bool:
+    """Accept a real table-backed family as negative evidence in a scoped challenge.
+
+    Family lookup is deliberately prefix-based in the table tools. It is useful
+    when a counterfactual asks whether any GRIA-family member occurs in one
+    cell/Ephys context, but it must not make an unsupported positive GRIA claim
+    look like an exact gene hit.
+    """
+    if not _is_negative_control_question(question):
+        return False
+    members = {
+        member
+        for row in found
+        for key in ("gene", "ligand", "receptor")
+        for member in str(row.get(key, "")).upper().split("_")
+        if member
+    }
+    if not any(member != gene and member.startswith(gene) for member in members):
+        return False
+    targeted_empty = any(
+        str(trace.filters.get("gene") or "").upper() == gene
+        and not trace.rows
+        and any(trace.filters.get(key) for key in (
+            "celltype", "ephys", "compartment", "source_compartment", "target_compartment"
+        ))
+        for trace in result["traces"]
+    )
+    grounded_context = any(
+        trace.tool in {"pathway_contrast_lookup", "pathway_filter", "exclusive_pathway_lookup"}
+        and bool(trace.rows)
+        for trace in result["traces"]
+    )
+    return targeted_empty and grounded_context
+
+
 def _question_targets_supported(question: str, result: dict,
                                 engine: RAGEngine | None = None) -> bool:
     intent = extract_target_intent(question, engine)
@@ -260,7 +305,8 @@ def _question_targets_supported(question: str, result: dict,
             if not exact:
                 exact = any(row.get("gene") == gene
                             for row in registry.nominate_lookup(gene=gene).rows)
-            if not exact:
+            if not exact and not _uses_grounded_negative_family_evidence(
+                    question, result, gene, found):
                 return False
         for name in intent.pathways:
             if not any(_target_name(row["pathway"]) == _target_name(name)
@@ -273,6 +319,20 @@ def _question_targets_supported(question: str, result: dict,
     # Unknown names cannot become valid merely because a permissive tool
     # matched their substring (e.g. 'micro' in 'microglia').
     return not intent.unsupported
+
+
+def _is_grounded_negative_family_control(
+        question: str, result: dict, engine: RAGEngine | None = None) -> bool:
+    if not isinstance(engine, RAGEngine):
+        return False
+    registry = engine.tools
+    for gene in extract_target_intent(question, engine).genes:
+        found = registry.cellchat_lookup(gene=gene).rows
+        found += registry.deg_lookup(gene=gene).rows
+        found += registry.deg_lookup(gene=gene, pooled=True).rows
+        if _uses_grounded_negative_family_evidence(question, result, gene, found):
+            return True
+    return False
 
 
 def _has_evidence(result: dict, question: str = "", engine: RAGEngine | None = None) -> bool:
@@ -315,7 +375,8 @@ class ReasoningService:
         }
         if not _has_evidence(grounded, question, engine):
             response["answer"] = "not in the tables"
-        elif model != "none":
+        elif model != "none" and not _is_grounded_negative_family_control(
+                question, grounded, engine):
             context = grounded["context"]
             key = self.cache.make_key(question, model, context)
             saved = self.cache.get(key)
