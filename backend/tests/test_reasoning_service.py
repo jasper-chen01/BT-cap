@@ -9,6 +9,9 @@ from backend.services import reasoning_service as service
 from ephys_rag.chain import RAGEngine
 from ephys_rag.retrieve import RetrievalHit
 from ephys_rag.schema import RAGDocument, ToolResult
+from ephys_rag.retrieve import HybridRetriever
+from ephys_rag.ingest import load_interactions
+from ephys_rag.tools.registry import ToolRegistry
 
 
 @pytest.fixture
@@ -113,6 +116,59 @@ def test_unrelated_hits_cannot_override_empty_target_lookup(
         "What is the DEG evidence for NONEXISTENT99 in tumor cells?", model)
     assert result["answer"] == "not in the tables"
     assert result["cached"] is False
+    provider.assert_not_called()
+
+
+@pytest.fixture(scope="module")
+def dispatcher_engine():
+    """Real table tools/dispatcher with a small deliberately broad retriever."""
+    interactions = load_interactions()
+    documents = [RAGDocument("broad", "tumor signaling evidence", "tumor cells pathway evidence",
+                              "interaction", {})]
+    return RAGEngine(interactions, documents, HybridRetriever(documents),
+                     ToolRegistry(interactions=interactions))
+
+
+@pytest.mark.parametrize("question", [
+    "What is the signaling evidence for NRXN1_NONEXISTENT99?",
+    "What is the signaling evidence for MDK_NONEXISTENT99?",
+    "What is the evidence for the nonexistent pathway in tumor cells?",
+    "What is the signaling evidence in hepatocytes?",
+])
+@pytest.mark.parametrize("model", ["none", "medgemma", "gemini"])
+def test_real_dispatcher_cannot_drop_explicit_targets(
+        dispatcher_engine, tmp_path, monkeypatch, question, model):
+    provider = Mock(return_value="ungrounded answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+    result = service.ReasoningService(dispatcher_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, model)
+    assert result["answer"] == "not in the tables"
+    provider.assert_not_called()
+
+
+@pytest.mark.parametrize("question", ["What is the signaling evidence for NRXN1_NLGN1?",
+                                     "What is the evidence for the EGF pathway in tumor cells?"])
+def test_real_dispatcher_preserves_supported_explicit_targets(
+        dispatcher_engine, tmp_path, monkeypatch, question):
+    monkeypatch.setattr(service, "generate_answer", lambda *args, **kwargs: "grounded answer")
+    result = service.ReasoningService(dispatcher_engine, service.PortalAnswerCache(tmp_path)).ask(
+        question, "gemini")
+    assert result["answer"] == "grounded answer"
+
+
+def test_real_dispatcher_imports_all_saved_week2_questions(
+        dispatcher_engine, tmp_path, monkeypatch):
+    source = Path(__file__).resolve().parents[2] / "fall_semester/turnin/week2_traces"
+    cache = service.PortalAnswerCache(tmp_path)
+    assert service.import_week2_cache(source, cache, dispatcher_engine) == 24
+    provider = Mock(side_effect=AssertionError("imported answers must be cached"))
+    monkeypatch.setattr(service, "generate_answer", provider)
+    reasoning = service.ReasoningService(dispatcher_engine, cache)
+    for qid in range(9, 33):
+        saved = json.loads((source / f"Q{qid}.json").read_text(encoding="utf-8"))
+        result = reasoning.ask(saved["question"], "medgemma")
+        assert result["cached"] is True, qid
+        assert result["answer"] == saved["medgemma"], qid
     provider.assert_not_called()
 
 
