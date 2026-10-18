@@ -28,7 +28,21 @@ from ephys_rag.schema import DegRecord, Interaction, ToolResult, normalize_idh
 from ephys_rag.nomination import NominationStore
 
 _GENE_RE = re.compile(r"\b([A-Z][A-Z0-9]{1,}(?:-[A-Z0-9]+)?)\b")
-_PAIR_RE = re.compile(r"\b([A-Z][A-Z0-9-]+)_([A-Z][A-Z0-9-]+)\b")
+_GENE_TOKEN = r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*"
+_PAIR_RE = re.compile(
+    rf"(?<![A-Z0-9-])({_GENE_TOKEN})\s*(\u2192|->|\u2013|_|-)\s*({_GENE_TOKEN})(?![A-Z0-9-])"
+)
+_PAIR_CONTEXT_RE = re.compile(r"\b(?:interpret|pair|interaction|binds?|ligand.?receptor)\b", re.I)
+
+
+def _mentions_alias(text: str, aliases: tuple[str, ...]) -> bool:
+    """Match a cell/compartment alias without finding it inside another word."""
+    return any(
+        re.search(rf"(?<![A-Za-z0-9]){re.escape(alias)}(?![A-Za-z0-9])", text, re.I)
+        for alias in aliases
+    )
+
+
 def _match_cell(value: str, query: str | None) -> bool:
     if not query:
         return True
@@ -541,9 +555,9 @@ def infer_query_slots(question: str) -> dict:
         "pathway": None,
     }
 
-    pair = _PAIR_RE.search(text.replace("→", "_").replace("->", "_").replace("–", "-"))
-    if pair:
-        slots["pair"] = (pair.group(1), pair.group(2))
+    pair = _PAIR_RE.search(text)
+    if pair and (pair.group(2) != "-" or _PAIR_CONTEXT_RE.search(text)):
+        slots["pair"] = (pair.group(1), pair.group(3))
 
     knowledge = load_pathway_knowledge()
     for name in sorted(knowledge, key=len, reverse=True):
@@ -626,25 +640,25 @@ def infer_query_slots(question: str) -> dict:
     elif re.search(r"ephys[_\s-]?1", lowered):
         slots["ephys"] = "Ephys_1"
 
-    if any(term in lowered for term in ("t cell", "t-cell", "tcell")):
+    if _mentions_alias(text, ("t cell", "t-cell", "tcell")):
         slots["celltype"] = "T cell"
         slots["compartment"] = "tcell"
-    elif "cycling" in lowered:
+    elif _mentions_alias(text, ("cycling",)):
         slots["celltype"] = "cycling_tumor"
         slots["compartment"] = "tumor"
-    elif "mes" in lowered:
+    elif _mentions_alias(text, ("mes", "mesenchymal")):
         slots["celltype"] = "MES_like"
         slots["compartment"] = "tumor"
-    elif any(term in lowered for term in ("opc-like", "opc_like", "opc like")):
+    elif _mentions_alias(text, ("opc-like", "opc_like", "opc like")):
         slots["celltype"] = "OPC_GABA_like_tumor"
         slots["compartment"] = "tumor"
-    elif "opc" in lowered:
+    elif _mentions_alias(text, ("opc",)):
         slots["celltype"] = "OPC_GABA"
         slots["compartment"] = "tumor"
-    elif any(term in lowered for term in ("myeloid", "tam", "microglia")):
+    elif _mentions_alias(text, ("myeloid", "tam", "tams", "tam1", "tam2", "microglia")):
         slots["celltype"] = "TAM"
         slots["compartment"] = "myeloid"
-    elif any(term in lowered for term in ("tumor", "glioma")):
+    elif _mentions_alias(text, ("tumor", "glioma")):
         slots["compartment"] = "tumor"
     return slots
 
