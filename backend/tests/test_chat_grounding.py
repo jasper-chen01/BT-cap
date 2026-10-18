@@ -218,3 +218,35 @@ def test_cell_identity_chat_uses_real_table_reasoning(
     else:
         assert any(trace["filters"].get("ask_neurons") for trace in response.message.traces)
         assert "neuron" in response.message.content.lower()
+
+
+@pytest.mark.parametrize("question,celltype", [
+    ("What about cycling_tumor?", "cycling_tumor"),
+    ("What about opc_gaba_like_tumor?", "OPC_GABA"),
+    ("What about my cells and B cells?", None),
+])
+@pytest.mark.parametrize("with_context", [False, True])
+def test_canonical_and_later_cell_identities_never_call_provider(
+        chat, monkeypatch, table_engine, question, celltype, with_context):
+    module, agent, _ = chat
+    monkeypatch.setattr(reasoning_service, "get_rag_engine", lambda: table_engine)
+    provider_calls = []
+
+    def generate_content(prompt):
+        provider_calls.append(prompt)
+        return SimpleNamespace(text="ungrounded provider answer")
+
+    # Exercise the actual general response path down to the provider boundary.
+    agent.gemini_model = SimpleNamespace(generate_content=generate_content)
+    monkeypatch.setattr(agent, "_gemini_response",
+                        module.ChatAgent._gemini_response.__get__(agent))
+    session = ChatSession(session_id="identities", messages=[],
+                          analysis_context={"total_cells": 42} if with_context else None)
+    response = run(agent, question, session=session)
+    assert provider_calls == []
+    assert response.message.traces
+    if celltype:
+        assert any(trace["filters"].get("celltype") == celltype
+                   and trace["rows"] for trace in response.message.traces)
+    else:
+        assert response.message.content == "not in the tables"

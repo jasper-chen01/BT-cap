@@ -171,13 +171,19 @@ class ChatAgent:
         # The shared parser deliberately uses permissive cell aliases (e.g.
         # 'mes' in 'messages'). At the chat boundary require whole identities
         # so ordinary portal language cannot masquerade as biological evidence.
-        cell_identity = re.search(r"\b([\w-]+)\s+cells?\b", text, flags=re.I)
-        if cell_identity and cell_identity.group(1).casefold() not in {
+        identity_text = re.sub(r"[_-]+", " ", text)
+        for key in ("celltype", "compartment"):
+            identity = re.sub(r"[_-]+", " ", slots.get(key) or "")
+            if identity and re.search(rf"\b{re.escape(identity)}\b", identity_text, flags=re.I):
+                return True
+        count_modifiers = {
             "total", "all", "many", "few", "more", "fewer", "most", "some",
             "any", "these", "those", "the", "my", "your", "our", "of", "are",
             "show", "count", "number", "upload", "uploaded", "annotated",
-        }:
-            return True
+        }
+        for cell_identity in re.finditer(r"\b([\w-]+)\s+cells?\b", text, flags=re.I):
+            if cell_identity.group(1).casefold() not in count_modifiers:
+                return True
         # Slot inference knows supported names. Generic biology and unknown
         # targets must also reach the service so it can decline without guessing.
         return bool(re.search(
