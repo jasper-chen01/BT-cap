@@ -14,7 +14,7 @@ export const getGene = (symbol) => apiRequest(`/genes/${encodeURIComponent(symbo
 
 export function getRankedGenes(filters = {}) {
   const values = { model: 'tumor_synaptic', arm: 'tables_scetm', exclude_housekeeping: true,
-    novel_only: false, min_n: 0, limit: 15, ...filters };
+    novel_only: false, min_n: 50, limit: 15, ...filters };
   const query = new URLSearchParams();
   Object.entries(values).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== '') query.set(key, value);

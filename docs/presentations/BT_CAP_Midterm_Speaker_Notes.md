@@ -49,7 +49,7 @@ Sources: `frontend-react/src/components/GenesTab.jsx`; `backend/api/reasoning.py
 - Q1–Q44 passed 44/44 when comparing API and CLI tool sets, required evidence terms, and extractive answer text.
 - The published-gene consistency check compared 310 scored outputs. AXL was absent from both interfaces and correctly returned no score.
 - Q9–Q32 produced 24/24 cache hits with zero provider calls and unchanged cache files.
-- The full suite passed 283 Python tests, 7 frontend tests, and the production frontend build.
+- The full suite passed 294 Python tests, 8 frontend tests, and the production frontend build.
 - These checks establish software consistency and provenance. They do not establish biological truth.
 
 Source: `fall_semester/turnin/week6_portal/WEEK6_PORTAL_REPORT.md`

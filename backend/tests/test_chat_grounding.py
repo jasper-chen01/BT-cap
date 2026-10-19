@@ -71,7 +71,8 @@ def test_biological_chat_uses_grounded_service(chat, question, with_context):
     session = ChatSession(session_id="grounding", messages=[],
                           analysis_context={"total_cells": 10} if with_context else None)
     response = run(agent, question, session=session)
-    assert calls == [question]
+    assert len(calls) == 1
+    assert calls[0].casefold() == question.casefold()
     assert response.message.content == ("not in the tables" if "invented" in question
                                         else "observed table evidence")
     assert response.message.traces == [{"tool": "deg_lookup", "source_file": "idh.csv",
@@ -118,6 +119,59 @@ def test_upload_and_annotation_keep_precedence(chat, monkeypatch):
     assert calls == []
 
 
+def test_annotation_keyword_does_not_preempt_grounded_biology(chat):
+    _, agent, calls = chat
+    question = "Analyze NRXN1 in IDH-mutant cycling tumor"
+
+    response = run(agent, question)
+
+    assert response.message.content == "observed table evidence"
+    assert calls == [question]
+
+
+def test_direct_cell_annotation_commands_keep_precedence(chat):
+    _, agent, calls = chat
+
+    for command in ("Analyze cells", "Classify cells", "Label cells", "Predict cells"):
+        response = run(agent, command)
+        assert "No file uploaded" in response.message.content
+        assert response.requires_action == "upload_file"
+
+    assert calls == []
+
+
+def test_explicit_annotation_command_keeps_precedence_with_analysis_context(
+        chat, monkeypatch):
+    _, agent, calls = chat
+    session = ChatSession(
+        session_id="upload",
+        messages=[],
+        uploaded_files=[{"filename": "cells.h5ad", "path": "cells.h5ad"}],
+        analysis_context={"total_cells": 42},
+    )
+    from backend.models.schemas import ChatMessage, ChatResponse
+
+    async def annotate(session, file_path):
+        assert file_path == "cells.h5ad"
+        return ChatResponse(
+            session_id=session.session_id,
+            message=ChatMessage(role="assistant", content="Annotated current data"),
+        )
+
+    async def summarize(session, message):
+        return ChatResponse(
+            session_id=session.session_id,
+            message=ChatMessage(role="assistant", content="UMAP summary"),
+        )
+
+    monkeypatch.setattr(agent, "annotate_file", annotate)
+    monkeypatch.setattr(agent, "_gemini_response", summarize)
+    response = run(agent, "Analyze my current data", session=session)
+
+    assert response.message.content == "Annotated current data"
+    assert calls == []
+
+
 @pytest.mark.parametrize("gemini_enabled", [True, False])
 def test_umap_summary_flow_is_preserved(chat, monkeypatch, gemini_enabled):
     _, agent, calls = chat
@@ -132,6 +186,29 @@ def test_umap_summary_flow_is_preserved(chat, monkeypatch, gemini_enabled):
     monkeypatch.setattr(agent, "_gemini_response", summarize)
     response = run(agent, "What are the total cells?", session=session)
     assert response.message.content == ("UMAP summary" if gemini_enabled else "total_cells = 42")
+    assert calls == []
+
+
+@pytest.mark.parametrize("question", [
+    "Which genes or pathways define my UMAP clusters?",
+    "Which genes define my current analysis?",
+    "Which genes define my clusters?",
+])
+def test_explicit_analysis_context_biology_uses_summary_flow(
+        chat, monkeypatch, question):
+    _, agent, calls = chat
+    session = ChatSession(session_id="umap", messages=[],
+                          analysis_context={"total_cells": 42})
+    from backend.models.schemas import ChatMessage, ChatResponse
+
+    async def summarize(session, message):
+        return ChatResponse(session_id=session.session_id,
+                            message=ChatMessage(role="assistant", content="UMAP summary"))
+
+    monkeypatch.setattr(agent, "_gemini_response", summarize)
+    response = run(agent, question, session=session)
+
+    assert response.message.content == "UMAP summary"
     assert calls == []
 
 

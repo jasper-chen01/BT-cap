@@ -206,6 +206,33 @@ def test_target_intent_does_not_treat_a_post_pathway_verb_as_a_name(production_e
     assert intent.unsupported == ()
 
 
+@pytest.mark.parametrize(("question", "gene"), [
+    ("What was the support for nrxn1?", "NRXN1"),
+    ("Is gene qxyz represented?", "QXYZ"),
+])
+def test_target_intent_normalizes_explicit_lowercase_genes(
+        production_engine, question, gene):
+    intent = service.extract_target_intent(question, production_engine)
+    assert intent.genes == (gene,)
+
+
+def test_lowercase_supported_gene_routes_target_specific_context(
+        production_engine, tmp_path, monkeypatch):
+    provider = Mock(return_value="grounded lower-case answer")
+    monkeypatch.setattr(service, "generate_answer", provider)
+
+    result = service.ReasoningService(
+        production_engine, service.PortalAnswerCache(tmp_path)).ask(
+            "What was the support for nrxn1?", "gemini")
+
+    assert result["answer"] == "grounded lower-case answer"
+    assert any(
+        trace["filters"].get("gene") == "NRXN1" and trace["n_hits"] > 0
+        for trace in result["traces"]
+    )
+    assert "NRXN1" in provider.call_args.args[1]
+
+
 @pytest.mark.parametrize("question", [
     "Which receptors does the Glutamate pathway hit in this table?",
     "If a model claims T-cell Ephys_2 is the synaptic (NRXN/GRIA) program, what would refute it?",
@@ -458,6 +485,7 @@ def test_tcell_and_ephys_must_match_in_the_same_real_ppia_bsg_participant(
 
 @pytest.mark.parametrize("question", [
     "What is the signaling evidence for NRXN1 and NONEXISTENT99?",
+    "Is gene qxyz represented?",
     "What is the signaling evidence for the NRX gene?",
     "What is the signaling evidence for NRXN1_NLGN1 and MDK_NONEXISTENT99?",
     "What is the evidence for pathway nonexistent in tumor cells?",

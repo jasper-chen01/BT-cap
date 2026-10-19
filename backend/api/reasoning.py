@@ -78,7 +78,7 @@ def ask_reasoning(payload: ReasoningAskRequest,
 @router.get("/genes/ranked")
 def ranked_genes(model: GeneModel = "tumor_synaptic", arm: FeatureArm = "tables_scetm",
                  exclude_housekeeping: bool = True, novel_only: bool = False,
-                 rule_pass: bool | None = None, min_n: int = Query(0, ge=0),
+                 rule_pass: bool | None = None, min_n: int = Query(50, ge=50),
                  limit: int = Query(15, ge=0), store: NominationStore = Depends(get_store)) -> dict:
     rows = store.ranked_rows(model=model, arm=arm, exclude_housekeeping=exclude_housekeeping,
                              novel_only=novel_only, rule_pass=rule_pass, min_n=min_n, limit=limit)

@@ -35,7 +35,7 @@ export default function GenesTab() {
   const [geneError, setGeneError] = useState('');
   const [celltype, setCelltype] = useState(CELL_TYPES[0]);
   const [idh, setIdh] = useState(IDH_CONTEXTS[0]);
-  const [filters, setFilters] = useState({ arm: 'tables_scetm', exclude_housekeeping: true, novel_only: false, rule_pass: '', min_n: 0, limit: 15 });
+  const [filters, setFilters] = useState({ arm: 'tables_scetm', exclude_housekeeping: true, novel_only: false, rule_pass: '', min_n: 50, limit: 15 });
   const [ranked, setRanked] = useState(null);
   const [rankBusy, setRankBusy] = useState(false);
   const [rankError, setRankError] = useState('');
@@ -121,7 +121,7 @@ export default function GenesTab() {
       <Card className="min-w-0">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h4 className="text-lg font-semibold text-white">Ranked genes</h4><Button variant="secondary" icon={Download} onClick={download} disabled={!ranked?.rows?.length || rankBusy} className="px-3 py-2 text-xs">Download CSV</Button></div>
         <div className="grid grid-cols-2 gap-3"><Select label="Feature arm" value={filters.arm} onChange={(value) => updateFilter('arm', value)} options={ARMS} /><Select label="Three-table rule" value={String(filters.rule_pass)} onChange={(value) => updateFilter('rule_pass', value === '' ? '' : value === 'true')} options={{ '': 'All', true: 'Pass', false: 'Does not pass' }} />
-          <label className="text-xs text-slate-400">Minimum cells<input type="number" min="0" className={`${fieldClass} mt-1`} value={filters.min_n} onChange={(event) => updateFilter('min_n', event.target.value)} /></label><label className="text-xs text-slate-400">Result limit<input type="number" min="0" className={`${fieldClass} mt-1`} value={filters.limit} onChange={(event) => updateFilter('limit', event.target.value)} /></label>
+          <label className="text-xs text-slate-400">Minimum cells<input type="number" min="50" className={`${fieldClass} mt-1`} value={filters.min_n} onChange={(event) => updateFilter('min_n', event.target.value)} /></label><label className="text-xs text-slate-400">Result limit<input type="number" min="0" className={`${fieldClass} mt-1`} value={filters.limit} onChange={(event) => updateFilter('limit', event.target.value)} /></label>
         </div>
         <div className="my-4 flex flex-wrap gap-4 text-sm text-slate-300"><label className="flex items-center gap-2"><input type="checkbox" checked={filters.exclude_housekeeping} onChange={(event) => updateFilter('exclude_housekeeping', event.target.checked)} className="accent-cyan-500" />Exclude housekeeping</label><label className="flex items-center gap-2"><input type="checkbox" checked={filters.novel_only} onChange={(event) => updateFilter('novel_only', event.target.checked)} className="accent-cyan-500" />Novel only</label></div>
         <ErrorMessage error={rankError} />{rankBusy && <p role="status" className="text-sm text-slate-400">Loading rankings…</p>}{ranked && <><p className="mb-2 text-xs text-slate-500">{ranked.rows.length} returned · gene score and rank from the selected arm</p><DataTable rows={ranked.rows} columns={['gene', 'score', 'gene_rank', 'celltype_id', 'IDH_status', 'context_score', 'passes_three_table', 'why', 'scoring_folds']} /></>}

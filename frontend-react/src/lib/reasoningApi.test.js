@@ -15,14 +15,26 @@ test('API paths encode gene symbols and send endpoint filter defaults', async (t
   assert.deepEqual((await getGene('A/B +')).rows, [{ score: null }, { score: '' }, { score: 0 }]);
   assert.equal(calls[0].url, 'http://127.0.0.1:8000/api/genes/A%2FB%20%2B');
   await getRankedGenes();
-  assert.equal(calls[1].url, 'http://127.0.0.1:8000/api/genes/ranked?model=tumor_synaptic&arm=tables_scetm&exclude_housekeeping=true&novel_only=false&min_n=0&limit=15');
-  await getRankedGenes({ model: 'immune_synapse', arm: 'tables', exclude_housekeeping: false, novel_only: true, rule_pass: false, min_n: 20, limit: 10 });
-  assert.deepEqual(Object.fromEntries(new URL(calls[2].url).searchParams), { model: 'immune_synapse', arm: 'tables', exclude_housekeeping: 'false', novel_only: 'true', rule_pass: 'false', min_n: '20', limit: '10' });
+  assert.equal(calls[1].url, 'http://127.0.0.1:8000/api/genes/ranked?model=tumor_synaptic&arm=tables_scetm&exclude_housekeeping=true&novel_only=false&min_n=50&limit=15');
+  await getRankedGenes({ model: 'immune_synapse', arm: 'tables', exclude_housekeeping: false, novel_only: true, rule_pass: false, min_n: 70, limit: 10 });
+  assert.deepEqual(Object.fromEntries(new URL(calls[2].url).searchParams), { model: 'immune_synapse', arm: 'tables', exclude_housekeeping: 'false', novel_only: 'true', rule_pass: 'false', min_n: '70', limit: '10' });
   await getNeighbors('A/B');
   assert.equal(calls[3].url, 'http://127.0.0.1:8000/api/genes/A%2FB/neighbors?model=tumor_synaptic&k=20');
   await askReasoning('NRXN1 evidence?', 'medgemma');
   assert.equal(calls[4].options.method, 'POST');
   assert.deepEqual(JSON.parse(calls[4].options.body), { question: 'NRXN1 evidence?', model: 'medgemma' });
+});
+
+test('Genes tab starts ranked-list filtering at the 50-cell safety floor', async () => {
+  const server = await createServer({ root: fileURLToPath(new URL('../../', import.meta.url)),
+    server: { middlewareMode: true }, appType: 'custom' });
+  try {
+    const { default: GenesTab } = await server.ssrLoadModule('/src/components/GenesTab.jsx');
+    const markup = renderToStaticMarkup(React.createElement(GenesTab));
+    assert.match(markup, /Minimum cells<input[^>]*min="50"[^>]*value="50"/);
+  } finally {
+    await server.close();
+  }
 });
 
 test('API errors surface backend preparation and validation details', async (t) => {

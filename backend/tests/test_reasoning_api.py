@@ -31,6 +31,9 @@ def store():
         dict(gene="RPL5", celltype_id="cycling_tumor", IDH_status="IDH_Mutant",
              p_tumor_synaptic=.95, p_immune_synapse=.4, novel=1, housekeeping=1,
              rule_pass=0, ctx_min_n=90, in_tumor_synaptic=0, in_immune_synapse=0),
+        dict(gene="LOW_N", celltype_id="cycling_tumor", IDH_status="IDH_Mutant",
+             p_tumor_synaptic=.6, p_immune_synapse=.1, novel=1, housekeeping=0,
+             rule_pass=0, ctx_min_n=49, in_tumor_synaptic=0, in_immune_synapse=0),
     ])
     ranks = pd.DataFrame([
         {"gene": gene,
@@ -40,7 +43,8 @@ def store():
          **{f"gene_rank_{model}__{arm}": rank
             for model in ("tumor_synaptic", "immune_synapse")
             for arm in ("tables", "tables_scetm", "scetm_only")}}
-        for gene, score, rank in [("ALPHA", .85, 2), ("BETA", .75, 3), ("RPL5", .96, 1)]
+        for gene, score, rank in [("ALPHA", .85, 2), ("BETA", .75, 3), ("RPL5", .96, 1),
+                                  ("LOW_N", .65, 4)]
     ])
     return NominationStore({arm: rows.copy() for arm in ("tables", "tables_scetm", "scetm_only")},
                            ranks, pd.DataFrame({"gene": ["ALPHA", "BETA", "RPL5"],
@@ -145,7 +149,7 @@ def test_ranking_filters_and_static_route_precedence(client, params, expected):
     assert result["columns"][:6] == ["gene", "model", "arm", "celltype_id", "IDH_status", "score"]
 
 
-@pytest.mark.parametrize("params", [{"model": "none"}, {"arm": "bad"}, {"min_n": -1},
+@pytest.mark.parametrize("params", [{"model": "none"}, {"arm": "bad"}, {"min_n": 49},
                                     {"limit": -1}, {"rule_pass": "maybe"}, {"min_n": "1.5"}])
 def test_ranking_rejects_invalid_filters(client, params):
     assert client.get("/api/genes/ranked", params=params).status_code == 422

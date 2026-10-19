@@ -94,30 +94,42 @@ class ChatAgent:
             ChatResponse with agent's reply
         """
         message_lower = user_message.lower().strip()
+        grounded_question = self._is_grounded_question(user_message)
+        analysis_context_question = (
+            bool(getattr(session, "analysis_context", None))
+            and self._is_analysis_context_question(user_message)
+        )
         
 
         
         # Handle greetings
         if (any(self._has_keyword(message_lower, greeting) for greeting in self.greetings)
-                and not self._is_grounded_question(user_message)):
+                and not grounded_question and not analysis_context_question):
             return self._greeting_response(session.session_id)
         
         # Handle help requests
-        if self._is_help_intent(message_lower) and not self._is_grounded_question(user_message):
+        if (self._is_help_intent(message_lower)
+                and not grounded_question and not analysis_context_question):
             return self._help_response(session.session_id)
 
         
         # Handle status checks
         if (any(self._has_keyword(message_lower, keyword) for keyword in self.status_keywords)
-                and not self._is_grounded_question(user_message)):
+                and not grounded_question and not analysis_context_question):
             return await self._status_response(session.session_id)
         
         # Handle file upload
         if file_path:
             return await self._handle_file_upload(session, file_path, user_message)
+
+        # Explicit questions about the active UMAP/current analysis belong to
+        # that session's summary, even when they mention genes or pathways.
+        if analysis_context_question and self.gemini_enabled:
+            return await self._gemini_response(session, user_message)
         
         # Handle annotation requests
-        if any(self._has_keyword(message_lower, keyword) for keyword in self.annotate_keywords):
+        if (any(self._has_keyword(message_lower, keyword) for keyword in self.annotate_keywords)
+                and not grounded_question and not analysis_context_question):
             if session.uploaded_files:
                 # Annotate the most recent file
                 return await self._annotate_latest_file(session)
@@ -135,8 +147,8 @@ class ChatAgent:
         top_k = self._extract_number(message_lower, r'top[_\s]?k[:\s]?(\d+)', default=10)
         threshold = self._extract_number(message_lower, r'threshold[:\s]?([\d.]+)', default=0.7, is_float=True)
 
-        # Keep biology ahead of both general-model paths, including UMAP context.
-        if self._is_grounded_question(user_message):
+        # Ground standalone biology against the derived tables.
+        if grounded_question and not analysis_context_question:
             try:
                 result = await asyncio.to_thread(ReasoningService().ask, user_message, "none")
             except (OSError, RuntimeError) as error:
@@ -180,6 +192,7 @@ class ChatAgent:
             "total", "all", "many", "few", "more", "fewer", "most", "some",
             "any", "these", "those", "the", "my", "your", "our", "of", "are",
             "show", "count", "number", "upload", "uploaded", "annotated",
+            "analyze", "analyse", "annotate", "classify", "label", "predict", "process",
         }
         for cell_identity in re.finditer(r"\b([\w-]+)\s+cells?\b", text, flags=re.I):
             if cell_identity.group(1).casefold() not in count_modifiers:
@@ -194,6 +207,34 @@ class ChatAgent:
             r"[a-z]*(?:cytes?|blasts?|phages?|glia)|[a-z]+\d+[a-z\d]*)\b",
             text, flags=re.I,
         ))
+
+    def _is_analysis_context_question(self, message: str) -> bool:
+        """Recognize explicit references to the active analysis or projection."""
+        text = re.sub(r"[_-]+", " ", message or "")
+        question_intent = bool(re.search(
+            r"\b(?:what|which|where|when|why|how|summarize|describe|explain|show|tell)\b",
+            text,
+            flags=re.I,
+        ))
+        return bool(
+            re.search(r"\b(?:UMAP|PCA)\b", text, flags=re.I)
+            or question_intent and (
+                re.search(
+                    r"\b(?:my\s+)?(?:current|latest)\s+"
+                    r"(?:analysis|results?|clusters?|data(?:set)?)\b",
+                    text,
+                    flags=re.I,
+                )
+                or re.search(
+                    r"\b(?:my|these(?:\s+uploaded)?|the\s+uploaded|uploaded)\s+"
+                    r"(?:analysis|results?|clusters?|data(?:set)?)\b",
+                    text,
+                    flags=re.I,
+                )
+                or re.search(r"\b(?:analysis|projection)\s+(?:summary|results?)\b",
+                             text, flags=re.I)
+            )
+        )
     
     async def annotate_file(
         self,

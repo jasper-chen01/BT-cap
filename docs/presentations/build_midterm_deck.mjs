@@ -253,7 +253,7 @@ const presentation = Presentation.create({ slideSize: { width: 1280, height: 720
   addMetric(slide, "44 / 44", "questions matched\nAPI ↔ CLI", 64, 158, 250, C.green);
   addMetric(slide, "24 / 24", "MedGemma cache hits\nzero provider calls", 334, 158, 250, C.green);
   addMetric(slide, "310", "scored outputs checked\npublished-gene equality", 604, 158, 250, C.teal);
-  addMetric(slide, "283 + 7", "Python + frontend\ntests passed", 874, 158, 250, C.teal);
+  addMetric(slide, "294 + 8", "Python + frontend\ntests passed", 874, 158, 250, C.teal);
 
   const values = [
     ["Verification", "What was compared", "Result"],

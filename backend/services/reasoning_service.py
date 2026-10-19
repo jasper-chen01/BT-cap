@@ -184,8 +184,73 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
         if canonical and any(row.pathway == canonical and row.receptor.startswith(family)
                              for row in interactions):
             standalone = standalone.replace(match.group(), pathway)
+    known_genes = {
+        member
+        for row in interactions
+        for value in (row.ligand, row.receptor)
+        for member in str(value).upper().split("_")
+        if member
+    }
+    if isinstance(engine, RAGEngine):
+        registry = engine.tools
+        known_genes.update(
+            str(row.gene).upper()
+            for rows in (registry.degs_idh, registry.degs_pooled)
+            for row in rows
+            if row.gene
+        )
+        store = registry.nomination_store
+        if store is not None:
+            for frame in [store.gene_ranks, *store.arm_scores.values()]:
+                if not frame.empty and "gene" in frame:
+                    known_genes.update(frame["gene"].dropna().astype(str).str.upper())
+    gene_candidates = set(
+        re.findall(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*\b", standalone)
+    )
+    # Gene symbols are case-insensitive at the API boundary. Resolve lowercase
+    # names against the table-backed vocabulary without promoting ordinary
+    # English words that happen to be valid symbols (for example WAS or SET).
+    explicit_gene_stops = broad | boundaries | {
+        "bad", "candidate", "candidates", "cat", "evidence", "expression",
+        "kit", "not", "program", "programs", "rank", "ranks", "ranking",
+        "rankings", "score", "scores", "set", "sets", "son", "was", "were",
+    }
+    left_gene_cue = re.compile(
+        r"\b(?:about|candidate|for|gene|ligand|nominate|rank|receptor|score|supports?)\s*$",
+        re.IGNORECASE,
+    )
+    right_gene_cue = re.compile(
+        r"^\s*(?:binds?|candidate|evidence|gene|interaction|rank|score|support)\b",
+        re.IGNORECASE,
+    )
+    word_pattern = r"\b[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*\b"
+    for match in re.finditer(word_pattern, standalone):
+        token = match.group()
+        symbol = token.upper()
+        if symbol not in known_genes or token.casefold() in explicit_gene_stops:
+            continue
+        has_symbol_shape = bool(re.search(r"[0-9-]", token))
+        has_target_context = (
+            left_gene_cue.search(standalone[:match.start()]) is not None
+            or right_gene_cue.match(standalone[match.end():]) is not None
+        )
+        if has_symbol_shape or has_target_context:
+            gene_candidates.add(symbol)
+    # Retain explicitly named unknown symbols so fail-closed validation can
+    # reject them instead of allowing a broad lexical hit to reach an LLM.
+    gene_candidates.update(
+        candidate
+        for match in re.finditer(
+            r"\bgenes?\s+(?:named\s+|called\s+)?"
+            r"([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*)\b",
+            standalone,
+            re.IGNORECASE,
+        )
+        for candidate in (match.group(1).upper(),)
+        if candidate.casefold() not in explicit_gene_stops
+    )
     genes = set()
-    for token in re.findall(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*\b", standalone):
+    for token in gene_candidates:
         if _target_name(token) in pathways or _target_name(token) in broad:
             continue
         genes.update(_gene_tokens(token))
@@ -240,6 +305,19 @@ def extract_target_intent(question: str, engine: RAGEngine | None = None) -> Tar
                     unsupported.add(f"{remainder} cells")
     return TargetIntent(tuple(sorted(pairs)), tuple(sorted(genes)), tuple(sorted(requested)),
                         tuple(sorted(requested_cells)), tuple(sorted(unsupported)))
+
+
+def _normalize_routing_question(question: str, intent: TargetIntent) -> str:
+    """Canonicalize explicit genes so the shared uppercase router targets them."""
+    routed = question
+    for gene in sorted(intent.genes, key=len, reverse=True):
+        routed = re.sub(
+            rf"(?<![A-Za-z0-9-]){re.escape(gene)}(?![A-Za-z0-9-])",
+            gene,
+            routed,
+            flags=re.IGNORECASE,
+        )
+    return routed
 
 
 def _is_negative_control_question(question: str) -> bool:
@@ -452,7 +530,8 @@ class ReasoningService:
         if model not in {"none", "medgemma", "gemini"}:
             raise ValueError("model must be none, medgemma, or gemini")
         engine = self.engine if self.engine is not None else get_rag_engine()
-        grounded = engine.ask(question, use_llm=False)
+        intent = extract_target_intent(question, engine)
+        grounded = engine.ask(_normalize_routing_question(question, intent), use_llm=False)
         response = {
             "answer": grounded["answer"], "model": model, "cached": False,
             "traces": [serialize_tool_result(trace) for trace in grounded["traces"]],
