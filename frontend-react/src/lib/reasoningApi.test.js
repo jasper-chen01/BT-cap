@@ -37,6 +37,19 @@ test('Genes tab starts ranked-list filtering at the 50-cell safety floor', async
   }
 });
 
+test('Genes tab starts Ask the Tables with a prompt backed by the MedGemma cache', async () => {
+  const server = await createServer({ root: fileURLToPath(new URL('../../', import.meta.url)),
+    server: { middlewareMode: true }, appType: 'custom' });
+  try {
+    const { default: GenesTab } = await server.ssrLoadModule('/src/components/GenesTab.jsx');
+    const markup = renderToStaticMarkup(React.createElement(GenesTab));
+    assert.match(markup,
+      /<textarea[^>]*>Is NRXN1 DEG-supported as Ephys_2-high in IDH-mutant cycling tumor\?<\/textarea>/);
+  } finally {
+    await server.close();
+  }
+});
+
 test('API errors surface backend preparation and validation details', async (t) => {
   t.mock.method(globalThis, 'fetch', async () => ({ ok: false, status: 503, json: async () => ({ detail: 'Runtime unavailable: prepare data' }) }));
   await assert.rejects(getGene('NRXN1'), /Runtime unavailable: prepare data/);

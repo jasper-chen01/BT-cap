@@ -44,7 +44,7 @@ export default function GenesTab() {
   const [neighbors, setNeighbors] = useState(null);
   const [neighborBusy, setNeighborBusy] = useState(false);
   const [neighborError, setNeighborError] = useState('');
-  const [question, setQuestion] = useState('Is NRXN1 differentially expressed between Ephys states?');
+  const [question, setQuestion] = useState('Is NRXN1 DEG-supported as Ephys_2-high in IDH-mutant cycling tumor?');
   const [llm, setLlm] = useState('none');
   const [answer, setAnswer] = useState(null);
   const [askBusy, setAskBusy] = useState(false);
